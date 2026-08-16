@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ОГЭ №8 — интерактивный рабочий лист</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+<style>
+:root{
+  --bg:#f5f7fb;--card:#fff;--ink:#1d2638;--muted:#6c778d;--line:#dfe5ef;
+  --accent:#5067e8;--accent-soft:#eef1ff;--good:#20a66a;--good-soft:#eaf8f2;
+  --warn:#d99518;--warn-soft:#fff6df;--bad:#d94e5d;--bad-soft:#fff0f2;
+  --skip:#6a7a91;--skip-soft:#eef2f6;--shadow:0 12px 35px rgba(38,55,95,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:#e9edf5;color:var(--ink)}
+body{display:grid;place-items:center;overflow:auto}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+#frame{
+  width:min(100vw,177.78vh);height:min(100vh,56.25vw);min-height:560px;min-width:920px;
+  aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.06),var(--shadow);
+  overflow:hidden;position:relative;border-radius:18px
+}
+@media(max-width:950px),(max-height:590px){
+  body{display:block;background:var(--bg);overflow:auto}
+  #frame{min-width:0;min-height:0;width:100vw;height:auto;aspect-ratio:16/9;border-radius:0;overflow:auto}
+}
+.topbar{height:72px;padding:12px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92)}
+.brand{font-weight:800;font-size:20px;margin-right:auto}.brand small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 14px;border-radius:12px;font-weight:700;transition:.15s;min-height:42px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(30,45,80,.08)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.good{background:var(--good);color:#fff;border-color:var(--good)}
+.btn.warn{background:var(--warn-soft);color:#8a5a00;border-color:#f1d895}
+.btn.bad{background:var(--bad-soft);color:#a82c3b;border-color:#f1bcc4}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.view{height:calc(100% - 72px);padding:22px;overflow:auto}
+.hidden{display:none!important}
+.hero{display:flex;gap:18px;margin-bottom:18px;align-items:stretch}
+.hero-card{background:linear-gradient(135deg,#fff,#f0f3ff);border:1px solid #dfe4ff;border-radius:18px;padding:18px 20px;flex:1}
+.hero-card h1{margin:0 0 7px;font-size:26px}.hero-card p{margin:0;color:var(--muted);line-height:1.45}
+.skill-summary{width:34%;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
+.skill-summary h3{margin:0 0 10px;font-size:15px}.mini-list{font-size:12px;color:var(--muted);line-height:1.5;max-height:72px;overflow:hidden}
+.block-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.block-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;min-height:164px;display:flex;flex-direction:column;box-shadow:0 5px 16px rgba(40,55,90,.035)}
+.block-card.off{opacity:.48}.block-card h3{font-size:15px;margin:0 0 6px}.block-card p{font-size:12px;line-height:1.35;color:var(--muted);margin:0 0 10px}
+.stats{font-size:12px;font-weight:700;margin-top:auto;color:#48556d}
+.dotmap{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0}
+.dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;border:1px solid var(--line);background:#fff;color:#748096}
+.dot.s-green{background:var(--good-soft);border-color:#b7e7d2;color:#13754d}
+.dot.s-yellow{background:var(--warn-soft);border-color:#f0d697;color:#8f5d00}
+.dot.s-skip{background:var(--skip-soft);border-color:#d8dfe8;color:#536176}
+.dot.s-repeat{background:var(--bad-soft);border-color:#f3b9c2;color:#aa2f40}
+.dot.s-current{box-shadow:0 0 0 3px #dce2ff}
+.block-actions{display:flex;gap:8px;margin-top:9px}.block-actions .btn{padding:7px 10px;min-height:34px;font-size:12px}
+.continue-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #dfe4ff;border-radius:14px;padding:10px 14px;margin-bottom:14px}
+.continue-card .grow{flex:1}.continue-card strong{display:block;font-size:13px}.continue-card span{font-size:12px;color:var(--muted)}
+.exercise-layout{display:grid;grid-template-columns:minmax(0,1fr) 0;gap:18px;height:100%;transition:.2s}
+.exercise-layout.panel-open{grid-template-columns:minmax(0,1fr) minmax(300px,34%)}
+.exercise-main{min-width:0;display:flex;flex-direction:column;gap:13px}
+.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.task-map{display:flex;gap:6px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);padding:8px 10px;border-radius:13px}
+.task-map .dot{cursor:pointer}
+.task-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;flex:1;min-height:0;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.task-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}.task-no{font-weight:900;font-size:14px;background:var(--accent-soft);color:#4057cf;border-radius:10px;padding:7px 10px}.badge{font-size:11px;border-radius:99px;padding:6px 9px;background:#f1f3f7;color:#657188;font-weight:800}
+.prompt{font-size:23px;line-height:1.65;min-height:95px;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 8px}
+.answer-wrap{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:10px;align-items:center;margin:10px auto 7px;width:min(720px,100%)}
+.answer-input{width:100%;border:2px solid #ccd4e4;border-radius:14px;padding:13px 16px;font-size:23px;text-align:center;outline:none;background:#fbfcff}
+.answer-input:focus{border-color:#8c9af0;box-shadow:0 0 0 4px #edf0ff}.answer-input.error{border-color:var(--bad);background:var(--bad-soft);animation:shake .22s}
+@keyframes shake{0%,100%{transform:translateX(0)}33%{transform:translateX(-4px)}66%{transform:translateX(4px)}}
+.feedback{min-height:45px;text-align:center;font-size:13px;line-height:1.45}
+.feedback.good{color:#126e49}.feedback.bad{color:#a62d3c}.feedback.info{color:#57657c}
+.math-keyboard{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:3px auto 10px;max-width:720px}
+.key{min-width:48px;height:42px;border:1px solid var(--line);background:#fff;border-radius:10px;font-weight:800;font-size:16px}
+.key.wide{min-width:78px;font-size:12px}
+.help-choice{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:3px}
+.task-actions{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid #eef1f5}.task-actions .spacer{flex:1}
+.side-panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:17px;overflow:auto;min-width:0;box-shadow:var(--shadow)}
+.side-panel h2{font-size:17px;margin:0 0 10px}.side-panel h4{margin:14px 0 6px;font-size:13px}.side-panel p{font-size:13px;line-height:1.5;color:#4f5b70}.formula-box{padding:12px;border-radius:12px;background:var(--accent-soft);overflow:auto;text-align:center}
+.panel-close{float:right;border:0;background:#f3f5f8;width:32px;height:32px;border-radius:9px;font-size:18px}
+.training-card{background:#fff;border:1px solid #dfe4ff;border-radius:18px;padding:22px;box-shadow:var(--shadow);max-width:1000px;margin:auto}
+.training-title{font-size:12px;font-weight:900;color:#4f63cf;text-transform:uppercase;letter-spacing:.06em}.training-card h1{font-size:20px;margin:7px 0 16px}
+.teacher-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:15px}
+.panel-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}.panel-card h2,.panel-card h3{margin-top:0}
+.teacher-table{width:100%;border-collapse:collapse;font-size:11px}.teacher-table th,.teacher-table td{border-bottom:1px solid #edf0f4;padding:7px 6px;text-align:left;vertical-align:top}.teacher-table th{position:sticky;top:0;background:#fff;z-index:1}
+.scroll-box{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.switch-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f2f6;font-size:12px}.switch-row:last-child{border:0}.switch-row span{flex:1}
+.small-input{border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:12px;width:100%}
+.report-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}.report-list{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}.report-list h3{margin:0 0 8px;font-size:15px}.report-list ul{padding-left:18px;margin:0;font-size:13px;line-height:1.55;color:#566279}
+.end-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}.kpi strong{font-size:24px;display:block}.kpi span{font-size:11px;color:var(--muted)}
+.notice{background:#fff8df;border:1px solid #f1da93;color:#765300;padding:10px 12px;border-radius:12px;font-size:12px}
+.modal{position:absolute;inset:0;background:rgba(25,34,54,.48);display:grid;place-items:center;z-index:20;padding:30px}.modal-box{background:#fff;border-radius:18px;padding:20px;width:min(560px,92%);box-shadow:var(--shadow)}.modal-box h2{margin-top:0}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}
+.footer-actions{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}
+.katex{font-size:1.08em}.prompt .katex{font-size:1.12em}
+
+.scratch-overlay{
+  position:absolute;inset:0;z-index:30;background:rgba(22,30,48,.52);
+  display:grid;place-items:center;padding:22px
+}
+.scratch-box{
+  width:min(1180px,96%);height:min(690px,92%);background:#fff;border-radius:18px;
+  box-shadow:0 18px 55px rgba(20,30,55,.24);display:flex;flex-direction:column;overflow:hidden
+}
+.scratch-head{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);
+  background:#fff
+}
+.scratch-head h2{font-size:17px;margin:0;margin-right:auto}
+.scratch-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.scratch-tool{
+  border:1px solid var(--line);background:#fff;border-radius:10px;min-height:40px;padding:8px 11px;
+  font-weight:750;color:var(--ink)
+}
+.scratch-tool.active{background:var(--accent-soft);border-color:#aeb9ff;color:#4057cf}
+.scratch-size{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.scratch-size input{width:100px}
+.scratch-area{
+  position:relative;flex:1;min-height:0;background-color:#fff;
+  background-image:
+    linear-gradient(#e8ecf3 1px,transparent 1px),
+    linear-gradient(90deg,#e8ecf3 1px,transparent 1px);
+  background-size:24px 24px
+}
+#scratchCanvas{
+  position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair
+}
+.scratch-note{
+  position:absolute;left:12px;bottom:9px;font-size:11px;color:#8a94a7;pointer-events:none;
+  background:rgba(255,255,255,.78);padding:4px 7px;border-radius:8px
+}
+@media(max-width:950px),(max-height:590px){
+  .scratch-overlay{padding:8px}
+  .scratch-box{width:98%;height:95%}
+  .scratch-head{align-items:flex-start}
+  .scratch-tools{justify-content:flex-end}
+}
+
+@media print{
+  body,#frame{display:block!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;overflow:visible!important;background:#fff!important;box-shadow:none!important}
+  .topbar,.no-print,#homeView,#exerciseView,#trainingView,#teacherView{display:none!important}
+  #finishView{display:block!important;height:auto!important;padding:0!important;overflow:visible!important}
+  .report-list,.kpi,.panel-card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div id="frame">
+  <header class="topbar">
+    <div class="brand">ОГЭ №8 <small>Интерактивный рабочий лист</small></div>
+    <button class="btn ghost" id="homeBtn">На главную</button>
+    <button class="btn ghost" id="teacherBtn">Для учителя</button>
+    <button class="btn ghost" id="scratchBtn">✎ Черновик</button>
+    <button class="btn ghost" id="fullscreenBtn">На весь экран</button>
+  </header>
+
+  <main id="homeView" class="view"></main>
+  <main id="exerciseView" class="view hidden"></main>
+  <main id="trainingView" class="view hidden"></main>
+  <main id="teacherView" class="view hidden"></main>
+  <main id="finishView" class="view hidden"></main>
+
+  <div id="scratchOverlay" class="scratch-overlay hidden" aria-hidden="true">
+    <section class="scratch-box" role="dialog" aria-modal="true" aria-labelledby="scratchTitle">
+      <header class="scratch-head">
+        <h2 id="scratchTitle">Черновик</h2>
+        <div class="scratch-tools">
+          <button type="button" class="scratch-tool active" id="penTool">✎ Ручка</button>
+          <button type="button" class="scratch-tool" id="eraserTool">⌫ Ластик</button>
+          <label class="scratch-size">Толщина
+            <input id="scratchSize" type="range" min="1" max="18" value="4">
+          </label>
+          <button type="button" class="scratch-tool" id="scratchUndo">↶ Отменить</button>
+          <button type="button" class="scratch-tool" id="scratchClear">Очистить</button>
+          <button type="button" class="scratch-tool" id="scratchClose">Закрыть</button>
+        </div>
+      </header>
+      <div class="scratch-area" id="scratchArea">
+        <canvas id="scratchCanvas"></canvas>
+        <div class="scratch-note">Можно писать стилусом, графическим планшетом, мышью или пальцем.</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-box">
+      <h2 id="modalTitle">Подтверждение</h2>
+      <p id="modalText"></p>
+      <div class="modal-actions">
+        <button class="btn" id="modalCancel">Отмена</button>
+        <button class="btn bad" id="modalOk">Продолжить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONTENT = {"blocks": [{"id": "powers_vars", "title": "Свойства степеней с переменной", "desc": "Произведение и частное степеней, степень степени, отрицательные показатели и подстановка значений.", "rule": {"title": "Свойства степеней", "formula": "a^m\\cdot a^n=a^{m+n},\\quad \\frac{a^m}{a^n}=a^{m-n},\\quad (a^m)^n=a^{mn}", "example": "\\frac{a^7\\cdot a^5}{a^9}=a^{7+5-9}=a^3", "mistake": "Не складывай показатели при делении и не умножай показатель степени на основание."}, "hints": ["Сначала не подставляй число. Упрости выражение со степенями одного основания.", "Собери показатель степени: при умножении показатели складываются, при делении — вычитаются.", "Если есть степень степени, сначала перемножь показатели. После упрощения подставь значение переменной."], "success": "Сначала степени одного основания можно объединить по свойствам степеней, а затем подставить значение переменной."}, {"id": "powers_numbers", "title": "Числовые выражения со степенями", "desc": "Отрицательные степени, одинаковые основания и преобразование составных оснований.", "rule": {"title": "Числовые степени", "formula": "a^{-n}=\\frac1{a^n},\\quad (ab)^n=a^nb^n", "example": "2^{-3}\\cdot2^5=2^2=4", "mistake": "Отрицательный показатель не делает число отрицательным: он означает обратное число."}, "hints": ["Поищи одинаковые основания. Если они есть, сначала объедини степени.", "Составное основание удобно разложить на множители: например, 10=2·5.", "Сведи выражение к одной степени или полностью сократи одинаковые множители до вычисления."], "success": "Выражение удобно упрощать через свойства степеней и переход к одинаковым основаниям."}, {"id": "root_powers", "title": "Степени под квадратным корнем", "desc": "Извлечение квадратного корня из степеней и сокращение степеней под корнем.", "rule": {"title": "Корень из квадрата", "formula": "\\sqrt{u^2}=|u|,\\quad \\sqrt{a^{2n}}=|a^n|", "example": "\\sqrt{a^8}=|a^4|", "mistake": "Нельзя просто убрать знак корня, не проверив, является ли выражение полным квадратом."}, "hints": ["Сначала объедини степени внутри корня.", "Попробуй представить подкоренное выражение как квадрат некоторого выражения.", "После извлечения корня подставь заданное значение переменной."], "success": "Подкоренное выражение приводится к полному квадрату, после чего квадратный корень извлекается."}, {"id": "root_algebra", "title": "Преобразование выражений под корнем", "desc": "Полный квадрат, степени переменных под корнем и дробные выражения.", "rule": {"title": "Полный квадрат под корнем", "formula": "u^2+2uv+v^2=(u+v)^2,\\quad u^2-2uv+v^2=(u-v)^2", "example": "\\sqrt{x^2+6x+9}=\\sqrt{(x+3)^2}=|x+3|", "mistake": "После распознавания квадрата не забывай, что √(u²)=|u|."}, "hints": ["Проверь, не является ли выражение под корнем квадратом суммы или разности.", "Если под корнем дробь со степенями, отдельно извлеки корень из числителя и знаменателя.", "Упрости выражение под корнем до полного квадрата, затем подставь значения."], "success": "Главный приём — распознать полный квадрат или квадрат дробного выражения под корнем."}, {"id": "square_root_expr", "title": "Квадрат выражения с корнем", "desc": "Использование квадрата произведения и упрощение дробей с корнями.", "rule": {"title": "Квадрат произведения", "formula": "(k\\sqrt{m})^2=k^2m", "example": "(3\\sqrt2)^2=9\\cdot2=18", "mistake": "При возведении в квадрат нужно возвести в квадрат и коэффициент перед корнем."}, "hints": ["Сначала вычисли квадрат выражения в скобках.", "Используй (k√m)² = k²m — корень после возведения в квадрат исчезает.", "После этого сократи обычную числовую дробь."], "success": "Квадрат выражения вида k√m превращается в обычное число k²m."}, {"id": "root_product", "title": "Произведение и частное квадратных корней", "desc": "Умножение и деление корней, произведение радикалов и корни из степеней.", "rule": {"title": "Произведение и частное корней", "formula": "\\sqrt a\\sqrt b=\\sqrt{ab},\\quad \\frac{\\sqrt a}{\\sqrt b}=\\sqrt{\\frac ab}", "example": "\\frac{\\sqrt{18}\\sqrt2}{\\sqrt4}=\\frac{\\sqrt{36}}2=3", "mistake": "Складывать подкоренные выражения при умножении нельзя — они перемножаются."}, "hints": ["Объедини произведение корней под одним знаком корня.", "Если есть числовые множители перед корнями, перемножь их отдельно.", "Проверь, не получается ли под корнем полный квадрат."], "success": "Корни можно объединить в один корень, а затем извлечь корень из полного квадрата."}, {"id": "root_sum", "title": "Сумма и разность радикалов", "desc": "Вынесение множителя из-под корня и действия с подобными радикалами.", "rule": {"title": "Вынос множителя из-под корня", "formula": "\\sqrt{k^2m}=|k|\\sqrt m", "example": "(\\sqrt{18}+\\sqrt2)\\sqrt2=(3\\sqrt2+\\sqrt2)\\sqrt2=8", "mistake": "Складывать √a и √b можно только после приведения к одинаковой подкоренной части."}, "hints": ["Вынеси полный квадрат из первого корня.", "После упрощения внутри скобок должны появиться подобные радикалы.", "Сложи или вычти коэффициенты при одинаковом корне, затем выполни умножение."], "success": "Сначала радикалы приводятся к одинаковой подкоренной части, затем выполняются обычные действия."}, {"id": "formulas_roots", "title": "Формулы сокращённого умножения с корнями", "desc": "Разность квадратов и квадрат суммы или разности с радикалами.", "rule": {"title": "Формулы сокращённого умножения", "formula": "(u-v)(u+v)=u^2-v^2,\\quad (u\\pm v)^2=u^2\\pm2uv+v^2", "example": "(\\sqrt{17}-3)(\\sqrt{17}+3)=17-9=8", "mistake": "В квадрате суммы или разности нельзя забывать удвоенное произведение 2uv."}, "hints": ["Определи, какая формула сокращённого умножения подходит к выражению.", "Если множители сопряжённые, используй разность квадратов.", "Если дана квадратная скобка, раскрой её по формуле и посмотри, какие радикалы сокращаются."], "success": "Здесь радикалы исчезают благодаря формуле сокращённого умножения."}], "tasks": [{"n": 1, "b": "powers_vars", "prompt": "Найдите значение выражения \\(a^8\\cdot a^{17}:a^{20}\\) при \\(a=2\\).", "answer": "32", "analogs": [["Найдите значение выражения \\(a^7\\cdot a^{12}:a^{16}\\) при \\(a=2\\).", "8"], ["Найдите значение выражения \\(a^{11}\\cdot a^8:a^{17}\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\(a^{15}\\cdot a^9:a^{22}\\) при \\(a=5\\).", "25"]]}, {"n": 2, "b": "powers_vars", "prompt": "Найдите значение выражения \\(a^{30}\\cdot a^{-17}:a^{10}\\) при \\(a=3\\).", "answer": "27", "analogs": [["Найдите значение выражения \\(a^{24}\\cdot a^{-11}:a^{10}\\) при \\(a=2\\).", "8"], ["Найдите значение выражения \\(a^{18}\\cdot a^{-7}:a^9\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\(a^{27}\\cdot a^{-15}:a^{10}\\) при \\(a=4\\).", "16"]]}, {"n": 3, "b": "powers_vars", "prompt": "Найдите значение выражения \\((a^5)^{-3}:a^{-19}\\) при \\(a=3\\).", "answer": "81", "analogs": [["Найдите значение выражения \\((a^4)^{-3}:a^{-15}\\) при \\(a=2\\).", "8"], ["Найдите значение выражения \\((a^3)^{-4}:a^{-14}\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\((a^6)^{-2}:a^{-15}\\) при \\(a=4\\).", "64"]]}, {"n": 4, "b": "powers_vars", "prompt": "Найдите значение выражения \\(a^{-15}\\cdot(a^9)^2\\) при \\(a=2\\).", "answer": "8", "analogs": [["Найдите значение выражения \\(a^{-10}\\cdot(a^6)^2\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\(a^{-13}\\cdot(a^8)^2\\) при \\(a=2\\).", "8"], ["Найдите значение выражения \\(a^{-17}\\cdot(a^{10})^2\\) при \\(a=5\\).", "125"]]}, {"n": 5, "b": "powers_vars", "prompt": "Найдите значение выражения \\(\\dfrac{a^9\\cdot a^{12}}{a^{18}}\\) при \\(a=4\\).", "answer": "64", "analogs": [["Найдите значение выражения \\(\\dfrac{a^8\\cdot a^7}{a^{13}}\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\(\\dfrac{a^{10}\\cdot a^6}{a^{14}}\\) при \\(a=5\\).", "25"], ["Найдите значение выражения \\(\\dfrac{a^{12}\\cdot a^9}{a^{18}}\\) при \\(a=2\\).", "8"]]}, {"n": 6, "b": "powers_vars", "prompt": "Найдите значение выражения \\(\\dfrac{a^{17}\\cdot a^{-6}}{a^9}\\) при \\(a=2\\).", "answer": "4", "analogs": [["Найдите значение выражения \\(\\dfrac{a^{14}\\cdot a^{-5}}{a^7}\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\(\\dfrac{a^{20}\\cdot a^{-8}}{a^{10}}\\) при \\(a=4\\).", "16"], ["Найдите значение выражения \\(\\dfrac{a^{17}\\cdot a^{-6}}{a^8}\\) при \\(a=2\\).", "8"]]}, {"n": 7, "b": "powers_vars", "prompt": "Найдите значение выражения \\(\\dfrac{(a^9)^3\\cdot a^7}{a^{29}}\\) при \\(a=2\\).", "answer": "32", "analogs": [["Найдите значение выражения \\(\\dfrac{(a^5)^3\\cdot a^4}{a^{17}}\\) при \\(a=3\\).", "9"], ["Найдите значение выражения \\(\\dfrac{(a^6)^2\\cdot a^5}{a^{14}}\\) при \\(a=2\\).", "8"], ["Найдите значение выражения \\(\\dfrac{(a^4)^4\\cdot a^3}{a^{17}}\\) при \\(a=5\\).", "25"]]}, {"n": 8, "b": "powers_vars", "prompt": "Найдите значение выражения \\(\\dfrac{(a^7)^2}{a^{12}}\\) при \\(a=5\\).", "answer": "25", "analogs": [["Найдите значение выражения \\(\\dfrac{(a^6)^2}{a^{10}}\\) при \\(a=4\\).", "16"], ["Найдите значение выражения \\(\\dfrac{(a^8)^2}{a^{13}}\\) при \\(a=2\\).", "8"], ["Найдите значение выражения \\(\\dfrac{(a^5)^2}{a^8}\\) при \\(a=3\\).", "9"]]}, {"n": 9, "b": "powers_vars", "prompt": "Найдите значение выражения: \\(\\dfrac{a^{23}\\cdot(b^5)^4}{(a\\cdot b)^{20}}\\) при \\(a=2\\) и \\(b=\\sqrt2\\).", "answer": "8", "analogs": [["Найдите значение выражения: \\(\\dfrac{a^{22}\\cdot(b^4)^5}{(a\\cdot b)^{20}}\\) при \\(a=3\\) и \\(b=\\sqrt2\\).", "9"], ["Найдите значение выражения: \\(\\dfrac{a^{17}\\cdot(b^3)^5}{(a\\cdot b)^{15}}\\) при \\(a=2\\) и \\(b=\\sqrt3\\).", "4"], ["Найдите значение выражения: \\(\\dfrac{a^{20}\\cdot(b^3)^6}{(a\\cdot b)^{18}}\\) при \\(a=4\\) и \\(b=\\sqrt5\\).", "16"]]}, {"n": 10, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(5^{-7}\\cdot(5^5)^2\\).", "answer": "125", "analogs": [["Найдите значение выражения: \\(2^{-4}\\cdot(2^3)^2\\).", "4"], ["Найдите значение выражения: \\(3^{-5}\\cdot(3^4)^2\\).", "27"], ["Найдите значение выражения: \\(10^{-3}\\cdot(10^2)^2\\).", "10"]]}, {"n": 11, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{9^{-6}\\cdot9^{15}}{9^7}\\).", "answer": "81", "analogs": [["Найдите значение выражения: \\(\\dfrac{8^{-4}\\cdot8^{10}}{8^5}\\).", "8"], ["Найдите значение выражения: \\(\\dfrac{5^{-3}\\cdot5^9}{5^4}\\).", "25"], ["Найдите значение выражения: \\(\\dfrac{3^{-6}\\cdot3^{12}}{3^4}\\).", "9"]]}, {"n": 12, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{(7^7)^{-3}}{7^{-23}}\\).", "answer": "49", "analogs": [["Найдите значение выражения: \\(\\dfrac{(5^4)^{-2}}{5^{-10}}\\).", "25"], ["Найдите значение выражения: \\(\\dfrac{(3^5)^{-2}}{3^{-12}}\\).", "9"], ["Найдите значение выражения: \\(\\dfrac{(2^6)^{-3}}{2^{-21}}\\).", "8"]]}, {"n": 13, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{3^7}{81}\\).", "answer": "27", "analogs": [["Найдите значение выражения: \\(\\dfrac{2^8}{32}\\).", "8"], ["Найдите значение выражения: \\(\\dfrac{5^6}{125}\\).", "125"], ["Найдите значение выражения: \\(\\dfrac{4^5}{64}\\).", "16"]]}, {"n": 14, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{7^4\\cdot9^6}{63^4}\\).", "answer": "81", "analogs": [["Найдите значение выражения: \\(\\dfrac{5^3\\cdot8^5}{40^3}\\).", "64"], ["Найдите значение выражения: \\(\\dfrac{4^6\\cdot3^4}{12^4}\\).", "16"], ["Найдите значение выражения: \\(\\dfrac{2^7\\cdot7^5}{14^5}\\).", "4"]]}, {"n": 15, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac1{2^{-11}}\\cdot\\dfrac1{2^7}\\).", "answer": "16", "analogs": [["Найдите значение выражения: \\(\\dfrac1{3^{-6}}\\cdot\\dfrac1{3^4}\\).", "9"], ["Найдите значение выражения: \\(\\dfrac1{5^{-5}}\\cdot\\dfrac1{5^3}\\).", "25"], ["Найдите значение выражения: \\(\\dfrac1{2^{-9}}\\cdot\\dfrac1{2^6}\\).", "8"]]}, {"n": 16, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{(3\\cdot10)^8}{3^6\\cdot10^7}\\).", "answer": "90", "analogs": [["Найдите значение выражения: \\(\\dfrac{(2\\cdot10)^6}{2^4\\cdot10^5}\\).", "40"], ["Найдите значение выражения: \\(\\dfrac{(5\\cdot10)^7}{5^5\\cdot10^6}\\).", "250"], ["Найдите значение выражения: \\(\\dfrac{(4\\cdot10)^5}{4^3\\cdot10^4}\\).", "160"]]}, {"n": 17, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{10^6}{2^5\\cdot5^4}\\).", "answer": "50", "analogs": [["Найдите значение выражения: \\(\\dfrac{10^5}{2^4\\cdot5^3}\\).", "50"], ["Найдите значение выражения: \\(\\dfrac{10^4}{2^3\\cdot5^2}\\).", "50"], ["Найдите значение выражения: \\(\\dfrac{10^6}{2^4\\cdot5^5}\\).", "20"]]}, {"n": 18, "b": "powers_numbers", "prompt": "Найдите значение выражения: \\(\\dfrac{5^9\\cdot8^{11}}{40^9}\\).", "answer": "64", "analogs": [["Найдите значение выражения: \\(\\dfrac{3^8\\cdot7^{10}}{21^8}\\).", "49"], ["Найдите значение выражения: \\(\\dfrac{2^9\\cdot5^{12}}{10^9}\\).", "125"], ["Найдите значение выражения: \\(\\dfrac{4^7\\cdot3^9}{12^7}\\).", "9"]]}, {"n": 19, "b": "root_powers", "prompt": "Найдите значение выражения \\(\\sqrt{a^8\\cdot(-a)^4}\\) при \\(a=2\\).", "answer": "64", "analogs": [["Найдите значение выражения \\(\\sqrt{a^6\\cdot(-a)^4}\\) при \\(a=2\\).", "32"], ["Найдите значение выражения \\(\\sqrt{a^8\\cdot(-a)^6}\\) при \\(a=2\\).", "128"], ["Найдите значение выражения \\(\\sqrt{a^4\\cdot(-a)^8}\\) при \\(a=3\\).", "729"]]}, {"n": 20, "b": "root_powers", "prompt": "Найдите значение выражения \\(\\sqrt{\\dfrac{16a^{14}}{a^8}}\\) при \\(a=3\\).", "answer": "108", "analogs": [["Найдите значение выражения \\(\\sqrt{\\dfrac{9a^{12}}{a^6}}\\) при \\(a=2\\).", "24"], ["Найдите значение выражения \\(\\sqrt{\\dfrac{25a^{10}}{a^4}}\\) при \\(a=3\\).", "135"], ["Найдите значение выражения \\(\\sqrt{\\dfrac{4a^{16}}{a^{10}}}\\) при \\(a=4\\).", "128"]]}, {"n": 21, "b": "root_algebra", "prompt": "Найдите значение выражения: \\(\\sqrt{a^2+8ab+16b^2}\\) при \\(a=3\\dfrac37\\) и \\(b=\\dfrac17\\).", "answer": "4", "analogs": [["Найдите значение выражения: \\(\\sqrt{a^2+6ab+9b^2}\\) при \\(a=\\dfrac52\\) и \\(b=\\dfrac12\\).", "4"], ["Найдите значение выражения: \\(\\sqrt{a^2+10ab+25b^2}\\) при \\(a=3\\) и \\(b=\\dfrac15\\).", "4"], ["Найдите значение выражения: \\(\\sqrt{a^2+12ab+36b^2}\\) при \\(a=\\dfrac72\\) и \\(b=\\dfrac14\\).", "5"]]}, {"n": 22, "b": "root_algebra", "prompt": "Найдите значение выражения: \\(\\sqrt{a^2+8ab+16b^2}\\) при \\(a=3\\) и \\(b=-4\\).", "answer": "13", "analogs": [["Найдите значение выражения: \\(\\sqrt{a^2+6ab+9b^2}\\) при \\(a=2\\) и \\(b=-3\\).", "7"], ["Найдите значение выражения: \\(\\sqrt{a^2+10ab+25b^2}\\) при \\(a=4\\) и \\(b=-2\\).", "6"], ["Найдите значение выражения: \\(\\sqrt{a^2+4ab+4b^2}\\) при \\(a=3\\) и \\(b=-5\\).", "7"]]}, {"n": 23, "b": "root_algebra", "prompt": "Найдите значение выражения \\(\\sqrt{\\dfrac1{16}x^6y^4}\\) при \\(x=2\\) и \\(y=5\\).", "answer": "50", "analogs": [["Найдите значение выражения \\(\\sqrt{\\dfrac19x^4y^6}\\) при \\(x=3\\) и \\(y=2\\).", "24"], ["Найдите значение выражения \\(\\sqrt{\\dfrac1{25}x^6y^2}\\) при \\(x=5\\) и \\(y=2\\).", "50"], ["Найдите значение выражения \\(\\sqrt{\\dfrac14x^2y^4}\\) при \\(x=6\\) и \\(y=3\\).", "27"]]}, {"n": 24, "b": "root_algebra", "prompt": "Найдите значение выражения \\(\\sqrt{\\dfrac{16x^4}{y^6}}\\) при \\(x=4\\) и \\(y=2\\).", "answer": "8", "analogs": [["Найдите значение выражения \\(\\sqrt{\\dfrac{9x^4}{y^2}}\\) при \\(x=4\\) и \\(y=6\\).", "8"], ["Найдите значение выражения \\(\\sqrt{\\dfrac{25x^6}{y^4}}\\) при \\(x=2\\) и \\(y=5\\).", "1.6"], ["Найдите значение выражения \\(\\sqrt{\\dfrac{4x^8}{y^6}}\\) при \\(x=3\\) и \\(y=3\\).", "6"]]}, {"n": 25, "b": "square_root_expr", "prompt": "Найдите значение выражения: \\(\\dfrac{(4\\sqrt3)^2}{60}\\).", "answer": "0.8", "analogs": [["Найдите значение выражения: \\(\\dfrac{(3\\sqrt2)^2}{12}\\).", "1.5"], ["Найдите значение выражения: \\(\\dfrac{(5\\sqrt3)^2}{15}\\).", "5"], ["Найдите значение выражения: \\(\\dfrac{(2\\sqrt7)^2}{14}\\).", "2"]]}, {"n": 26, "b": "square_root_expr", "prompt": "Найдите значение выражения: \\(\\dfrac{64}{(2\\sqrt8)^2}\\).", "answer": "2", "analogs": [["Найдите значение выражения: \\(\\dfrac{72}{(3\\sqrt2)^2}\\).", "4"], ["Найдите значение выражения: \\(\\dfrac{100}{(2\\sqrt5)^2}\\).", "5"], ["Найдите значение выражения: \\(\\dfrac{54}{(3\\sqrt3)^2}\\).", "2"]]}, {"n": 32, "b": "square_root_expr", "prompt": "Найдите значение выражения: \\(\\dfrac{90}{(3\\sqrt5)^2}\\).", "answer": "2", "analogs": [["Найдите значение выражения: \\(\\dfrac{72}{(2\\sqrt3)^2}\\).", "6"], ["Найдите значение выражения: \\(\\dfrac{150}{(5\\sqrt2)^2}\\).", "3"], ["Найдите значение выражения: \\(\\dfrac{96}{(4\\sqrt2)^2}\\).", "3"]]}, {"n": 27, "b": "root_product", "prompt": "Найдите значение выражения: \\(\\dfrac{\\sqrt{51}\\cdot\\sqrt{12}}{\\sqrt{17}}\\).", "answer": "6", "analogs": [["Найдите значение выражения: \\(\\dfrac{\\sqrt{24}\\cdot\\sqrt6}{\\sqrt4}\\).", "6"], ["Найдите значение выражения: \\(\\dfrac{\\sqrt{45}\\cdot\\sqrt{10}}{\\sqrt2}\\).", "15"], ["Найдите значение выражения: \\(\\dfrac{\\sqrt{28}\\cdot\\sqrt7}{\\sqrt4}\\).", "7"]]}, {"n": 29, "b": "root_product", "prompt": "Найдите значение выражения: \\(\\sqrt{13\\cdot18}\\cdot\\sqrt{26}\\).", "answer": "78", "analogs": [["Найдите значение выражения: \\(\\sqrt{8\\cdot9}\\cdot\\sqrt2\\).", "12"], ["Найдите значение выражения: \\(\\sqrt{6\\cdot24}\\cdot\\sqrt4\\).", "24"], ["Найдите значение выражения: \\(\\sqrt{5\\cdot20}\\cdot\\sqrt9\\).", "30"]]}, {"n": 30, "b": "root_product", "prompt": "Найдите значение выражения: \\(\\sqrt{5^6}\\).", "answer": "125", "analogs": [["Найдите значение выражения: \\(\\sqrt{7^4}\\).", "49"], ["Найдите значение выражения: \\(\\sqrt{3^6}\\).", "27"], ["Найдите значение выражения: \\(\\sqrt{10^4}\\).", "100"]]}, {"n": 31, "b": "root_product", "prompt": "Найдите значение выражения: \\(\\sqrt{16^3}\\).", "answer": "64", "analogs": [["Найдите значение выражения: \\(\\sqrt{25^3}\\).", "125"], ["Найдите значение выражения: \\(\\sqrt{9^5}\\).", "243"], ["Найдите значение выражения: \\(\\sqrt{4^7}\\).", "128"]]}, {"n": 33, "b": "root_product", "prompt": "Найдите значение выражения: \\(4\\sqrt{17}\\cdot5\\sqrt2\\cdot\\sqrt{34}\\).", "answer": "680", "analogs": [["Найдите значение выражения: \\(2\\sqrt3\\cdot4\\sqrt2\\cdot\\sqrt6\\).", "48"], ["Найдите значение выражения: \\(3\\sqrt5\\cdot2\\sqrt2\\cdot\\sqrt{10}\\).", "60"], ["Найдите значение выражения: \\(5\\sqrt2\\cdot3\\sqrt7\\cdot\\sqrt{14}\\).", "210"]]}, {"n": 34, "b": "root_sum", "prompt": "Найдите значение выражения: \\((\\sqrt{45}-\\sqrt5)\\cdot\\sqrt5\\).", "answer": "10", "analogs": [["Найдите значение выражения: \\((\\sqrt{32}-\\sqrt2)\\cdot\\sqrt2\\).", "6"], ["Найдите значение выражения: \\((\\sqrt{75}-\\sqrt3)\\cdot\\sqrt3\\).", "12"], ["Найдите значение выражения: \\((\\sqrt{48}-\\sqrt3)\\cdot\\sqrt3\\).", "9"]]}, {"n": 35, "b": "root_sum", "prompt": "Найдите значение выражения: \\((\\sqrt{20}+\\sqrt5)\\cdot\\sqrt5\\).", "answer": "15", "analogs": [["Найдите значение выражения: \\((\\sqrt{18}+\\sqrt2)\\cdot\\sqrt2\\).", "8"], ["Найдите значение выражения: \\((\\sqrt{80}+\\sqrt5)\\cdot\\sqrt5\\).", "25"], ["Найдите значение выражения: \\((\\sqrt{27}+\\sqrt3)\\cdot\\sqrt3\\).", "12"]]}, {"n": 36, "b": "formulas_roots", "prompt": "Найдите значение выражения: \\((\\sqrt{31}-3)(\\sqrt{31}+3)\\).", "answer": "22", "analogs": [["Найдите значение выражения: \\((\\sqrt{29}-2)(\\sqrt{29}+2)\\).", "25"], ["Найдите значение выражения: \\((\\sqrt{32}-3)(\\sqrt{32}+3)\\).", "23"], ["Найдите значение выражения: \\((\\sqrt{61}-5)(\\sqrt{61}+5)\\).", "36"]]}, {"n": 37, "b": "formulas_roots", "prompt": "Найдите значение выражения: \\((\\sqrt{19}-\\sqrt2)(\\sqrt{19}+\\sqrt2)\\).", "answer": "17", "analogs": [["Найдите значение выражения: \\((\\sqrt{23}-\\sqrt5)(\\sqrt{23}+\\sqrt5)\\).", "18"], ["Найдите значение выражения: \\((\\sqrt{31}-\\sqrt7)(\\sqrt{31}+\\sqrt7)\\).", "24"], ["Найдите значение выражения: \\((\\sqrt{17}-\\sqrt8)(\\sqrt{17}+\\sqrt8)\\).", "9"]]}, {"n": 38, "b": "formulas_roots", "prompt": "Найдите значение выражения: \\((\\sqrt{11}+3)^2-6\\sqrt{11}\\).", "answer": "20", "analogs": [["Найдите значение выражения: \\((\\sqrt7+4)^2-8\\sqrt7\\).", "23"], ["Найдите значение выражения: \\((\\sqrt{13}+2)^2-4\\sqrt{13}\\).", "17"], ["Найдите значение выражения: \\((\\sqrt{21}+5)^2-10\\sqrt{21}\\).", "46"]]}, {"n": 39, "b": "formulas_roots", "prompt": "Найдите значение выражения: \\((\\sqrt{13}-3)^2+6\\sqrt{13}\\).", "answer": "22", "analogs": [["Найдите значение выражения: \\((\\sqrt8-3)^2+6\\sqrt8\\).", "17"], ["Найдите значение выражения: \\((\\sqrt{15}-4)^2+8\\sqrt{15}\\).", "31"], ["Найдите значение выражения: \\((\\sqrt{19}-2)^2+4\\sqrt{19}\\).", "23"]]}]};
+
+const LS_KEY = "oge8_holst_v1";
+const DEFAULT_STATE = {
+  version:1,
+  task:{},
+  enabledBlocks:Object.fromEntries(CONTENT.blocks.map(b=>[b.id,true])),
+  teacherComments:{},
+  manualRepeat:{tasks:[],blocks:[]},
+  last:null,
+  activeSeconds:0,
+  blockSeconds:{},
+  taskSeconds:{},
+  currentTimerTask:null,
+  currentTimerBlock:null,
+  lastActivity:Date.now(),
+  repeatSession:false,
+  scratchpads:{}
+};
+let state = loadState();
+let currentBlock = null, currentTaskN = null, currentMode = "original";
+let currentAnalogIndex = null, currentHintLevel = 0;
+let modalCallback = null;
+
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY)||"null");
+    if(!s) return structuredClone(DEFAULT_STATE);
+    return Object.assign(structuredClone(DEFAULT_STATE),s,{
+      enabledBlocks:Object.assign({},DEFAULT_STATE.enabledBlocks,s.enabledBlocks||{}),
+      manualRepeat:Object.assign({tasks:[],blocks:[]},s.manualRepeat||{}),
+      scratchpads:Object.assign({},s.scratchpads||{})
+    });
+  }catch(e){ return structuredClone(DEFAULT_STATE); }
+}
+function saveState(){ localStorage.setItem(LS_KEY,JSON.stringify(state)); }
+
+function T(n){ return CONTENT.tasks.find(t=>t.n===Number(n)); }
+function B(id){ return CONTENT.blocks.find(b=>b.id===id); }
+function ts(n){
+  if(!state.task[n]) state.task[n]={
+    status:null, attempts:0, cycleAttempts:0, errors:0, hintsUsed:0, ruleViews:0,
+    notKnow:0, skipped:0, usedAnalogs:[], analogAttempts:{}, analogIncomplete:0,
+    masteredOnRepeat:false, repeatAttempts:0, helpEver:false, lastAnswer:""
+  };
+  return state.task[n];
+}
+function blockTasks(id){ return CONTENT.tasks.filter(t=>t.b===id).sort((a,b)=>a.n-b.n); }
+function normalize(v){
+  let s=String(v??"").trim().replace(/\s+/g,"").replace(",",".");
+  if(!s) return null;
+  if(!/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)) return null;
+  const x=Number(s); return Number.isFinite(x)?x:null;
+}
+function correct(v,ans){ const a=normalize(v), b=normalize(ans); return a!==null&&b!==null&&Math.abs(a-b)<1e-9; }
+function statusClass(s){ return s==="green"?"s-green":s==="yellow"?"s-yellow":s==="skip"?"s-skip":s==="repeat"?"s-repeat":""; }
+function statusGlyph(s){ return s==="green"?"✓":s==="yellow"?"!":s==="skip"?"↷":s==="repeat"?"↻":"·"; }
+function statusName(s){
+  return s==="green"?"Решено самостоятельно":s==="yellow"?"Решено с затруднением":s==="skip"?"Пропущено":s==="repeat"?"Требует повторения":"Не выполнено";
+}
+function renderMath(root=document){
+  if(window.renderMathInElement){
+    renderMathInElement(root,{delimiters:[{left:"\\(",right:"\\)",display:false},{left:"\\[",right:"\\]",display:true}],throwOnError:false});
+  }
+}
+function showView(id){
+  ["homeView","exerciseView","trainingView","teacherView","finishView"].forEach(v=>document.getElementById(v).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+function setLast(block,n,mode="original"){
+  state.last={block,n,mode,time:Date.now()}; saveState();
+}
+function blockStats(id){
+  const arr=blockTasks(id), sts=arr.map(t=>ts(t.n).status);
+  const done=sts.filter(Boolean).length;
+  const repeat=sts.filter(s=>s==="repeat"||s==="skip").length;
+  const allFinal=done===arr.length;
+  return {total:arr.length,done,repeat,allFinal};
+}
+function problemTasks(){
+  return CONTENT.tasks.filter(t=>{
+    const s=ts(t.n);
+    return s.status==="yellow"||s.status==="skip"||s.status==="repeat"||s.notKnow>0||
+           state.manualRepeat.tasks.includes(t.n)||state.manualRepeat.blocks.includes(t.b);
+  });
+}
+function recommendations(){
+  const rec=[];
+  CONTENT.blocks.forEach(b=>{
+    const arr=blockTasks(b.id), prob=arr.filter(t=>{
+      const s=ts(t.n); return s.status==="yellow"||s.status==="skip"||s.status==="repeat"||s.notKnow>0;
+    });
+    const green=arr.filter(t=>ts(t.n).status==="green").length;
+    if(prob.length===0 && green===arr.length) rec.push(`«${b.title}»: навык устойчиво проявляется в выполненных заданиях.`);
+    else if(prob.length) rec.push(`«${b.title}»: стоит повторить ${prob.length} из ${arr.length} заданий блока (${prob.map(t=>"№"+t.n).join(", ")}).`);
+  });
+  const solvedTimes=Object.entries(state.taskSeconds).filter(([n,sec])=>ts(n).status==="green"||ts(n).status==="yellow").map(([n,sec])=>Number(sec));
+  if(solvedTimes.length>=4){
+    const sorted=[...solvedTimes].sort((a,b)=>a-b), med=sorted[Math.floor(sorted.length/2)];
+    const slow=Object.entries(state.taskSeconds).filter(([n,sec])=>Number(sec)>Math.max(60,med*1.7)&&ts(n).status);
+    if(slow.length) rec.push(`По относительной скорости внутри этой работы больше времени потребовали: ${slow.map(([n])=>"№"+n).join(", ")}. Это дополнительный сигнал для наблюдения, а не норматив ОГЭ.`);
+  }
+  if(!rec.length) rec.push("Недостаточно завершённых заданий для содержательной рекомендации.");
+  return rec;
+}
+
+function home(){
+  showView("homeView"); currentMode="home"; stopTaskTimer();
+  const hv=document.getElementById("homeView");
+  const probs=problemTasks();
+  const green=CONTENT.tasks.filter(t=>ts(t.n).status==="green").map(t=>t.n);
+  const mastered=CONTENT.tasks.filter(t=>ts(t.n).masteredOnRepeat).map(t=>t.n);
+  let cont="";
+  if(state.last && T(state.last.n)){
+    const tb=B(state.last.block), st=ts(state.last.n);
+    cont=`<div class="continue-card">
+      <div class="grow"><strong>Продолжить с места остановки</strong><span>${tb.title} · задание №${state.last.n} · ${statusName(st.status)}</span></div>
+      <button class="btn primary" onclick="openTask('${state.last.block}',${state.last.n})">Продолжить</button>
+    </div>`;
+  }
+  const cards=CONTENT.blocks.map(b=>{
+    const st=blockStats(b.id), enabled=state.enabledBlocks[b.id]!==false;
+    const dots=blockTasks(b.id).map(t=>`<span class="dot ${statusClass(ts(t.n).status)}" title="№${t.n}: ${statusName(ts(t.n).status)}">${statusGlyph(ts(t.n).status)}</span>`).join("");
+    const stateText=st.allFinal?(st.repeat?"Завершён — есть темы для повторения":"Завершён"):"В работе";
+    return `<section class="block-card ${enabled?"":"off"}">
+      <h3>${b.title}</h3><p>${b.desc}</p>
+      <div class="dotmap">${dots}</div>
+      <div class="stats">${st.total} заданий · ${st.done} выполнено · ${st.repeat} требуют внимания<br>${stateText}</div>
+      <div class="block-actions">
+        <button class="btn ${enabled?"primary":""}" ${enabled?"":"disabled"} onclick="openBlock('${b.id}')">${st.done?"Продолжить":"Открыть"}</button>
+      </div>
+    </section>`;
+  }).join("");
+
+  hv.innerHTML=`${cont}
+    <div class="hero">
+      <section class="hero-card">
+        <h1>Практика задания №8 ОГЭ</h1>
+        <p>Выберите любой тематический блок. Исходные задания сохраняют нумерацию документа; после ошибок доступны подсказки, правило и тренировочные аналоги.</p>
+        <div class="footer-actions">
+          <button class="btn primary" onclick="startSmartRepeat()" ${probs.length?"":"disabled"}>Повторить ошибки (${probs.length})</button>
+          <button class="btn" onclick="finish()">Завершить работу</button>
+        </div>
+      </section>
+      <aside class="skill-summary">
+        <h3>Карта навыков</h3>
+        <div class="mini-list"><b>Что уже получается:</b> ${green.length?green.map(n=>"№"+n).join(", "):"пока нет завершённых заданий"}<br>
+        <b>Что стоит повторить:</b> ${probs.length?probs.map(t=>"№"+t.n).join(", "):"пока не выявлено"}<br>
+        ${mastered.length?`<b>Освоено при повторении:</b> ${mastered.map(n=>"№"+n).join(", ")}`:""}</div>
+      </aside>
+    </div>
+    <div class="block-grid">${cards}</div>`;
+}
+
+function openBlock(id){
+  if(state.enabledBlocks[id]===false) return;
+  const arr=blockTasks(id);
+  const first=arr.find(t=>!ts(t.n).status) || arr[0];
+  openTask(id,first.n);
+}
+function taskMapHtml(id,n){
+  return blockTasks(id).map(t=>`<button class="dot ${statusClass(ts(t.n).status)} ${t.n===n?"s-current":""}" onclick="openTask('${id}',${t.n})" title="№${t.n}: ${statusName(ts(t.n).status)}">${t.n}</button>`).join("");
+}
+function openTask(id,n,repeat=false){
+  currentBlock=id; currentTaskN=Number(n); currentMode=repeat?"repeat":"original"; currentAnalogIndex=null; currentHintLevel=0;
+  setLast(id,n,currentMode); showView("exerciseView"); startTaskTimer(n,id);
+  const task=T(n), b=B(id), s=ts(n);
+  const ev=document.getElementById("exerciseView");
+  ev.innerHTML=`<div class="exercise-layout" id="exerciseLayout">
+    <section class="exercise-main">
+      <div class="breadcrumb"><span>${repeat?"Повторение":"Тематический блок"}</span> › <b>${b.title}</b></div>
+      <div class="task-map">${taskMapHtml(id,n)}</div>
+      <article class="task-card">
+        <div class="task-head"><span class="task-no">Задание №${n}</span>
+          ${repeat?'<span class="badge">Повторение</span>':""}
+          ${s.masteredOnRepeat?'<span class="badge" style="background:#eaf8f2;color:#16734d">Освоено при повторении</span>':""}
+        </div>
+        <div class="prompt">${task.prompt}</div>
+        <div class="answer-wrap">
+          <input id="answerInput" class="answer-input" inputmode="decimal" autocomplete="off" placeholder="Введите ответ" value="${escapeHtml(s.lastAnswer||"")}">
+          <button class="btn primary" onclick="checkOriginal()">Проверить</button>
+        </div>
+        <div class="math-keyboard">${keyboardHtml()}</div>
+        <div id="feedback" class="feedback info">${s.status?`Текущий статус: <b>${statusName(s.status)}</b>`:""}</div>
+        <div id="helpChoice" class="help-choice hidden">
+          <button class="btn warn" onclick="showHint()">Подсказка</button>
+          <button class="btn" onclick="startAnalog()">Попробовать аналог</button>
+          <button class="btn" onclick="showRule()">Посмотреть правило</button>
+        </div>
+        <div class="task-actions">
+          <button class="btn" onclick="prevTask()">Назад</button>
+          <button class="btn ghost" onclick="skipTask()">Пропустить</button>
+          <button class="btn ghost" onclick="dontKnow()">Не знаю</button>
+          <span class="spacer"></span>
+          <button class="btn" onclick="nextTask()">Далее</button>
+        </div>
+      </article>
+    </section>
+    <aside class="side-panel hidden" id="sidePanel"></aside>
+  </div>`;
+  renderMath(ev);
+  const inp=document.getElementById("answerInput"); inp.focus();
+  inp.addEventListener("input",()=>{ ts(n).lastAnswer=inp.value; saveState(); });
+}
+
+function keyboardHtml(){
+  const keys=["1","2","3","4","5","6","7","8","9","0","−",",","."];
+  return keys.map(k=>`<button class="key" onclick="keyIn('${k}')">${k}</button>`).join("")+
+  `<button class="key wide" onclick="backspace()">⌫</button><button class="key wide" onclick="clearInput()">Очистить</button>`;
+}
+function keyIn(k){
+  const inp=document.getElementById("answerInput")||document.getElementById("analogInput"); if(!inp)return;
+  const val=k==="−"?"-":k; const st=inp.selectionStart??inp.value.length, en=inp.selectionEnd??st;
+  inp.value=inp.value.slice(0,st)+val+inp.value.slice(en); inp.focus(); inp.setSelectionRange(st+val.length,st+val.length);
+  inp.dispatchEvent(new Event("input"));
+}
+function backspace(){
+  const inp=document.getElementById("answerInput")||document.getElementById("analogInput"); if(!inp)return;
+  const st=inp.selectionStart??inp.value.length, en=inp.selectionEnd??st;
+  if(st!==en) inp.value=inp.value.slice(0,st)+inp.value.slice(en);
+  else if(st>0) inp.value=inp.value.slice(0,st-1)+inp.value.slice(st);
+  inp.focus(); inp.dispatchEvent(new Event("input"));
+}
+function clearInput(){const inp=document.getElementById("answerInput")||document.getElementById("analogInput");if(inp){inp.value="";inp.focus();inp.dispatchEvent(new Event("input"));}}
+
+function markOriginalSuccess(s,repeat){
+  if(repeat){
+    s.repeatAttempts++;
+    s.masteredOnRepeat=true;
+  }else if(!s.status){
+    s.status=(s.errors===0&&!s.helpEver)?"green":"yellow";
+  }else if(s.status==="skip"||s.status==="repeat"){
+    s.status="yellow";
+  }
+  s.cycleAttempts=0;s.lastAnswer="";saveState();
+}
+function checkOriginal(){
+  const task=T(currentTaskN), s=ts(currentTaskN), inp=document.getElementById("answerInput"), fb=document.getElementById("feedback");
+  const v=inp.value; s.attempts++; if(currentMode==="repeat") s.repeatAttempts++;
+  if(correct(v,task.answer)){
+    markOriginalSuccess(s,currentMode==="repeat");
+    inp.classList.remove("error"); fb.className="feedback good";
+    fb.innerHTML=`<b>Верно.</b> ${B(task.b).success}`;
+    document.getElementById("helpChoice").classList.add("hidden");
+    saveState(); renderMath(fb); refreshMap();
+    return;
+  }
+  s.errors++;s.cycleAttempts++;s.lastAnswer=v;saveState();
+  inp.classList.remove("error"); void inp.offsetWidth; inp.classList.add("error");
+  fb.className="feedback bad";
+  if(s.cycleAttempts===1){
+    fb.innerHTML="<b>Неверно. Попробуй ещё раз.</b><br>Проверь вычисления, знаки и порядок действий.";
+  }else{
+    fb.innerHTML="<b>Ответ пока не получился.</b> Выбери способ помощи.";
+    document.getElementById("helpChoice").classList.remove("hidden");
+  }
+}
+function showHint(){
+  const b=B(currentBlock), s=ts(currentTaskN); s.helpEver=true;s.hintsUsed++;currentHintLevel=Math.min(currentHintLevel+1,b.hints.length);saveState();
+  openPanel(`<h2>Подсказка ${currentHintLevel} из ${b.hints.length}</h2><p>${b.hints[currentHintLevel-1]}</p>
+    ${currentHintLevel<b.hints.length?'<button class="btn warn" onclick="showHint()">Следующая подсказка</button>':""}`);
+}
+function showRule(){
+  const r=B(currentBlock).rule,s=ts(currentTaskN);s.helpEver=true;s.ruleViews++;saveState();
+  openPanel(`<h2>${r.title}</h2><h4>Правило</h4><div class="formula-box">\\[${r.formula}\\]</div>
+    <h4>Пример</h4><div class="formula-box">\\[${r.example}\\]</div>
+    <h4>Типичная ошибка</h4><p>${r.mistake}</p>`);
+}
+function openPanel(content){
+  const layout=document.getElementById("exerciseLayout"),p=document.getElementById("sidePanel");
+  layout.classList.add("panel-open");p.classList.remove("hidden");
+  p.innerHTML=`<button class="panel-close" onclick="closePanel()">×</button>${content}`;renderMath(p);
+}
+function closePanel(){
+  const layout=document.getElementById("exerciseLayout"),p=document.getElementById("sidePanel");
+  if(layout)layout.classList.remove("panel-open");if(p)p.classList.add("hidden");
+}
+
+function startAnalog(){
+  const task=T(currentTaskN), s=ts(currentTaskN); s.helpEver=true;
+  const unused=[0,1,2].filter(i=>!s.usedAnalogs.includes(i));
+  if(!unused.length){ exhaustAnalogs(); return; }
+  currentAnalogIndex=unused[Math.floor(Math.random()*unused.length)];
+  s.usedAnalogs.push(currentAnalogIndex); s.analogAttempts[currentAnalogIndex]=0; saveState();
+  showTraining();
+}
+function showTraining(){
+  stopTaskTimer(); showView("trainingView"); const task=T(currentTaskN),a=task.analogs[currentAnalogIndex];
+  startTaskTimer(currentTaskN,currentBlock);
+  const tv=document.getElementById("trainingView");
+  tv.innerHTML=`<article class="training-card">
+    <div class="training-title">Тренировка · аналог задания №${currentTaskN}</div>
+    <h1>${B(currentBlock).title}</h1>
+    <div class="prompt">${a[0]}</div>
+    <div class="answer-wrap">
+      <input id="analogInput" class="answer-input" inputmode="decimal" autocomplete="off" placeholder="Введите ответ">
+      <button class="btn primary" onclick="checkAnalog()">Проверить</button>
+    </div>
+    <div class="math-keyboard">${keyboardHtml()}</div>
+    <div id="analogFeedback" class="feedback info">Реши аналог. После верного ответа вернёмся к исходному заданию.</div>
+    <div class="task-actions">
+      <button class="btn ghost" onclick="leaveAnalog()">Вернуться к исходному</button><span class="spacer"></span>
+      <button class="btn" onclick="showRuleFromTraining()">Посмотреть правило</button>
+    </div>
+  </article>`;
+  renderMath(tv);document.getElementById("analogInput").focus();
+}
+function checkAnalog(){
+  const task=T(currentTaskN), s=ts(currentTaskN), a=task.analogs[currentAnalogIndex], inp=document.getElementById("analogInput"),fb=document.getElementById("analogFeedback");
+  s.analogAttempts[currentAnalogIndex]=(s.analogAttempts[currentAnalogIndex]||0)+1;saveState();
+  if(correct(inp.value,a[1])){
+    fb.className="feedback good";fb.innerHTML="<b>Верно.</b> Возвращаемся к исходному заданию — реши его ещё раз самостоятельно.";
+    setTimeout(()=>{s.cycleAttempts=0;saveState();openTask(currentBlock,currentTaskN,currentMode==="repeat");},650);
+  }else{
+    inp.classList.remove("error");void inp.offsetWidth;inp.classList.add("error");fb.className="feedback bad";
+    fb.innerHTML="<b>Неверно.</b> Проверь преобразования и попробуй ещё раз.";
+    if((s.analogAttempts[currentAnalogIndex]||0)>=2){
+      const unused=[0,1,2].filter(i=>!s.usedAnalogs.includes(i));
+      if(!unused.length){
+        fb.innerHTML+='<br><button class="btn bad" style="margin-top:8px" onclick="exhaustAnalogs()">Завершить тренировку</button>';
+      }
+    }
+  }
+}
+function leaveAnalog(){const s=ts(currentTaskN);s.analogIncomplete++;saveState();openTask(currentBlock,currentTaskN,currentMode==="repeat");}
+function showRuleFromTraining(){
+  const r=B(currentBlock).rule;
+  alert("Правило: "+r.title+"\n\n"+r.mistake+"\n\nВернитесь к заданию и примените это правило.");
+}
+function exhaustAnalogs(){
+  const s=ts(currentTaskN); if(!s.status||s.status==="skip")s.status="repeat";s.helpEver=true;saveState();
+  showView("exerciseView");openTask(currentBlock,currentTaskN,currentMode==="repeat");
+  const fb=document.getElementById("feedback");fb.className="feedback bad";
+  fb.innerHTML="<b>Навык отмечен как требующий повторения.</b><br>Правильный ответ не показывается. Можно перейти к следующему заданию или вернуться к этому позже.";
+  openPanel(`<h2>Стратегия повторения</h2><p>${B(currentBlock).hints.join("</p><p>")}</p><div class="notice">Финальный ответ намеренно не показан.</div>`);
+  refreshMap();
+}
+
+function dontKnow(){
+  const s=ts(currentTaskN);s.notKnow++;s.helpEver=true;saveState();
+  const fb=document.getElementById("feedback");fb.className="feedback bad";fb.innerHTML="<b>Затруднение зафиксировано.</b> Выбери способ помощи.";
+  document.getElementById("helpChoice").classList.remove("hidden");
+}
+function skipTask(){
+  const s=ts(currentTaskN);s.skipped++; if(!s.status)s.status="skip";saveState();refreshMap();
+  const fb=document.getElementById("feedback");fb.className="feedback info";fb.innerHTML="Задание отмечено как пропущенное. К нему можно вернуться позже.";
+}
+function refreshMap(){
+  const map=document.querySelector(".task-map"); if(map)map.innerHTML=taskMapHtml(currentBlock,currentTaskN);
+}
+function prevTask(){
+  const arr=blockTasks(currentBlock),i=arr.findIndex(t=>t.n===currentTaskN); if(i>0)openTask(currentBlock,arr[i-1].n,currentMode==="repeat");
+}
+function nextTask(){
+  const arr=blockTasks(currentBlock),i=arr.findIndex(t=>t.n===currentTaskN);
+  if(i<arr.length-1){openTask(currentBlock,arr[i+1].n,currentMode==="repeat");return;}
+  const st=blockStats(currentBlock);
+  if(st.allFinal){
+    home(); setTimeout(()=>alert(st.repeat?"Блок завершён. Есть задания для повторения.":"Блок завершён."),80);
+  }else{
+    const skipped=arr.filter(t=>ts(t.n).status==="skip");
+    home();
+    if(skipped.length)setTimeout(()=>{if(confirm(`В блоке пропущено заданий: ${skipped.length}. Вернуться к первому пропущенному?`))openTask(currentBlock,skipped[0].n);},100);
+  }
+}
+
+function startSmartRepeat(){
+  const probs=problemTasks(); if(!probs.length)return;
+  state.repeatSession=true;saveState();
+  const t=probs[0];openTask(t.b,t.n,true);
+}
+function nextRepeatProblem(){
+  const probs=problemTasks().filter(t=>!ts(t.n).masteredOnRepeat);
+  if(probs.length){openTask(probs[0].b,probs[0].n,true);}else{state.repeatSession=false;saveState();finish();}
+}
+
+function teacher(){
+  showView("teacherView");stopTaskTimer();
+  const tv=document.getElementById("teacherView");
+  const rows=CONTENT.tasks.map(t=>{
+    const s=ts(t.n), time=fmtTime(state.taskSeconds[t.n]||0);
+    return `<tr><td>№${t.n}</td><td>${B(t.b).title}</td><td>${statusName(s.status)}${s.masteredOnRepeat?"<br><b>Освоено при повторении</b>":""}</td>
+      <td>${s.attempts}</td><td>${s.errors}</td><td>${s.hintsUsed}</td><td>${s.ruleViews}</td><td>${s.notKnow}</td><td>${s.analogIncomplete}</td><td>${time}</td>
+      <td><input type="checkbox" ${state.manualRepeat.tasks.includes(t.n)?"checked":""} onchange="toggleManualTask(${t.n},this.checked)"></td>
+      <td><input class="small-input" value="${escapeHtml(state.teacherComments[t.n]||"")}" onchange="setComment(${t.n},this.value)" placeholder="Комментарий"></td></tr>`;
+  }).join("");
+  const blockControls=CONTENT.blocks.map(b=>`<div class="switch-row"><input type="checkbox" ${state.enabledBlocks[b.id]!==false?"checked":""} onchange="toggleBlock('${b.id}',this.checked)">
+    <span>${b.title}</span><label><input type="checkbox" ${state.manualRepeat.blocks.includes(b.id)?"checked":""} onchange="toggleManualBlock('${b.id}',this.checked)"> назначить блок</label></div>`).join("");
+  const keyRows=CONTENT.tasks.map(t=>`<tr><td>№${t.n}</td><td>${t.answer.replace(".",",")}</td><td>${t.analogs.map((a,i)=>`${i+1}) ${a[1].replace(".",",")}`).join("<br>")}</td></tr>`).join("");
+  tv.innerHTML=`<div class="teacher-grid">
+    <div>
+      <section class="panel-card"><h2>Статистика текущей работы</h2>
+        <div class="footer-actions no-print">
+          <button class="btn" onclick="exportCSV()">Экспорт CSV</button>
+          <button class="btn" onclick="finish();setTimeout(()=>window.print(),100)">Печать / PDF</button>
+          <button class="btn bad" onclick="askReset()">Сбросить прогресс</button>
+        </div>
+        <p style="font-size:12px;color:var(--muted)">Активное время: <b>${fmtTime(state.activeSeconds)}</b>. Паузы при бездействии автоматически не учитываются.</p>
+      </section>
+      <section class="panel-card"><h3>Результаты по заданиям</h3><div class="scroll-box">
+        <table class="teacher-table"><thead><tr><th>№</th><th>Блок</th><th>Статус</th><th>Попытки</th><th>Ошибки</th><th>Подсказки</th><th>Правила</th><th>Не знаю</th><th>Незав. аналоги</th><th>Время</th><th>Повтор</th><th>Комментарий</th></tr></thead><tbody>${rows}</tbody></table>
+      </div></section>
+    </div>
+    <div>
+      <section class="panel-card"><h3>Доступные блоки и ручное повторение</h3>
+        <div class="footer-actions no-print"><button class="btn" onclick="setAllBlocks(true)">Выбрать все</button><button class="btn" onclick="setAllBlocks(false)">Снять все</button><button class="btn warn" onclick="onlyProblemBlocks()">Только проблемные навыки</button></div>
+        ${blockControls}
+      </section>
+      <section class="panel-card"><h3>Ключ для учителя</h3><div class="scroll-box"><table class="teacher-table"><thead><tr><th>№</th><th>Исходный ответ</th><th>Ответы аналогов</th></tr></thead><tbody>${keyRows}</tbody></table></div></section>
+    </div>
+  </div>`;
+}
+function toggleBlock(id,on){state.enabledBlocks[id]=on;saveState();}
+function setAllBlocks(on){CONTENT.blocks.forEach(b=>state.enabledBlocks[b.id]=on);saveState();teacher();}
+function onlyProblemBlocks(){const ids=new Set(problemTasks().map(t=>t.b));CONTENT.blocks.forEach(b=>state.enabledBlocks[b.id]=ids.has(b.id));saveState();teacher();}
+function toggleManualTask(n,on){const a=state.manualRepeat.tasks; if(on&&!a.includes(n))a.push(n); if(!on)state.manualRepeat.tasks=a.filter(x=>x!==n);saveState();}
+function toggleManualBlock(id,on){const a=state.manualRepeat.blocks; if(on&&!a.includes(id))a.push(id); if(!on)state.manualRepeat.blocks=a.filter(x=>x!==id);saveState();}
+function setComment(n,v){state.teacherComments[n]=v;saveState();}
+
+function finish(){
+  showView("finishView");stopTaskTimer();
+  const fv=document.getElementById("finishView"), probs=problemTasks(), mastered=CONTENT.tasks.filter(t=>ts(t.n).masteredOnRepeat);
+  const greens=CONTENT.tasks.filter(t=>ts(t.n).status==="green").length, yellows=CONTENT.tasks.filter(t=>ts(t.n).status==="yellow").length;
+  const skips=CONTENT.tasks.filter(t=>ts(t.n).status==="skip").length, reps=CONTENT.tasks.filter(t=>ts(t.n).status==="repeat").length;
+  const goodBlocks=CONTENT.blocks.filter(b=>blockTasks(b.id).every(t=>ts(t.n).status==="green")).map(b=>b.title);
+  const weakBlocks=CONTENT.blocks.filter(b=>blockTasks(b.id).some(t=>["yellow","skip","repeat"].includes(ts(t.n).status)||ts(t.n).notKnow>0)).map(b=>b.title);
+  const rec=recommendations();
+  fv.innerHTML=`<h1 style="margin-top:0">Итог работы</h1>
+    <div class="end-summary"><div class="kpi"><strong>${greens}</strong><span>самостоятельно</span></div><div class="kpi"><strong>${yellows}</strong><span>с затруднением</span></div><div class="kpi"><strong>${skips}</strong><span>пропущено</span></div><div class="kpi"><strong>${reps}</strong><span>требуют повторения</span></div></div>
+    <div class="report-columns">
+      <section class="report-list"><h3>Что уже получается</h3><ul>${(goodBlocks.length?goodBlocks:["Пока недостаточно данных"]).map(x=>`<li>${x}</li>`).join("")}</ul></section>
+      <section class="report-list"><h3>Что стоит повторить</h3><ul>${(weakBlocks.length?weakBlocks:["Проблемные блоки пока не выявлены"]).map(x=>`<li>${x}</li>`).join("")}</ul></section>
+    </div>
+    <section class="panel-card" style="margin-top:14px"><h3>Динамика повторения</h3><p>${mastered.length?`Освоено при повторении: ${mastered.map(t=>"№"+t.n).join(", ")}.`:"Пока нет заданий с отметкой «Освоено при повторении»."}</p></section>
+    <section class="panel-card"><h3>Рекомендации учителю</h3><ul style="font-size:13px;line-height:1.55">${rec.map(x=>`<li>${x}</li>`).join("")}</ul>
+      <p style="font-size:12px;color:var(--muted)">Активное время работы: ${fmtTime(state.activeSeconds)}.</p></section>
+    <div class="footer-actions no-print"><button class="btn primary" onclick="home()">Вернуться к заданиям</button><button class="btn" onclick="startSmartRepeat()" ${probs.length?"":"disabled"}>Перейти к повторению</button><button class="btn" onclick="window.print()">Печать / PDF</button><button class="btn" onclick="exportCSV()">CSV</button></div>`;
+}
+
+function exportCSV(){
+  const head=["Номер","Блок","Статус","Освоено при повторении","Попытки","Ошибки","Подсказки","Просмотры правила","Не знаю","Пропуски","Незавершённые аналоги","Активное время, сек","Ручное повторение","Комментарий"];
+  const rows=CONTENT.tasks.map(t=>{const s=ts(t.n);return [t.n,B(t.b).title,statusName(s.status),s.masteredOnRepeat?"да":"нет",s.attempts,s.errors,s.hintsUsed,s.ruleViews,s.notKnow,s.skipped,s.analogIncomplete,state.taskSeconds[t.n]||0,state.manualRepeat.tasks.includes(t.n)||state.manualRepeat.blocks.includes(t.b)?"да":"нет",state.teacherComments[t.n]||""];});
+  const csv=[head,...rows].map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(";")).join("\r\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="OGE_8_report.csv";a.click();URL.revokeObjectURL(url);
+}
+function fmtTime(sec){sec=Math.round(Number(sec)||0);const m=Math.floor(sec/60),s=sec%60;return m?`${m} мин ${s} с`:`${s} с`;}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+function askReset(){
+  document.getElementById("modalTitle").textContent="Сбросить прогресс?";
+  document.getElementById("modalText").textContent="Будут удалены ответы, история попыток, время, комментарии учителя и настройки доступных блоков.";
+  document.getElementById("confirmModal").classList.remove("hidden");
+  modalCallback=()=>{state=structuredClone(DEFAULT_STATE);saveState();home();};
+}
+function closeModal(){document.getElementById("confirmModal").classList.add("hidden");modalCallback=null;}
+document.getElementById("modalCancel").onclick=closeModal;
+document.getElementById("modalOk").onclick=()=>{const cb=modalCallback;closeModal();if(cb)cb();};
+
+function startTaskTimer(n,b){state.currentTimerTask=n;state.currentTimerBlock=b;state.lastActivity=Date.now();saveState();}
+function stopTaskTimer(){state.currentTimerTask=null;state.currentTimerBlock=null;saveState();}
+["pointerdown","keydown","touchstart","mousemove"].forEach(ev=>document.addEventListener(ev,()=>state.lastActivity=Date.now(),{passive:true}));
+setInterval(()=>{
+  if(!state.currentTimerTask)return;
+  if(Date.now()-state.lastActivity>90000)return; // автоматическая пауза при бездействии
+  state.activeSeconds=(state.activeSeconds||0)+1;
+  state.taskSeconds[state.currentTimerTask]=(state.taskSeconds[state.currentTimerTask]||0)+1;
+  state.blockSeconds[state.currentTimerBlock]=(state.blockSeconds[state.currentTimerBlock]||0)+1;
+  if(state.activeSeconds%10===0)saveState();
+},1000);
+
+
+// ---------- Черновик для графического планшета ----------
+const scratch = {
+  open:false, tool:"pen", drawing:false, pointerId:null, current:null,
+  strokes:[], canvas:null, ctx:null, area:null, dpr:1
+};
+
+function scratchKey(){
+  // Черновик сохраняется отдельно для каждого исходного задания.
+  return currentTaskN ? String(currentTaskN) : "_general";
+}
+function ensureScratchState(){
+  if(!state.scratchpads) state.scratchpads={};
+  const key=scratchKey();
+  if(!Array.isArray(state.scratchpads[key])) state.scratchpads[key]=[];
+  return state.scratchpads[key];
+}
+function openScratchpad(){
+  scratch.open=true;
+  const ov=document.getElementById("scratchOverlay");
+  ov.classList.remove("hidden"); ov.setAttribute("aria-hidden","false");
+  scratch.canvas=document.getElementById("scratchCanvas");
+  scratch.ctx=scratch.canvas.getContext("2d");
+  scratch.area=document.getElementById("scratchArea");
+  scratch.strokes=JSON.parse(JSON.stringify(ensureScratchState()));
+  resizeScratchCanvas();
+  requestAnimationFrame(()=>redrawScratch());
+}
+function closeScratchpad(){
+  scratch.open=false;scratch.drawing=false;scratch.pointerId=null;
+  const ov=document.getElementById("scratchOverlay");
+  ov.classList.add("hidden");ov.setAttribute("aria-hidden","true");
+  persistScratch();
+}
+function resizeScratchCanvas(){
+  if(!scratch.canvas||!scratch.area)return;
+  const r=scratch.area.getBoundingClientRect();
+  scratch.dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  scratch.canvas.width=Math.max(1,Math.round(r.width*scratch.dpr));
+  scratch.canvas.height=Math.max(1,Math.round(r.height*scratch.dpr));
+  scratch.canvas.style.width=r.width+"px";scratch.canvas.style.height=r.height+"px";
+  scratch.ctx=scratch.canvas.getContext("2d");
+  scratch.ctx.setTransform(scratch.dpr,0,0,scratch.dpr,0,0);
+  scratch.ctx.lineCap="round";scratch.ctx.lineJoin="round";
+}
+function scratchPoint(e){
+  const r=scratch.canvas.getBoundingClientRect();
+  return {
+    x:(e.clientX-r.left)/r.width,
+    y:(e.clientY-r.top)/r.height,
+    p:(typeof e.pressure==="number"&&e.pressure>0)?e.pressure:0.5
+  };
+}
+function scratchPointerDown(e){
+  if(!scratch.open||scratch.drawing)return;
+  e.preventDefault();
+  scratch.drawing=true;scratch.pointerId=e.pointerId;
+  try{scratch.canvas.setPointerCapture(e.pointerId);}catch(_){}
+  const p=scratchPoint(e);
+  scratch.current={
+    tool:scratch.tool,
+    size:Number(document.getElementById("scratchSize").value)||4,
+    points:[p]
+  };
+  scratch.strokes.push(scratch.current);
+  drawScratchSegment(scratch.current,null,p,e.pointerType);
+}
+function scratchPointerMove(e){
+  if(!scratch.drawing||e.pointerId!==scratch.pointerId||!scratch.current)return;
+  e.preventDefault();
+  const p=scratchPoint(e), pts=scratch.current.points, prev=pts[pts.length-1];
+  pts.push(p);drawScratchSegment(scratch.current,prev,p,e.pointerType);
+}
+function scratchPointerUp(e){
+  if(e.pointerId!==scratch.pointerId)return;
+  scratch.drawing=false;scratch.pointerId=null;scratch.current=null;
+  persistScratch();
+}
+function drawScratchSegment(stroke,a,b,pointerType){
+  const r=scratch.canvas.getBoundingClientRect(),ctx=scratch.ctx;
+  const x1=(a||b).x*r.width,y1=(a||b).y*r.height,x2=b.x*r.width,y2=b.y*r.height;
+  ctx.save();
+  ctx.globalCompositeOperation=stroke.tool==="eraser"?"destination-out":"source-over";
+  ctx.strokeStyle="#182033";
+  // Для пера учитываем нажим, но сохраняем комфортную толщину для мыши/пальца.
+  const pressure=(pointerType==="pen"?Math.max(.25,b.p||.5):1);
+  ctx.lineWidth=Math.max(1,stroke.size*pressure);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();
+}
+function redrawScratch(){
+  if(!scratch.ctx||!scratch.canvas)return;
+  const r=scratch.canvas.getBoundingClientRect(),ctx=scratch.ctx;
+  ctx.save();ctx.setTransform(scratch.dpr,0,0,scratch.dpr,0,0);
+  ctx.clearRect(0,0,r.width,r.height);ctx.restore();
+  for(const stroke of scratch.strokes){
+    const pts=stroke.points||[];
+    if(!pts.length)continue;
+    if(pts.length===1) drawScratchSegment(stroke,null,pts[0],"mouse");
+    else for(let i=1;i<pts.length;i++) drawScratchSegment(stroke,pts[i-1],pts[i],"mouse");
+  }
+}
+function persistScratch(){
+  if(!state.scratchpads)state.scratchpads={};
+  state.scratchpads[scratchKey()]=JSON.parse(JSON.stringify(scratch.strokes||[]));
+  saveState();
+}
+function setScratchTool(tool){
+  scratch.tool=tool;
+  document.getElementById("penTool").classList.toggle("active",tool==="pen");
+  document.getElementById("eraserTool").classList.toggle("active",tool==="eraser");
+  if(scratch.canvas)scratch.canvas.style.cursor=tool==="eraser"?"cell":"crosshair";
+}
+function undoScratch(){
+  if(!scratch.strokes.length)return;
+  scratch.strokes.pop();redrawScratch();persistScratch();
+}
+function clearScratch(){
+  if(!scratch.strokes.length)return;
+  if(!confirm("Очистить черновик для этого задания?"))return;
+  scratch.strokes=[];redrawScratch();persistScratch();
+}
+
+document.getElementById("scratchBtn").onclick=openScratchpad;
+document.getElementById("scratchClose").onclick=closeScratchpad;
+document.getElementById("penTool").onclick=()=>setScratchTool("pen");
+document.getElementById("eraserTool").onclick=()=>setScratchTool("eraser");
+document.getElementById("scratchUndo").onclick=undoScratch;
+document.getElementById("scratchClear").onclick=clearScratch;
+document.getElementById("scratchCanvas").addEventListener("pointerdown",scratchPointerDown,{passive:false});
+document.getElementById("scratchCanvas").addEventListener("pointermove",scratchPointerMove,{passive:false});
+document.getElementById("scratchCanvas").addEventListener("pointerup",scratchPointerUp,{passive:false});
+document.getElementById("scratchCanvas").addEventListener("pointercancel",scratchPointerUp,{passive:false});
+window.addEventListener("resize",()=>{if(scratch.open){resizeScratchCanvas();redrawScratch();}});
+
+document.getElementById("homeBtn").onclick=home;
+document.getElementById("teacherBtn").onclick=teacher;
+document.getElementById("fullscreenBtn").onclick=async()=>{
+  try{ if(!document.fullscreenElement) await document.getElementById("frame").requestFullscreen(); else await document.exitFullscreen(); }catch(e){}
+};
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){if(scratch.open){closeScratchpad();return;}closePanel();}
+  if(e.key==="Enter"){
+    const a=document.getElementById("analogInput"),o=document.getElementById("answerInput");
+    if(a&&document.activeElement===a){e.preventDefault();checkAnalog();}
+    else if(o&&document.activeElement===o){e.preventDefault();checkOriginal();}
+  }
+});
+window.addEventListener("beforeunload",saveState);
+window.addEventListener("load",()=>{home();setTimeout(()=>renderMath(document),50);});
+</script>
+</body>
+</html>
