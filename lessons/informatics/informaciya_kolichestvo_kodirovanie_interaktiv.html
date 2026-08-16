@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Информация, количество информации и кодирование</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#6b7485;--line:#dfe5ef;--accent:#5b67e8;--accent2:#eef0ff;--ok:#18864b;--bad:#c43b3b;--warn:#fff7df;}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+.sidebar{background:#11182a;color:#fff;padding:24px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand h1{font-size:23px;line-height:1.15;margin:6px 0 8px} .brand p{color:#aeb7cb;font-size:13px;line-height:1.45}
+.badge{display:inline-block;background:#27314f;border:1px solid #3a466b;border-radius:999px;padding:5px 9px;font-size:12px}
+.tabs{display:grid;gap:8px;margin-top:22px}
+.tab-btn{border:0;background:transparent;color:#cbd3e4;text-align:left;padding:12px 14px;border-radius:12px;cursor:pointer;font-size:14px;line-height:1.3}
+.tab-btn:hover,.tab-btn.active{background:#27314f;color:#fff}
+.side-score{margin-top:22px;padding:14px;background:#1a233a;border-radius:14px} .side-score .line{display:flex;justify-content:space-between;font-size:13px}
+.content{padding:28px 34px 60px;max-width:1180px;width:100%}
+.tab-pane{display:none} .tab-pane.active{display:block}
+.hero{background:linear-gradient(135deg,#5b67e8,#7a61d8);color:#fff;border-radius:22px;padding:28px 30px;margin-bottom:22px;box-shadow:0 12px 30px rgba(52,61,130,.18)}
+.hero h2{font-size:30px;margin:6px 0 8px} .hero p{margin:0;color:#eef0ff;max-width:800px;line-height:1.5} .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+.theory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 5px 16px rgba(31,40,70,.05)}
+.card h3{margin:0 0 10px;font-size:18px} .card p{line-height:1.58;margin:8px 0}
+.example{background:#f2f8ff;border-left:4px solid #6aa5e8;padding:12px 14px;border-radius:10px;margin-top:12px;line-height:1.5}
+.note{background:var(--warn);padding:12px 14px;border-radius:10px;margin-top:12px;line-height:1.5}
+.formula{font-size:20px;font-weight:700;text-align:center;background:#f7f7ff;border:1px solid #e3e4ff;padding:12px;border-radius:12px;margin:10px 0}
+.chips{display:flex;flex-wrap:wrap;gap:7px} .chips span{background:#f2f3f7;padding:7px 9px;border-radius:999px;font-size:13px}
+.practice-head{display:flex;justify-content:space-between;align-items:center;margin:28px 0 12px;font-size:22px;font-weight:700} .practice-head b{font-size:13px;background:var(--accent2);color:#4f59cb;padding:7px 10px;border-radius:999px}
+.questions{display:grid;gap:14px} .question{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.qnum{font-size:12px;color:#5660d4;font-weight:800;text-transform:uppercase;letter-spacing:.08em} .qtext{font-size:17px;font-weight:650;line-height:1.45;margin:7px 0 14px}
+.option{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;cursor:pointer} .option:hover{background:#f6f7fb}
+.option input{margin-top:3px} .answer-row{display:flex;gap:10px;margin-top:10px} .text-answer{flex:1;min-width:0;border:1px solid #ccd3df;border-radius:10px;padding:11px 12px;font-size:15px}
+.check-btn{border:0;background:var(--accent);color:white;padding:10px 15px;border-radius:10px;font-weight:700;cursor:pointer;margin-top:10px} .answer-row .check-btn{margin-top:0}
+.feedback{margin-top:10px;font-weight:700;min-height:20px} .feedback.ok{color:var(--ok)} .feedback.bad{color:var(--bad)}
+.match-row{display:grid;grid-template-columns:1fr 190px;gap:10px;align-items:center;margin:8px 0} select{padding:9px;border:1px solid #ccd3df;border-radius:9px;background:white}
+.order-item{padding:6px 0} .order-help{color:var(--muted);margin-bottom:8px}
+.summary-card{display:grid;grid-template-columns:170px 1fr;gap:25px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px}
+.score-big{font-size:58px;font-weight:800;color:#4f59cb;text-align:center} .score-big small{font-size:22px;color:#8c94a5}
+.progress{height:12px;background:#eef0f4;border-radius:999px;overflow:hidden} #progressBar{height:100%;width:0;background:#5b67e8;transition:.3s}
+.checklist{line-height:1.7} .reset{margin-top:16px;border:1px solid #d7dce7;background:#fff;padding:10px 14px;border-radius:10px;cursor:pointer}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.tabs{grid-template-columns:repeat(2,1fr)}.content{padding:18px}.theory-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.tabs{grid-template-columns:1fr}.hero h2{font-size:24px}.match-row{grid-template-columns:1fr}.summary-card{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand"><span class="badge">Интерактивное занятие</span><h1>Информация, количество информации и кодирование</h1><p>Теория → простые примеры → вопросы из документа.</p></div>
+ <nav class="tabs">
+ <button class="tab-btn active" data-tab="basics">1. Что такое информация</button><button class="tab-btn " data-tab="carriers">2. Носители информации</button><button class="tab-btn " data-tab="units">3. Единицы информации</button><button class="tab-btn " data-tab="alphabet">4. Алфавит и объём сообщения</button><button class="tab-btn " data-tab="probability">5. Количество информации и вероятность</button><button class="tab-btn " data-tab="coding">6. Кодирование текста</button><button class="tab-btn " data-tab="final">7. Итог</button>
+ </nav>
+ <div class="side-score"><div class="line"><span>Проверено верно</span><b><span id="sideScore">0</span> / 27</b></div></div>
+</aside>
+<main class="content">
+ 
+<section id="basics" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Подтема</span><h2>Что такое информация</h2><p>Сначала разберите теорию и примеры, затем выполните вопросы из исходного документа.</p></div></div>
+ 
+<div class="theory-grid">
+  <article class="card"><h3>Что такое информация?</h3><p><b>Информация</b> — это сведения об объектах, явлениях, событиях и процессах. Проще: всё, что помогает нам что-то узнать и уменьшает неопределённость.</p>
+  <div class="example"><b>Пример.</b> До прогноза мы не знаем, будет ли дождь. Сообщение «завтра дождь» уменьшает неопределённость — мы получили информацию.</div></article>
+  <article class="card"><h3>Как человек получает информацию?</h3>
+    <p><b>Визуальная</b> — глазами; <b>аудиальная</b> — слухом; <b>тактильная</b> — осязанием; <b>обонятельная</b> — запах; <b>вкусовая</b> — вкус.</p>
+    <div class="example">Радуга — визуальная, музыка — аудиальная, шероховатость ткани — тактильная.</div>
+  </article>
+  <article class="card"><h3>Формы представления</h3><p>В тесте встречаются <b>текстовая, числовая, графическая, звуковая</b> формы.</p>
+  <div class="example">«25 °C» — числовая; фотография — графическая; голосовое сообщение — звуковая; абзац учебника — текстовая.</div></article>
+  <article class="card"><h3>Информационные процессы</h3><p>Основные процессы: <b>получение/ввод, хранение, обработка, передача, вывод</b>.</p>
+  <div class="example">Сняли видео → получили; сохранили → хранение; обрезали → обработка; отправили → передача; распечатали кадр → вывод.</div></article>
+  <article class="card"><h3>Что изучает информатика?</h3><p><b>Информатика</b> изучает свойства информации и способы её представления, накопления, обработки и передачи с помощью технических средств.</p></article>
+</div>
+ <div class="practice-head"><span>Практика по документу</span><b>7 заданий</b></div>
+ <div class="questions"><div class="question" data-q="16" data-type="single"><div class="qnum">Вопрос 16</div><div class="qtext">Тактильной называют информацию, которая воспринимается человеком посредством:</div><label class="option"><input type="radio" name="q16" value="0"><span>органов осязания</span></label><label class="option"><input type="radio" name="q16" value="1"><span>органов слуха</span></label><label class="option"><input type="radio" name="q16" value="2"><span>органов обоняния</span></label><label class="option"><input type="radio" name="q16" value="3"><span>органов зрения</span></label><label class="option"><input type="radio" name="q16" value="4"><span>органов восприятия вкуса</span></label><button class="check-btn" onclick="checkChoice(16, [0], 'single')">Проверить</button><div class="feedback" id="fb16"></div></div><div class="question" data-q="17" data-type="multi"><div class="qnum">Вопрос 17</div><div class="qtext">Укажите все информационные процессы</div><label class="option"><input type="checkbox" name="q17" value="0"><span>обработка видео</span></label><label class="option"><input type="checkbox" name="q17" value="1"><span>хранение на жестком диске</span></label><label class="option"><input type="checkbox" name="q17" value="2"><span>ввод информации в компьютер</span></label><label class="option"><input type="checkbox" name="q17" value="3"><span>передача данных по сети</span></label><label class="option"><input type="checkbox" name="q17" value="4"><span>распечатывание данных на бумажный носитель</span></label><button class="check-btn" onclick="checkChoice(17, [0, 1, 2, 3, 4], 'multi')">Проверить</button><div class="feedback" id="fb17"></div></div><div class="question" data-q="42" data-type="single"><div class="qnum">Вопрос 42</div><div class="qtext">Аудиальной называют информацию, которая воспринимается человеком посредством:</div><label class="option"><input type="radio" name="q42" value="0"><span>органов осязания</span></label><label class="option"><input type="radio" name="q42" value="1"><span>органов обоняния</span></label><label class="option"><input type="radio" name="q42" value="2"><span>органов восприятия вкуса</span></label><label class="option"><input type="radio" name="q42" value="3"><span>органов зрения</span></label><label class="option"><input type="radio" name="q42" value="4"><span>органов слуха</span></label><button class="check-btn" onclick="checkChoice(42, [4], 'single')">Проверить</button><div class="feedback" id="fb42"></div></div><div class="question" data-q="63" data-type="match"><div class="qnum">Вопрос 63</div><div class="qtext">Установите соответствие между примером информации и ее видом.</div><div class="match-row"><span>1. чувствовать запах цветов</span><select data-correct="обонятельная"><option value="">— выберите —</option><option>обонятельная</option><option>тактильная</option><option>визуальная</option><option>вкусовая</option><option>аудиальная</option></select></div><div class="match-row"><span>2. слушать пение птиц</span><select data-correct="аудиальная"><option value="">— выберите —</option><option>обонятельная</option><option>тактильная</option><option>визуальная</option><option>вкусовая</option><option>аудиальная</option></select></div><div class="match-row"><span>3. чувствовать вкус ананаса</span><select data-correct="вкусовая"><option value="">— выберите —</option><option>обонятельная</option><option>тактильная</option><option>визуальная</option><option>вкусовая</option><option>аудиальная</option></select></div><div class="match-row"><span>4. чувствовать мокрую траву</span><select data-correct="тактильная"><option value="">— выберите —</option><option>обонятельная</option><option>тактильная</option><option>визуальная</option><option>вкусовая</option><option>аудиальная</option></select></div><div class="match-row"><span>5. видеть радугу</span><select data-correct="визуальная"><option value="">— выберите —</option><option>обонятельная</option><option>тактильная</option><option>визуальная</option><option>вкусовая</option><option>аудиальная</option></select></div><button class="check-btn" onclick="checkMatch(63)">Проверить</button><div class="feedback" id="fb63"></div></div><div class="question" data-q="76" data-type="single"><div class="qnum">Вопрос 76</div><div class="qtext">Дисциплина, изучающая свойства информации, а также способы представления, накопления, обработки и передачи информации с помощью технических средств — это:</div><label class="option"><input type="radio" name="q76" value="0"><span>информатика</span></label><label class="option"><input type="radio" name="q76" value="1"><span>кибернетика</span></label><label class="option"><input type="radio" name="q76" value="2"><span>информатизация</span></label><label class="option"><input type="radio" name="q76" value="3"><span>автоматизация</span></label><label class="option"><input type="radio" name="q76" value="4"><span>теория игр</span></label><button class="check-btn" onclick="checkChoice(76, [0], 'single')">Проверить</button><div class="feedback" id="fb76"></div></div><div class="question" data-q="92" data-type="single"><div class="qnum">Вопрос 92</div><div class="qtext">Визуальной называют информацию, которая воспринимается человеком посредством:</div><label class="option"><input type="radio" name="q92" value="0"><span>органов обоняния</span></label><label class="option"><input type="radio" name="q92" value="1"><span>органов зрения</span></label><label class="option"><input type="radio" name="q92" value="2"><span>органов слуха</span></label><label class="option"><input type="radio" name="q92" value="3"><span>органов осязания</span></label><label class="option"><input type="radio" name="q92" value="4"><span>органов восприятия вкуса</span></label><button class="check-btn" onclick="checkChoice(92, [1], 'single')">Проверить</button><div class="feedback" id="fb92"></div></div><div class="question" data-q="94" data-type="multi"><div class="qnum">Вопрос 94</div><div class="qtext">Информация по форме представления бывает:</div><label class="option"><input type="checkbox" name="q94" value="0"><span>мультимедийная</span></label><label class="option"><input type="checkbox" name="q94" value="1"><span>вкусовая</span></label><label class="option"><input type="checkbox" name="q94" value="2"><span>числовая</span></label><label class="option"><input type="checkbox" name="q94" value="3"><span>звуковая</span></label><label class="option"><input type="checkbox" name="q94" value="4"><span>графическая</span></label><label class="option"><input type="checkbox" name="q94" value="5"><span>аудиальная</span></label><label class="option"><input type="checkbox" name="q94" value="6"><span>тактильная</span></label><label class="option"><input type="checkbox" name="q94" value="7"><span>текстовая</span></label><button class="check-btn" onclick="checkChoice(94, [2, 3, 4, 7], 'multi')">Проверить</button><div class="feedback" id="fb94"></div></div></div>
+</section>
+<section id="carriers" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Подтема</span><h2>Носители информации</h2><p>Сначала разберите теорию и примеры, затем выполните вопросы из исходного документа.</p></div></div>
+ 
+<div class="theory-grid">
+ <article class="card"><h3>Что такое носитель?</h3><p><b>Носитель информации</b> — объект или среда, на которой информацию можно зафиксировать и сохранить.</p><div class="example">Бумага хранит текст, флешка — файлы, диск — цифровые данные.</div></article>
+ <article class="card"><h3>Цифровой носитель</h3><p>На цифровом носителе данные представлены в форме, которую компьютер обрабатывает как цифровой код.</p><div class="example">SSD, флеш-карта, CD/DVD, магнитный жёсткий диск.</div></article>
+ <article class="card"><h3>Аналоговый носитель</h3><p>В рамках формулировок исходного теста к аналоговым отнесены традиционные материальные носители: бумага, папирус, блокнот, камень и т. п.</p><div class="note">Важно: классификация носителей может зависеть от курса. Здесь ответы привязаны именно к вашему документу.</div></article>
+</div>
+ <div class="practice-head"><span>Практика по документу</span><b>2 заданий</b></div>
+ <div class="questions"><div class="question" data-q="19" data-type="multi"><div class="qnum">Вопрос 19</div><div class="qtext">Выберите из списка все цифровые носители информации:</div><label class="option"><input type="checkbox" name="q19" value="0"><span>блокнот</span></label><label class="option"><input type="checkbox" name="q19" value="1"><span>твердотельный жесткий диск</span></label><label class="option"><input type="checkbox" name="q19" value="2"><span>камень</span></label><label class="option"><input type="checkbox" name="q19" value="3"><span>парта</span></label><label class="option"><input type="checkbox" name="q19" value="4"><span>оптический диск (CD, DVD)</span></label><label class="option"><input type="checkbox" name="q19" value="5"><span>папирус</span></label><label class="option"><input type="checkbox" name="q19" value="6"><span>магнитный жесткий диск</span></label><label class="option"><input type="checkbox" name="q19" value="7"><span>перфокарта</span></label><label class="option"><input type="checkbox" name="q19" value="8"><span>флеш карта</span></label><button class="check-btn" onclick="checkChoice(19, [1, 4, 6, 7, 8], 'multi')">Проверить</button><div class="feedback" id="fb19"></div></div><div class="question" data-q="53" data-type="multi"><div class="qnum">Вопрос 53</div><div class="qtext">Выберите из списка все аналоговые носители информации:</div><label class="option"><input type="checkbox" name="q53" value="0"><span>перфокарта</span></label><label class="option"><input type="checkbox" name="q53" value="1"><span>камень</span></label><label class="option"><input type="checkbox" name="q53" value="2"><span>бумага</span></label><label class="option"><input type="checkbox" name="q53" value="3"><span>твердотельный жесткий диск</span></label><label class="option"><input type="checkbox" name="q53" value="4"><span>папирус</span></label><label class="option"><input type="checkbox" name="q53" value="5"><span>блокнот</span></label><label class="option"><input type="checkbox" name="q53" value="6"><span>парта</span></label><label class="option"><input type="checkbox" name="q53" value="7"><span>оптический диск (CD, DVD)</span></label><label class="option"><input type="checkbox" name="q53" value="8"><span>флеш карта</span></label><label class="option"><input type="checkbox" name="q53" value="9"><span>магнитный диск</span></label><button class="check-btn" onclick="checkChoice(53, [1, 2, 4, 5, 6], 'multi')">Проверить</button><div class="feedback" id="fb53"></div></div></div>
+</section>
+<section id="units" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Подтема</span><h2>Единицы информации</h2><p>Сначала разберите теорию и примеры, затем выполните вопросы из исходного документа.</p></div></div>
+ 
+<div class="theory-grid">
+ <article class="card"><h3>Бит и байт</h3><p><b>Бит</b> — минимальная единица информации. Он принимает одно из двух значений: 0 или 1.</p><p><b>1 байт = 8 бит.</b></p></article>
+ <article class="card"><h3>Килобайт, мегабайт, гигабайт</h3><p>В задачах этого теста используется двоичный пересчёт:</p>
+ <div class="formula">1 Кбайт = 1024 байта<br>1 Мбайт = 1024 Кбайта<br>1 Гбайт = 1024 Мбайта<br>1 Тбайт = 1024 Гбайта</div></article>
+ <article class="card"><h3>Как переводить единицы?</h3><p>Переходим к меньшей единице — <b>умножаем</b>. К большей — <b>делим</b>.</p>
+ <div class="example"><b>Пример:</b> 2 Кбайт = 2 · 1024 = 2048 байт = 2048 · 8 = 16384 бит.</div></article>
+ <article class="card"><h3>Как сравнивать?</h3><p>Сначала переведите величины в одну и ту же единицу.</p>
+ <div class="example">2 Мбайт = 2048 Кбайт. 2048 : 64 = 32. Значит, 2 Мбайт в 32 раза больше 64 Кбайт.</div></article>
+</div>
+ <div class="practice-head"><span>Практика по документу</span><b>5 заданий</b></div>
+ <div class="questions"><div class="question" data-q="14" data-type="single"><div class="qnum">Вопрос 14</div><div class="qtext">Какая единица измерения информации больше: 1 Гб или 1024 Мб?</div><label class="option"><input type="radio" name="q14" value="0"><span>1024 Мб</span></label><label class="option"><input type="radio" name="q14" value="1"><span>1 Гб</span></label><label class="option"><input type="radio" name="q14" value="2"><span>они равны</span></label><button class="check-btn" onclick="checkChoice(14, [2], 'single')">Проверить</button><div class="feedback" id="fb14"></div></div><div class="question" data-q="33" data-type="order"><div class="qnum">Вопрос 33</div><div class="qtext">Расположите единицы измерения информации в порядке возрастания:</div><div class="order-help">Введите номера элементов от меньшего к большему.</div><div class="order-item"><b>1</b> — 1030 битов</div><div class="order-item"><b>2</b> — 1 Тб</div><div class="order-item"><b>3</b> — 10 Кб</div><div class="order-item"><b>4</b> — 20480 байт</div><div class="order-item"><b>5</b> — 0,4 Мб</div><div class="answer-row"><input class="text-answer" id="in33" placeholder="Например: 2, 1, 3, 4, 5"><button class="check-btn" onclick="checkInput(33, "1,3,4,5,2")">Проверить</button></div><div class="feedback" id="fb33"></div></div><div class="question" data-q="41" data-type="input"><div class="qnum">Вопрос 41</div><div class="qtext">Сколько бит в 1 Кб?</div><div class="answer-row"><input class="text-answer" id="in41" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(41, "8192")">Проверить</button></div><div class="feedback" id="fb41"></div></div><div class="question" data-q="61" data-type="input"><div class="qnum">Вопрос 61</div><div class="qtext">Во сколько раз 2 Мб больше, чем 64 Кб? (В ответ запишите только число)</div><div class="answer-row"><input class="text-answer" id="in61" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(61, "32")">Проверить</button></div><div class="feedback" id="fb61"></div></div><div class="question" data-q="93" data-type="single"><div class="qnum">Вопрос 93</div><div class="qtext">За минимальную единицу измерения информации принят:</div><label class="option"><input type="radio" name="q93" value="0"><span>1 Кб</span></label><label class="option"><input type="radio" name="q93" value="1"><span>1 Тб</span></label><label class="option"><input type="radio" name="q93" value="2"><span>1 бит/с</span></label><label class="option"><input type="radio" name="q93" value="3"><span>1 бит</span></label><label class="option"><input type="radio" name="q93" value="4"><span>1 байт</span></label><label class="option"><input type="radio" name="q93" value="5"><span>1 Кбит</span></label><button class="check-btn" onclick="checkChoice(93, [3], 'single')">Проверить</button><div class="feedback" id="fb93"></div></div></div>
+</section>
+<section id="alphabet" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Подтема</span><h2>Алфавит и объём сообщения</h2><p>Сначала разберите теорию и примеры, затем выполните вопросы из исходного документа.</p></div></div>
+ 
+<div class="theory-grid">
+ <article class="card"><h3>Алфавит и его мощность</h3><p><b>Алфавит</b> — набор символов, которые могут использоваться в сообщении. <b>Мощность алфавита N</b> — количество символов в нём.</p>
+ <div class="example">В алфавите {0,1} мощность N=2. В условном алфавите из 16 знаков N=16.</div></article>
+ <article class="card"><h3>Сколько бит на один символ?</h3><p>Если все символы кодируются одинаковым числом бит:</p><div class="formula">i = log₂N</div>
+ <p>Для школьных задач удобно помнить:</p><div class="chips"><span>N=2 → i=1</span><span>N=4 → i=2</span><span>N=8 → i=3</span><span>N=16 → i=4</span><span>N=32 → i=5</span><span>N=64 → i=6</span><span>N=256 → i=8</span></div></article>
+ <article class="card"><h3>Объём сообщения</h3><div class="formula">I = K · i</div><p><b>I</b> — информационный объём; <b>K</b> — число символов; <b>i</b> — бит на символ.</p>
+ <div class="example"><b>Пример:</b> 32 символа, алфавит 16 знаков. i=4 бит. I=32·4=128 бит.</div></article>
+ <article class="card"><h3>Обратные задачи</h3><p>Если известны I и K: <b>i = I/K</b>, затем <b>N = 2ⁱ</b>. Если известны I и i: <b>K = I/i</b>.</p>
+ <div class="example">300 бит на 100 символов: i=3 бита, значит N=2³=8.</div></article>
+ <article class="card"><h3>Не забудьте единицы</h3><p>Перед использованием формулы приведите объём к битам.</p><div class="example">1,5 Кбайта = 1,5·1024·8 = 12288 бит.</div></article>
+</div>
+ <div class="practice-head"><span>Практика по документу</span><b>7 заданий</b></div>
+ <div class="questions"><div class="question" data-q="3" data-type="input"><div class="qnum">Вопрос 3</div><div class="qtext">Информационное сообщение объемом 300 бит содержит 100 символов. Какова мощность алфавита?</div><div class="answer-row"><input class="text-answer" id="in3" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(3, "8")">Проверить</button></div><div class="feedback" id="fb3"></div></div><div class="question" data-q="10" data-type="input"><div class="qnum">Вопрос 10</div><div class="qtext">Сколько символов содержит сообщение, написанное с помощью 16-символьного алфавита, если объем его составил 3/16 Кбайта?</div><div class="answer-row"><input class="text-answer" id="in10" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(10, "384")">Проверить</button></div><div class="feedback" id="fb10"></div></div><div class="question" data-q="30" data-type="single"><div class="qnum">Вопрос 30</div><div class="qtext">Алфавит языка состоит из 16 знаков. Сколько бит информации несет сообщение длиной 32 символа?</div><label class="option"><input type="radio" name="q30" value="0"><span>512</span></label><label class="option"><input type="radio" name="q30" value="1"><span>128</span></label><label class="option"><input type="radio" name="q30" value="2"><span>4</span></label><label class="option"><input type="radio" name="q30" value="3"><span>64</span></label><label class="option"><input type="radio" name="q30" value="4"><span>2</span></label><button class="check-btn" onclick="checkChoice(30, [1], 'single')">Проверить</button><div class="feedback" id="fb30"></div></div><div class="question" data-q="38" data-type="input"><div class="qnum">Вопрос 38</div><div class="qtext">Информационное сообщение объемом 1,5 Кбайта содержит 3072 символа. Сколько символов содержит алфавит, с помощью которого было записано сообщение?</div><div class="answer-row"><input class="text-answer" id="in38" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(38, "16")">Проверить</button></div><div class="feedback" id="fb38"></div></div><div class="question" data-q="72" data-type="input"><div class="qnum">Вопрос 72</div><div class="qtext">Какое количество информации в битах будет содержаться на странице печатного текста при использовании 32-х символьного алфавита (на странице 60 строк по 56 символов)?</div><div class="answer-row"><input class="text-answer" id="in72" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(72, "16800")">Проверить</button></div><div class="feedback" id="fb72"></div></div><div class="question" data-q="105" data-type="input"><div class="qnum">Вопрос 105</div><div class="qtext">Имеется два текста на разных языках. Первый текст использует 32-символьный алфавит и содержит 200 символов, второй — 16-символьный алфавит и содержит 240 символов. На сколько байтов отличаются информационные объемы текстов? (В ответ напишите только число.)</div><div class="answer-row"><input class="text-answer" id="in105" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(105, "5")">Проверить</button></div><div class="feedback" id="fb105"></div></div><div class="question" data-q="106" data-type="input"><div class="qnum">Вопрос 106</div><div class="qtext">Для записи сообщения использовался 64-символьный алфавит. Каждая страница содержит 30 строк. Все сообщение содержит 8775 байт информации и занимает 6 страниц. Сколько символов в строке?</div><div class="answer-row"><input class="text-answer" id="in106" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(106, "65")">Проверить</button></div><div class="feedback" id="fb106"></div></div></div>
+</section>
+<section id="probability" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Подтема</span><h2>Количество информации и вероятность</h2><p>Сначала разберите теорию и примеры, затем выполните вопросы из исходного документа.</p></div></div>
+ 
+<div class="theory-grid">
+ <article class="card"><h3>Информация уменьшает неопределённость</h3><p>Чем менее ожидаемо событие, тем больше информации несёт сообщение о том, что оно произошло.</p></article>
+ <article class="card"><h3>Равновероятные варианты</h3><p>Если есть <b>N равновероятных вариантов</b>, то количество информации:</p><div class="formula">I = log₂N</div>
+ <div class="example">128 равновероятных мест → log₂128 = 7 бит.</div></article>
+ <article class="card"><h3>Событие с вероятностью p</h3><p>Для школьных задач используется:</p><div class="formula">I = −log₂p = log₂(1/p)</div>
+ <div class="example">Вероятность достать чёрный шар: 8/(8+24)=1/4. Тогда I=log₂4=2 бита.</div></article>
+ <article class="card"><h3>Обратная задача</h3><p>Если сообщение несёт I бит, то вероятность события:</p><div class="formula">p = 1 / 2ᴵ</div>
+ <div class="example">2 бита → p=1/4. Если белых шаров четверть всех шаров, а чёрных 18 = 3/4, то всего 24 шара.</div></article>
+</div>
+ <div class="practice-head"><span>Практика по документу</span><b>4 заданий</b></div>
+ <div class="questions"><div class="question" data-q="5" data-type="input"><div class="qnum">Вопрос 5</div><div class="qtext">В корзине лежат 8 черных, 24 белых шара. Сколько информации несет сообщение о том, что достали черный шар?</div><div class="answer-row"><input class="text-answer" id="in5" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(5, "2")">Проверить</button></div><div class="feedback" id="fb5"></div></div><div class="question" data-q="43" data-type="input"><div class="qnum">Вопрос 43</div><div class="qtext">В школьной библиотеке 16 стеллажей с книгами. На каждом стеллаже 8 полок. Библиотекарь сообщил Пете, что нужная ему книга находится на пятом стеллаже на третьей сверху полке. Какое количество бит информации библиотекарь передал Пете?</div><div class="answer-row"><input class="text-answer" id="in43" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(43, "7")">Проверить</button></div><div class="feedback" id="fb43"></div></div><div class="question" data-q="48" data-type="single"><div class="qnum">Вопрос 48</div><div class="qtext">Что рассматривается как мера уменьшения неопределённости знания при получении информационных сообщений?</div><label class="option"><input type="radio" name="q48" value="0"><span>первоначальная ситуация</span></label><label class="option"><input type="radio" name="q48" value="1"><span>точка отсчета</span></label><label class="option"><input type="radio" name="q48" value="2"><span>система управления</span></label><label class="option"><input type="radio" name="q48" value="3"><span>количество информации</span></label><label class="option"><input type="radio" name="q48" value="4"><span>функционирование</span></label><button class="check-btn" onclick="checkChoice(48, [3], 'single')">Проверить</button><div class="feedback" id="fb48"></div></div><div class="question" data-q="88" data-type="input"><div class="qnum">Вопрос 88</div><div class="qtext">В корзине лежат белые и черные шары. Среди них 18 черных шаров. Сообщение о том, что из корзины достали белый шар, несет 2 бита информации. Сколько всего в корзине шаров?</div><div class="answer-row"><input class="text-answer" id="in88" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(88, "24")">Проверить</button></div><div class="feedback" id="fb88"></div></div></div>
+</section>
+<section id="coding" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Подтема</span><h2>Кодирование текста</h2><p>Сначала разберите теорию и примеры, затем выполните вопросы из исходного документа.</p></div></div>
+ 
+<div class="theory-grid">
+ <article class="card"><h3>Зачем кодировать текст?</h3><p>Компьютер хранит данные в двоичном виде. Поэтому каждому символу сопоставляется числовой код.</p><div class="example">Буква, цифра, пробел и знак препинания — всё это символы, которым нужен код.</div></article>
+ <article class="card"><h3>ASCII и Unicode</h3><p><b>ASCII</b> создавался для ограниченного набора символов. <b>Unicode</b> предназначен для представления символов множества письменных систем мира.</p><div class="note">В вопросе из документа правильный вариант — Unicode.</div></article>
+ <article class="card"><h3>Фиксированное число бит на символ</h3><p>Если в условии сказано, что каждый символ кодируется 8 битами, то один символ занимает 1 байт.</p><div class="example">«ИНФОРМАТИКА» содержит 11 символов → 11 байт при 8 битах на символ.</div></article>
+</div>
+ <div class="practice-head"><span>Практика по документу</span><b>2 заданий</b></div>
+ <div class="questions"><div class="question" data-q="51" data-type="single"><div class="qnum">Вопрос 51</div><div class="qtext">Какая кодировка поддерживает все письменные языки мира?</div><label class="option"><input type="radio" name="q51" value="0"><span>ISO-8</span></label><label class="option"><input type="radio" name="q51" value="1"><span>Win-1251</span></label><label class="option"><input type="radio" name="q51" value="2"><span>ASCII</span></label><label class="option"><input type="radio" name="q51" value="3"><span>Unicode</span></label><button class="check-btn" onclick="checkChoice(51, [3], 'single')">Проверить</button><div class="feedback" id="fb51"></div></div><div class="question" data-q="86" data-type="input"><div class="qnum">Вопрос 86</div><div class="qtext">Какой вес в байтах имеет слово «ИНФОРМАТИКА» (без кавычек), если каждый символ кодируется 8 битами?</div><div class="answer-row"><input class="text-answer" id="in86" placeholder="Введите ответ"><button class="check-btn" onclick="checkInput(86, "11")">Проверить</button></div><div class="feedback" id="fb86"></div></div></div>
+</section>
+<section id="final" class="tab-pane">
+ <div class="hero small"><div><span class="eyebrow">Финал</span><h2>Итог занятия</h2><p>Проверьте прогресс по всем вкладкам. Можно вернуться к любой подтеме и исправить ответы.</p></div></div>
+ <div class="summary-card">
+  <div class="score-big"><span id="scoreNow">0</span><small>/ <span id="scoreTotal">0</span></small></div>
+  <div><h3>Результат</h3><p id="scoreText">Ответьте на вопросы в тематических вкладках.</p><div class="progress"><div id="progressBar"></div></div></div>
+ </div>
+ <div class="card"><h3>Что нужно уметь после занятия</h3>
+  <ul class="checklist"><li>различать виды информации по способу восприятия и форме представления;</li><li>называть основные информационные процессы;</li><li>переводить биты, байты, Кбайты, Мбайты и Гбайты;</li><li>находить i, N, K и I в задачах на алфавит;</li><li>решать простые задачи через вероятность события;</li><li>понимать назначение кодировок и роль Unicode.</li></ul>
+ </div>
+ <button class="reset" onclick="resetAll()">Сбросить все ответы</button>
+</section>
+</main>
+</div>
+<script>
+const state={};
+const total=27;
+
+function showTab(id){
+ document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
+ document.getElementById(id).classList.add('active');
+ window.scrollTo({top:0,behavior:'smooth'});
+ updateScore();
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+document.getElementById('basics').classList.add('active');
+
+function norm(s){return String(s).trim().toLowerCase().replace(/\s+/g,'').replace(/,/g,'.');}
+function mark(n,ok,msg){
+ state[n]=ok;
+ const fb=document.getElementById('fb'+n);
+ fb.textContent=msg || (ok?'Верно!':'Есть ошибка. Попробуйте ещё раз.');
+ fb.className='feedback '+(ok?'ok':'bad');
+ updateScore();
+}
+function checkChoice(n,ans,type){
+ const box=document.querySelector('[data-q="'+n+'"]');
+ const chosen=[...box.querySelectorAll('input:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+ const a=[...ans].sort((a,b)=>a-b);
+ const ok=chosen.length===a.length && chosen.every((v,i)=>v===a[i]);
+ mark(n,ok,ok?'Верно!':'Ответ пока неверный.');
+}
+function checkInput(n,answer){
+ const v=document.getElementById('in'+n).value;
+ let ok;
+ if(String(answer).includes(',')) {
+   const tidy=x=>x.split(',').map(z=>z.trim()).filter(Boolean).join(',');
+   ok=tidy(v)===tidy(String(answer));
+ } else {
+   ok=norm(v)===norm(answer);
+ }
+ mark(n,ok,ok?'Верно!':'Проверь вычисления и попробуйте снова.');
+}
+function checkMatch(n){
+ const box=document.querySelector('[data-q="'+n+'"]');
+ const sels=[...box.querySelectorAll('select')];
+ const ok=sels.every(s=>s.value===s.dataset.correct);
+ mark(n,ok,ok?'Все соответствия верны!':'Есть неверное соответствие.');
+}
+function updateScore(){
+ const score=Object.values(state).filter(Boolean).length;
+ document.getElementById('sideScore').textContent=score;
+ document.getElementById('scoreNow').textContent=score;
+ document.getElementById('scoreTotal').textContent=total;
+ const p=Math.round(score/total*100);
+ document.getElementById('progressBar').style.width=p+'%';
+ const t=document.getElementById('scoreText');
+ if(score===0) t.textContent='Ответьте на вопросы в тематических вкладках.';
+ else if(p<50) t.textContent='Начало положено. Вернитесь к теории в тех вкладках, где появились ошибки.';
+ else if(p<80) t.textContent='Хорошая база. Осталось закрепить несколько подтем.';
+ else if(p<100) t.textContent='Очень хороший результат. Проверьте оставшиеся задания.';
+ else t.textContent='Все задания выполнены верно.';
+}
+function resetAll(){
+ for(const k in state) delete state[k];
+ document.querySelectorAll('input').forEach(x=>{if(x.type==='radio'||x.type==='checkbox')x.checked=false; else x.value='';});
+ document.querySelectorAll('select').forEach(x=>x.value='');
+ document.querySelectorAll('.feedback').forEach(x=>{x.textContent='';x.className='feedback';});
+ updateScore();
+}
+updateScore();
+</script>
+</body></html>
