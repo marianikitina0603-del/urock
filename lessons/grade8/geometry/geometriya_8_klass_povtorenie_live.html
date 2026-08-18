@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Повторение геометрии за 8 класс</title>
+</head>
+<body>
+  <div id="status" style="font-family:Arial,sans-serif;padding:24px">Загрузка актуальной версии…</div>
+  <script>
+  (async()=>{
+    try{
+      const url='https://raw.githubusercontent.com/marianikitina0603-del/urock/main/lessons/grade8/geometry/geometriya_8_klass_povtorenie.html?ts='+Date.now();
+      const res=await fetch(url,{cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const html=await res.text();
+      document.open();
+      document.write(html);
+      document.close();
+    }catch(e){
+      document.getElementById('status').textContent='Не удалось загрузить актуальную версию: '+e.message;
+    }
+  })();
+  </script>
+</body>
+</html>
