@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Дело о пропавших формулах — свойства корня и степени</title>
+<style>
+:root{
+  --bg:#101821;--bg2:#172635;--panel:#1d2b38;--panel2:#24394a;--ink:#fffaf0;--muted:#e2e9ed;
+  --gold:#d9b46b;--gold2:#f2d699;--red:#d96a64;--green:#6ac28f;--blue:#75b8d4;--violet:#9b8bd8;
+  --shadow:0 18px 50px rgba(0,0,0,.35);--radius:22px;
+}
+*{box-sizing:border-box} html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:
+radial-gradient(circle at 20% 10%,rgba(217,180,107,.08),transparent 28%),
+linear-gradient(145deg,var(--bg),#0a1118 70%);color:var(--ink)}
+body{overflow-x:hidden}
+button,input,select{font:inherit}
+button{min-height:48px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
+.app{min-height:100vh;position:relative;overflow:hidden}
+.app:before{content:"";position:fixed;inset:0;pointer-events:none;background:
+linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:40px 40px;mask-image:linear-gradient(to bottom,transparent,black 15%,black 85%,transparent)}
+.screen{display:none;min-height:100vh;padding:clamp(18px,3vw,42px);animation:fadeIn .45s ease}.screen.active{display:flex;flex-direction:column}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.glow{box-shadow:0 0 0 1px rgba(217,180,107,.2),0 0 35px rgba(217,180,107,.08),var(--shadow)}
+.card{background:linear-gradient(180deg,rgba(37,57,74,.96),rgba(24,38,50,.96));border:1px solid rgba(217,180,107,.22);border-radius:var(--radius);box-shadow:var(--shadow)}
+.title{font-size:clamp(2rem,5vw,4.3rem);line-height:1.02;margin:0;letter-spacing:-.03em}
+.subtitle{color:var(--muted);font-size:clamp(1rem,2vw,1.2rem);line-height:1.55}
+.btn{border:0;border-radius:15px;padding:13px 20px;font-weight:800;cursor:pointer;transition:.2s transform,.2s filter,.2s background;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.06)}.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1d1a13}.btn.secondary{background:#31485a;color:var(--ink);border:1px solid rgba(255,255,255,.1)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(255,255,255,.18)}.btn.danger{background:rgba(217,106,100,.18);color:#ffd7d3;border:1px solid rgba(217,106,100,.45)}
+.top-actions{display:flex;gap:10px;flex-wrap:wrap}
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:30px;align-items:center;max-width:1220px;width:100%;margin:auto}
+.hero-copy{padding:clamp(26px,5vw,54px)}
+.kicker{color:var(--gold2);font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:.8rem}
+.case-board{min-height:490px;position:relative;padding:28px;overflow:hidden;background:linear-gradient(160deg,#303c43,#17232d 70%)}
+.case-board:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.06),transparent 28%),repeating-linear-gradient(0deg,transparent 0 32px,rgba(255,255,255,.015) 33px)}
+.note{position:absolute;background:#eadfbf;color:#302a20;padding:15px 17px;width:170px;min-height:110px;box-shadow:0 10px 25px rgba(0,0,0,.35);font-weight:800;transform:rotate(-3deg)}
+.note.n2{right:28px;top:55px;transform:rotate(4deg);background:#d9e7de}.note.n3{left:45px;bottom:65px;transform:rotate(2deg);background:#e7d7d3}.note.n4{right:42px;bottom:48px;transform:rotate(-5deg);background:#d8dfed}
+.string{position:absolute;height:2px;background:rgba(217,106,100,.8);transform-origin:left center;box-shadow:0 0 4px rgba(217,106,100,.6)}
+.s1{width:210px;left:170px;top:170px;transform:rotate(18deg)}.s2{width:235px;left:155px;top:290px;transform:rotate(-13deg)}
+.detective{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:180px;height:250px;display:flex;align-items:center;justify-content:center}
+.detective .head{width:96px;height:92px;border-radius:46% 46% 42% 42%;background:#d8ad89;position:absolute;top:42px;z-index:2;box-shadow:inset -10px -8px 0 rgba(0,0,0,.08)}
+.detective .hat{position:absolute;top:12px;width:125px;height:52px;background:#6a5740;border-radius:60px 60px 18px 18px;z-index:3}.detective .hat:after{content:"";position:absolute;left:-18px;right:-18px;bottom:-8px;height:14px;background:#4a3b2c;border-radius:20px}
+.detective .body{position:absolute;bottom:0;width:145px;height:135px;background:#7c6a4d;clip-path:polygon(20% 0,80% 0,100% 100%,0 100%);border-radius:18px 18px 8px 8px}
+.detective .magnify{position:absolute;right:-5px;top:112px;width:68px;height:68px;border:9px solid var(--gold2);border-radius:50%;z-index:4}.detective .magnify:after{content:"";position:absolute;width:54px;height:10px;background:var(--gold2);right:-42px;bottom:-24px;transform:rotate(48deg);border-radius:8px}
+.detective .eye{position:absolute;top:78px;width:10px;height:10px;background:#2b2520;border-radius:50%;z-index:4}.detective .e1{left:70px}.detective .e2{right:70px}.detective.happy .head:after{content:"⌣";position:absolute;left:37px;top:52px;color:#6b3b2c;font-size:30px}.detective.sad .head:after{content:"︵";position:absolute;left:35px;top:53px;color:#6b3b2c;font-size:30px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.rule{padding:16px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);color:var(--muted)}
+.footer-sign{margin-top:auto;padding-top:20px;color:#cbd5db;font-size:.85rem;text-align:center}
+.game-shell{max-width:1280px;width:100%;margin:auto;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.hud{grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:15px;align-items:center}
+.progress-wrap{height:14px;background:#0d151c;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}.progress{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .35s ease}
+.metrics{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.metric{padding:9px 12px;border-radius:12px;background:#1e303f;border:1px solid rgba(255,255,255,.08);font-weight:800;font-size:.93rem}
+.question-card{padding:clamp(20px,3.2vw,36px);min-height:560px;position:relative;overflow:hidden}.question-card:after{content:"";position:absolute;width:220px;height:220px;border:1px solid rgba(217,180,107,.09);border-radius:50%;right:-80px;top:-80px;box-shadow:0 0 0 35px rgba(217,180,107,.025),0 0 0 70px rgba(217,180,107,.018);pointer-events:none}
+.qhead{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}.stage-badge{display:inline-flex;padding:8px 11px;border-radius:999px;background:rgba(117,184,212,.12);border:1px solid rgba(117,184,212,.35);color:#cceeff;font-weight:800;font-size:.85rem}
+.qnum{color:var(--gold2);font-weight:900}.question{font-size:clamp(1.2rem,2.7vw,1.8rem);line-height:1.45;margin:18px 0 22px}.math{font-family:"Cambria Math","Times New Roman",serif}.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.05;margin:0 .16em}.frac .top{border-bottom:1.8px solid currentColor;padding:0 .17em .07em}.frac .bottom{padding:.07em .17em 0}.sqrt{display:inline-flex;align-items:flex-start}.sqrt:before{content:"√";font-size:1.15em;line-height:1}.rad{border-top:1.5px solid currentColor;padding:0 .12em}
+.options{display:grid;gap:12px}.option{width:100%;text-align:left;background:#263b4c;color:var(--ink);border:1px solid rgba(255,255,255,.1);border-radius:15px;padding:15px 17px;cursor:pointer;min-height:54px;transition:.2s}.option:hover{background:#2d465a;transform:translateX(2px)}.option.selected{border-color:var(--gold2);box-shadow:0 0 0 2px rgba(217,180,107,.15) inset}.option.correct{background:rgba(106,194,143,.16);border-color:var(--green)}.option.wrong{background:rgba(217,106,100,.14);border-color:var(--red)}.option.missed{border-color:var(--gold);box-shadow:0 0 0 2px rgba(217,180,107,.15) inset}
+.input-row{display:flex;gap:10px;flex-wrap:wrap}.answer-input{flex:1;min-width:180px;background:#0f1a22;color:var(--ink);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px 16px;min-height:52px;font-size:1.05rem}
+.solution-steps{display:grid;gap:10px}.step{padding:14px 16px;border:1px solid rgba(255,255,255,.11);border-radius:14px;background:#223543;cursor:pointer}.step:hover{background:#294050}.step.correct{border-color:var(--green);background:rgba(106,194,143,.13)}.step.wrong{border-color:var(--red);background:rgba(217,106,100,.12)}
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pair-col{display:grid;gap:10px}.pair-item{padding:13px;border-radius:13px;background:#263b4c;border:1px solid rgba(255,255,255,.1);cursor:pointer;min-height:50px}.pair-item.active{border-color:var(--gold2)}.pair-item.locked{opacity:.58;background:rgba(106,194,143,.11);border-color:var(--green)}
+.feedback{margin-top:18px;padding:15px 17px;border-radius:14px;display:none;line-height:1.45}.feedback.show{display:block;animation:fadeIn .25s ease}.feedback.ok{background:rgba(106,194,143,.13);border:1px solid rgba(106,194,143,.35)}.feedback.bad{background:rgba(217,106,100,.13);border:1px solid rgba(217,106,100,.35)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.actions .spacer{flex:1}
+.side{padding:18px;position:sticky;top:18px}.portrait{height:235px;position:relative;border-radius:18px;background:radial-gradient(circle at 50% 30%,rgba(217,180,107,.12),transparent 45%),#14232e;overflow:hidden}.portrait .detective{transform:translate(-50%,-47%) scale(.72)}.speech{margin-top:12px;padding:14px;background:#182936;border-radius:14px;border:1px solid rgba(255,255,255,.08);color:var(--muted);min-height:96px;line-height:1.4}.achievements{display:grid;gap:8px;margin-top:14px}.achievement{font-size:.9rem;padding:9px 11px;border-radius:11px;background:#172734;color:#c5d0d6;border:1px solid rgba(255,255,255,.06)}.achievement.unlocked{color:var(--ink);background:rgba(217,180,107,.12);border-color:rgba(217,180,107,.35)}
+.audio{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px;align-items:center}.audio input{width:100%}
+.modal{position:fixed;inset:0;background:rgba(3,8,12,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}.modal.show{display:flex}.modal-box{max-width:720px;width:100%;max-height:85vh;overflow:auto;padding:24px}.modal-box h3{margin-top:0}.modal-close{float:right}
+.final{max-width:900px;width:100%;margin:auto;text-align:center;padding:clamp(24px,5vw,54px)}.final h2{font-size:clamp(2rem,4vw,3.5rem);margin:.2em 0}.big-score{font-size:clamp(3.2rem,8vw,6.5rem);font-weight:950;color:var(--gold2);line-height:1}.final-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.final-stat{padding:18px;background:rgba(255,255,255,.045);border-radius:16px;border:1px solid rgba(255,255,255,.08)}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:100}.confetti i{position:absolute;top:-20px;width:10px;height:18px;background:var(--gold);animation:fall linear forwards}@keyframes fall{to{transform:translate(var(--x),110vh) rotate(var(--r));opacity:.1}}
+.shake{animation:shake .35s ease}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pop{animation:pop .35s ease}@keyframes pop{50%{transform:scale(1.02)}}
+.toast{position:fixed;right:18px;bottom:18px;background:#263b4c;border:1px solid rgba(217,180,107,.35);padding:13px 16px;border-radius:13px;box-shadow:var(--shadow);z-index:120;display:none}.toast.show{display:block;animation:fadeIn .25s ease}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.case-board{min-height:390px}.game-shell{grid-template-columns:1fr}.side{position:relative;top:auto}.portrait{height:180px}.side .portrait .detective{transform:translate(-50%,-52%) scale(.58)}.hud{grid-template-columns:1fr}.metrics{justify-content:flex-start}}
+@media(max-width:620px){.screen{padding:12px}.hero-copy,.question-card,.final{padding:20px}.rules{grid-template-columns:1fr}.pairs{grid-template-columns:1fr}.final-grid{grid-template-columns:1fr}.metrics{gap:6px}.metric{font-size:.8rem;padding:7px 9px}.note{transform:scale(.8)!important}.case-board{min-height:340px}.detective{transform:translate(-50%,-50%) scale(.8)}.actions .spacer{display:none}.actions .btn{flex:1 1 auto}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+.card,.case-board,.side,.modal-box,.final,.metric,.option,.step,.pair-item,.speech,.achievement,.feedback,.toast{color:var(--ink)}
+.subtitle,.rule,.speech{color:var(--muted)}
+.option,.pair-item{font-weight:650}
+.answer-input::placeholder{color:#bfcbd2;opacity:1}
+.feedback.ok{color:#eafff1}.feedback.bad{color:#ffe9e7}
+.stage-badge{color:#e8f8ff}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="startScreen" class="screen active">
+    <div class="hero">
+      <div class="hero-copy card glow">
+        <div class="kicker">Интерактивное расследование • Алгебра • 9 класс</div>
+        <h1 class="title">Дело о пропавших формулах</h1>
+        <p class="subtitle">В архиве Академии исчезли ключевые правила работы со степенями и квадратными корнями. Следователь Арден нашёл 15 улик. Восстанови цепочку доказательств и вычисли, кто подменил формулы.</p>
+        <div class="rules">
+          <div class="rule"><b>🕵️ 15 улик</b><br>Разные механики: выбор, мультивыбор, истина/ложь, ввод, поиск ошибки и пары.</div>
+          <div class="rule"><b>💡 2 попытки</b><br>После ошибки Арден даст подсказку. Правильный ответ сразу не раскрывается.</div>
+          <div class="rule"><b>🏆 Досье</b><br>Собирай баллы, открывай достижения и выйди на один из двух финалов.</div>
+        </div>
+        <div class="top-actions">
+          <button id="startBtn" class="btn primary">🔎 Начать расследование</button>
+          <button id="resumeBtn" class="btn secondary" style="display:none">↩ Продолжить</button>
+          <button id="resetBtn" class="btn danger">🗑 Сбросить сохранение</button>
+          <button id="fsBtnStart" class="btn ghost">⛶ Полный экран</button>
+        </div>
+        <div class="footer-sign">Составитель: учитель математики • УМК Ю. Н. Макарычев и соавт.</div>
+      </div>
+      <div class="case-board card glow" aria-label="Детективная доска расследования">
+        <div class="note">Улика A<br><span class="math">a<sup>m</sup>·a<sup>n</sup>=?</span></div>
+        <div class="note n2">Улика B<br><span class="math">√(a²)=?</span></div>
+        <div class="note n3">Улика C<br>Степень<br>произведения</div>
+        <div class="note n4">Улика D<br>Область<br>допустимости</div>
+        <div class="string s1"></div><div class="string s2"></div>
+        <div class="detective happy" aria-hidden="true"><div class="hat"></div><div class="head"></div><div class="eye e1"></div><div class="eye e2"></div><div class="body"></div><div class="magnify"></div></div>
+      </div>
+    </div>
+  </section>
+  <section id="gameScreen" class="screen">
+    <div class="game-shell">
+      <div class="hud">
+        <div><div class="progress-wrap" aria-label="Прогресс"><div id="progress" class="progress"></div></div></div>
+        <div class="metrics">
+          <div class="metric">Улика <span id="qCounter">1/15</span></div>
+          <div class="metric">⭐ <span id="score">0</span></div>
+          <div class="metric">✅ <span id="correctCount">0</span></div>
+          <div class="metric">⚠️ <span id="errorCount">0</span></div>
+        </div>
+      </div>
+      <main id="questionCard" class="question-card card glow">
+        <div class="qhead"><div><span id="stageBadge" class="stage-badge">Этап</span></div><div class="qnum" id="difficulty">Сложность</div></div>
+        <div id="question" class="question"></div>
+        <div id="answerArea"></div>
+        <div id="feedback" class="feedback"></div>
+        <div class="actions">
+          <button id="hintBtn" class="btn ghost">💡 Подсказка</button>
+          <button id="solutionBtn" class="btn ghost" style="display:none">📜 Решение</button>
+          <div class="spacer"></div>
+          <button id="checkBtn" class="btn primary" style="display:none">Проверить</button>
+          <button id="nextBtn" class="btn primary" style="display:none">Следующая улика →</button>
+        </div>
+      </main>
+      <aside class="side card glow">
+        <div id="portrait" class="portrait"><div id="detective" class="detective happy" aria-hidden="true"><div class="hat"></div><div class="head"></div><div class="eye e1"></div><div class="eye e2"></div><div class="body"></div><div class="magnify"></div></div></div>
+        <div id="speech" class="speech">Следуй по уликам внимательно. Формулы здесь — доказательства.</div>
+        <div class="achievements">
+          <div id="ach1" class="achievement">🔒 Чистый след — 3 верных подряд</div>
+          <div id="ach2" class="achievement">🔒 Эксперт по корням — 5 верных</div>
+          <div id="ach3" class="achievement">🔒 Главный следователь — 12+ верных</div>
+        </div>
+        <div class="audio">
+          <input id="volume" type="range" min="0" max="1" step="0.05" value="0.35" aria-label="Громкость">
+          <button id="soundBtn" class="btn secondary" aria-label="Включить или выключить звук">🔊</button>
+        </div>
+        <div class="top-actions" style="margin-top:10px">
+          <button id="fsBtn" class="btn ghost">⛶</button>
+          <button id="quitBtn" class="btn ghost">⌂</button>
+        </div>
+        <div class="footer-sign">Составитель: учитель математики</div>
+      </aside>
+    </div>
+  </section>
+  <section id="finalScreen" class="screen">
+    <div class="final card glow">
+      <div class="kicker">Расследование завершено</div>
+      <h2 id="finalTitle">Дело раскрыто</h2>
+      <div id="finalScore" class="big-score">0/15</div>
+      <p id="finalText" class="subtitle"></p>
+      <div class="final-grid">
+        <div class="final-stat"><b id="fCorrect">0</b><br><span class="subtitle">верных</span></div>
+        <div class="final-stat"><b id="fErrors">0</b><br><span class="subtitle">ошибок</span></div>
+        <div class="final-stat"><b id="fPoints">0</b><br><span class="subtitle">баллов</span></div>
+      </div>
+      <div id="finalAwards" class="subtitle"></div>
+      <div class="top-actions" style="justify-content:center;margin-top:24px">
+        <button id="againBtn" class="btn primary">🔁 Играть снова</button>
+        <button id="homeBtn" class="btn secondary">⌂ На титульный экран</button>
+        <button id="fsBtnFinal" class="btn ghost">⛶ Полный экран</button>
+      </div>
+      <div class="footer-sign">Составитель: учитель математики • УМК Ю. Н. Макарычев и соавт.</div>
+    </div>
+  </section>
+</div>
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box card glow"><button id="modalClose" class="btn ghost modal-close">✕</button><h3 id="modalTitle">Подсказка</h3><div id="modalBody" class="subtitle"></div></div>
+</div>
+<div id="confetti" class="confetti"></div><div id="toast" class="toast"></div>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const STORAGE='detectiveRootsPowers_v1';
+const questions=[
+{type:'choice',stage:'Мозговой штурм',difficulty:'★',points:1,q:'Упростите: <span class="math">a<sup>3</sup> · a<sup>5</sup></span>.',options:['<span class="math">a<sup>8</sup></span>','<span class="math">a<sup>15</sup></span>','<span class="math">2a<sup>8</sup></span>','<span class="math">a<sup>2</sup></span>'],answer:0,hint:'При умножении степеней с одинаковым основанием показатели складываются.',solution:'<span class="math">a<sup>3</sup>·a<sup>5</sup>=a<sup>3+5</sup>=a<sup>8</sup></span>.'},
+{type:'choice',stage:'Мозговой штурм',difficulty:'★',points:1,q:'Найдите значение: <span class="math">(2<sup>3</sup>)<sup>2</sup></span>.',options:['32','64','16','12'],answer:1,hint:'При возведении степени в степень показатели перемножаются.',solution:'<span class="math">(2<sup>3</sup>)<sup>2</sup>=2<sup>6</sup>=64</span>.'},
+{type:'multi',stage:'Мульти-выбор',difficulty:'★★',points:1,q:'Выберите все тождества, верные при допустимых значениях переменных.',options:['<span class="math">a<sup>m</sup>a<sup>n</sup>=a<sup>m+n</sup></span>','<span class="math">(ab)<sup>n</sup>=a<sup>n</sup>b<sup>n</sup></span>','<span class="math">a<sup>m</sup>:a<sup>n</sup>=a<sup>m-n</sup>, a≠0</span>','<span class="math">a<sup>m</sup>+a<sup>n</sup>=a<sup>m+n</sup></span>'],answer:[0,1,2],hint:'Три правила относятся к умножению, делению и степени произведения. Сложение степеней так не работает.',solution:'Верны первые три равенства. Для суммы степеней общего правила <span class="math">a<sup>m</sup>+a<sup>n</sup>=a<sup>m+n</sup></span> нет.'},
+{type:'tf',stage:'Детектор истины',difficulty:'★',points:1,q:'Верно ли утверждение: <span class="math">√49 = ±7</span>?',answer:false,hint:'Знак квадратного корня обозначает арифметический, то есть неотрицательный корень.',solution:'<span class="math">√49=7</span>. Значения <span class="math">±7</span> появляются как решения уравнения <span class="math">x²=49</span>, но не как значение арифметического корня.'},
+{type:'input',stage:'Заполни пробел',difficulty:'★',points:1,q:'Вычислите: <span class="math">√144</span>.',answer:['12'],hint:'Найдите неотрицательное число, квадрат которого равен 144.',solution:'<span class="math">12²=144</span>, поэтому <span class="math">√144=12</span>.'},
+{type:'error',stage:'Сыщик: найди ошибку',difficulty:'★★',points:1,q:'В решении допущена ошибка. Нажмите на первый неверный шаг.',steps:['<span class="math">√(36·4)=√36·√4</span>','<span class="math">=6·2</span>','<span class="math">=8</span>'],answer:2,hint:'Проверьте последнее арифметическое действие.',solution:'Первые два шага верны: <span class="math">√144=6·2=12</span>. Ошибка — в равенстве <span class="math">6·2=8</span>.'},
+{type:'pairs',stage:'Диалог мудрецов',difficulty:'★★',points:1,q:'Сопоставьте выражения с результатами.',left:['<span class="math">√81</span>','<span class="math">3<sup>2</sup>·3<sup>4</sup></span>','<span class="math">(2a)<sup>2</sup></span>'],right:['<span class="math">4a²</span>','<span class="math">9</span>','<span class="math">3<sup>6</sup></span>'],pairs:[[0,1],[1,2],[2,0]],hint:'Используйте арифметический квадратный корень, сложение показателей при умножении и степень произведения.',solution:'<span class="math">√81=9</span>; <span class="math">3²·3⁴=3⁶</span>; <span class="math">(2a)²=4a²</span>.'},
+{type:'input',stage:'Заполни пробел',difficulty:'★★',points:1,q:'Упростите и впишите число: <span class="math">√(25·16)</span> = ___',answer:['20'],hint:'Можно вычислить произведение под корнем или применить свойство корня произведения.',solution:'<span class="math">√(25·16)=√25·√16=5·4=20</span>.'},
+{type:'tf',stage:'Детектор истины',difficulty:'★★',points:1,q:'Верно ли при <span class="math">x&lt;0</span>: <span class="math">√(x²)=x</span>?',answer:false,hint:'Арифметический квадратный корень всегда неотрицателен.',solution:'В общем случае <span class="math">√(x²)=|x|</span>. При <span class="math">x&lt;0</span> имеем <span class="math">|x|=-x</span>.'},
+{type:'choice',stage:'Мозговой штурм',difficulty:'★★',points:1,q:'Упростите при <span class="math">a≠0</span>: <span class="math">a<sup>9</sup>:a<sup>4</sup></span>.',options:['<span class="math">a<sup>13</sup></span>','<span class="math">a<sup>5</sup></span>','<span class="math">a<sup>36</sup></span>','<span class="math">a<sup>9/4</sup></span>'],answer:1,hint:'При делении степеней с одинаковым основанием показатели вычитаются.',solution:'<span class="math">a⁹:a⁴=a<sup>9−4</sup>=a⁵</span>.'},
+{type:'multi',stage:'Мульти-выбор',difficulty:'★★★',points:1,q:'Выберите выражения, равные <span class="math">12</span>.',options:['<span class="math">√144</span>','<span class="math">√(9·16)</span>','<span class="math">2³+2²</span>','<span class="math">3·2²</span>'],answer:[0,1,3],hint:'Вычислите каждое выражение отдельно.',solution:'<span class="math">√144=12</span>; <span class="math">√(9·16)=3·4=12</span>; <span class="math">2³+2²=8+4=12</span>; <span class="math">3·2²=12</span>. Следовательно, здесь фактически все четыре выражения равны 12.',overrideAnswer:[0,1,2,3]},
+{type:'error',stage:'Сыщик: найди ошибку',difficulty:'★★★',points:1,q:'Найдите первый неверный шаг в преобразовании.',steps:['<span class="math">(a³)⁴=a<sup>3+4</sup></span>','<span class="math">=a⁷</span>','Следовательно, показатель равен 7.'],answer:0,hint:'Вспомните правило возведения степени в степень.',solution:'Первый шаг неверен. Нужно перемножить показатели: <span class="math">(a³)⁴=a<sup>12</sup></span>.'},
+{type:'input',stage:'Заполни пробел',difficulty:'★★★',points:1,q:'При <span class="math">a≥0</span> упростите: <span class="math">√(49a²)</span>. Введите выражение.',answer:['7a','7*a','7 a'],hint:'Разложите корень произведения и используйте условие <span class="math">a≥0</span>.',solution:'<span class="math">√(49a²)=√49·√(a²)=7|a|=7a</span>, так как <span class="math">a≥0</span>.'},
+{type:'pairs',stage:'Диалог мудрецов',difficulty:'★★★',points:1,q:'Сопоставьте правило и его применение.',left:['Степень произведения','Деление степеней','Корень квадрата'],right:['<span class="math">a⁷:a²=a⁵</span>','<span class="math">√(t²)=|t|</span>','<span class="math">(3x)²=9x²</span>'],pairs:[[0,2],[1,0],[2,1]],hint:'Определите, какое основное правило демонстрирует каждый пример.',solution:'Степень произведения → <span class="math">(3x)²=9x²</span>; деление степеней → <span class="math">a⁷:a²=a⁵</span>; корень квадрата → <span class="math">√(t²)=|t|</span>.'},
+{type:'choice',stage:'Финальная улика',difficulty:'★★★',points:1,q:'Упростите при <span class="math">x&gt;0</span>: <span class="math">√(x⁶) : x²</span>.',options:['<span class="math">x</span>','<span class="math">x²</span>','<span class="math">x³</span>','<span class="math">1/x</span>'],answer:0,hint:'Представьте <span class="math">x⁶=(x³)²</span> и учтите условие <span class="math">x&gt;0</span>.',solution:'<span class="math">√(x⁶)=√((x³)²)=|x³|=x³</span>. Тогда <span class="math">x³:x²=x</span>.'}
+];
+questions[10].answer=questions[10].overrideAnswer;
+let state={index:0,score:0,correct:0,errors:0,streak:0,attempts:0,answered:false,ach:[false,false,false],sound:true,volume:.35,results:[]};
+let audioCtx=null,masterGain=null,musicTimer=null,pairState={left:null,right:null,matched:[]};
+function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE));if(s&&Number.isInteger(s.index))return s;}catch(e){}return null;}
+function resetState(){state={index:0,score:0,correct:0,errors:0,streak:0,attempts:0,answered:false,ach:[false,false,false],sound:true,volume:+$('#volume').value||.35,results:[]};pairState={left:null,right:null,matched:[]};save();}
+function showScreen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$('#'+id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+function initAudio(){if(audioCtx)return;try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();masterGain=audioCtx.createGain();masterGain.gain.value=state.volume;masterGain.connect(audioCtx.destination);startMusic();}catch(e){state.sound=false;}}
+function tone(freq=440,dur=.12,type='sine',vol=.12,delay=0){if(!state.sound||!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=0;o.connect(g);g.connect(masterGain);const t=audioCtx.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.start(t);o.stop(t+dur+.02);}
+function sfx(name){if(!state.sound)return;initAudio();if(name==='click')tone(250,.05,'square',.045);if(name==='ok'){tone(520,.12,'sine',.11);tone(690,.16,'sine',.1,.08);}if(name==='bad'){tone(180,.16,'sawtooth',.08);tone(140,.2,'sawtooth',.06,.08);}if(name==='open'){tone(360,.1,'triangle',.06);tone(480,.1,'triangle',.06,.08);}if(name==='win'){[523,659,784,1047].forEach((f,i)=>tone(f,.3,'sine',.11,i*.12));}if(name==='lose'){[260,220,180].forEach((f,i)=>tone(f,.28,'triangle',.07,i*.15));}}
+function startMusic(){if(musicTimer||!audioCtx)return;const seq=[196,246.94,293.66,246.94];let i=0;musicTimer=setInterval(()=>{if(state.sound)tone(seq[i++%seq.length],.5,'sine',.018)},900);}
+function toggleSound(){state.sound=!state.sound;$('#soundBtn').textContent=state.sound?'🔊':'🔇';if(state.sound){initAudio();if(audioCtx?.state==='suspended')audioCtx.resume();}save();}
+function setMood(m){$('#detective').classList.remove('happy','sad');$('#detective').classList.add(m);}
+function say(t){$('#speech').innerHTML=t;}
+function updateHud(){const n=state.index+1;$('#qCounter').textContent=n+'/'+questions.length;$('#score').textContent=state.score;$('#correctCount').textContent=state.correct;$('#errorCount').textContent=state.errors;$('#progress').style.width=(state.index/questions.length*100)+'%';state.ach.forEach((v,i)=>$('#ach'+(i+1)).classList.toggle('unlocked',v));}
+function render(){if(state.index>=questions.length){finish();return;}state.attempts=0;state.answered=false;pairState={left:null,right:null,matched:[]};const q=questions[state.index];updateHud();$('#stageBadge').textContent='🔍 '+q.stage;$('#difficulty').textContent=q.difficulty+' • '+q.points+' балл';$('#question').innerHTML='<span class="qnum">Улика '+(state.index+1)+'.</span> '+q.q;$('#feedback').className='feedback';$('#feedback').innerHTML='';$('#hintBtn').style.display='inline-flex';$('#solutionBtn').style.display='none';$('#nextBtn').style.display='none';$('#checkBtn').style.display='none';setMood('happy');say('Изучи улику. Не спеши: иногда важна не только формула, но и условие её применения.');const a=$('#answerArea');a.innerHTML='';if(q.type==='choice'){const box=document.createElement('div');box.className='options';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option';b.innerHTML=o;b.onclick=()=>answerChoice(i,b);box.appendChild(b)});a.appendChild(box)}if(q.type==='multi'){const box=document.createElement('div');box.className='options';q.options.forEach((o,i)=>{const b=document.createElement('button');b.className='option';b.dataset.i=i;b.innerHTML='☐ '+o;b.onclick=()=>{if(state.answered)return;b.classList.toggle('selected');b.innerHTML=(b.classList.contains('selected')?'☑ ':'☐ ')+o;sfx('click')};box.appendChild(b)});a.appendChild(box);$('#checkBtn').style.display='inline-flex';$('#checkBtn').onclick=checkMulti}if(q.type==='tf'){const box=document.createElement('div');box.className='options';[['✅ Верно',true],['❌ Неверно',false]].forEach(([t,v])=>{const b=document.createElement('button');b.className='option';b.textContent=t;b.onclick=()=>answerTF(v,b);box.appendChild(b)});a.appendChild(box)}if(q.type==='input'){a.innerHTML='<div class="input-row"><input id="answerInput" class="answer-input" autocomplete="off" inputmode="text" placeholder="Введите ответ" aria-label="Ответ"></div>';$('#checkBtn').style.display='inline-flex';$('#checkBtn').onclick=checkInput;$('#answerInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkInput()})}if(q.type==='error'){const box=document.createElement('div');box.className='solution-steps';q.steps.forEach((s,i)=>{const b=document.createElement('button');b.className='step';b.innerHTML=(i+1)+'. '+s;b.onclick=()=>answerError(i,b);box.appendChild(b)});a.appendChild(box)}if(q.type==='pairs'){renderPairs(q,a)}sfx('open');save();}
+function normalize(s){return String(s).trim().toLowerCase().replace(/\s+/g,'').replace(/,/g,'.').replace(/×/g,'*').replace(/²/g,'^2').replace(/³/g,'^3');}
+function equivalent(input,answers){const n=normalize(input);return answers.some(a=>normalize(a)===n)||numericEquivalent(n,answers);}
+function numericEquivalent(n,answers){const val=parseSimpleNumber(n);if(val===null)return false;return answers.some(a=>{const av=parseSimpleNumber(normalize(a));return av!==null&&Math.abs(av-val)<1e-9});}
+function parseSimpleNumber(s){if(/^[-+]?\d+(\.\d+)?$/.test(s))return Number(s);if(/^[-+]?\d+\/[-+]?\d+$/.test(s)){const [a,b]=s.split('/').map(Number);return b? a/b:null;}return null;}
+function answerChoice(i,b){if(state.answered)return;sfx('click');const q=questions[state.index];if(i===q.answer){b.classList.add('correct');success()}else{b.classList.add('wrong');fail('Этот вариант не подтверждает улику. Проверь правило ещё раз.')}}
+function answerTF(v,b){if(state.answered)return;sfx('click');const q=questions[state.index];if(v===q.answer){b.classList.add('correct');success()}else{b.classList.add('wrong');fail('Логическая проверка не пройдена. Вспомни точную формулировку свойства.')}}
+function answerError(i,b){if(state.answered)return;sfx('click');const q=questions[state.index];if(i===q.answer){b.classList.add('correct');success()}else{b.classList.add('wrong');fail('Этот шаг ещё корректен. Ищи первый момент, где правило применено неверно.')}}
+function checkInput(){if(state.answered)return;const q=questions[state.index],inp=$('#answerInput');if(!inp||!inp.value.trim()){toast('Введите ответ.');return;}sfx('click');if(equivalent(inp.value,q.answer)){inp.style.borderColor='var(--green)';success()}else{inp.style.borderColor='var(--red)';fail('Ответ не совпал. Проверь вычисления и запись результата.')}}
+function checkMulti(){if(state.answered)return;const q=questions[state.index];const sel=[...document.querySelectorAll('.option.selected')].map(b=>+b.dataset.i).sort((a,b)=>a-b),ans=[...q.answer].sort((a,b)=>a-b);if(!sel.length){toast('Отметь хотя бы один вариант.');return;}sfx('click');const ok=sel.length===ans.length&&sel.every((v,i)=>v===ans[i]);if(ok){document.querySelectorAll('.option').forEach((b,i)=>{if(ans.includes(i))b.classList.add('correct')});success()}else{document.querySelectorAll('.option').forEach((b,i)=>{if(sel.includes(i)&&!ans.includes(i))b.classList.add('wrong')});fail('Набор ответов неполный или содержит лишний вариант. После подсказки можно исправить выбор.',true)}}
+function renderPairs(q,a){const wrap=document.createElement('div');wrap.className='pairs';const l=document.createElement('div'),r=document.createElement('div');l.className=r.className='pair-col';q.left.forEach((t,i)=>{const b=document.createElement('button');b.className='pair-item';b.dataset.i=i;b.innerHTML=t;b.onclick=()=>selectPair('left',i,b,q);l.appendChild(b)});q.right.forEach((t,i)=>{const b=document.createElement('button');b.className='pair-item';b.dataset.i=i;b.innerHTML=t;b.onclick=()=>selectPair('right',i,b,q);r.appendChild(b)});wrap.append(l,r);a.appendChild(wrap);}
+function selectPair(side,i,b,q){if(state.answered||b.classList.contains('locked'))return;sfx('click');const col=b.parentElement;[...col.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');pairState[side]=i;if(pairState.left!==null&&pairState.right!==null){const ok=q.pairs.some(p=>p[0]===pairState.left&&p[1]===pairState.right);const lb=document.querySelector('.pair-col:first-child .pair-item[data-i="'+pairState.left+'"]'),rb=document.querySelector('.pair-col:last-child .pair-item[data-i="'+pairState.right+'"]');if(ok){lb.classList.add('locked');rb.classList.add('locked');lb.classList.remove('active');rb.classList.remove('active');pairState.matched.push([pairState.left,pairState.right]);tone(600,.08,'sine',.06);pairState.left=pairState.right=null;if(pairState.matched.length===q.pairs.length)success()}else{lb.classList.add('wrong');rb.classList.add('wrong');setTimeout(()=>{lb.classList.remove('wrong','active');rb.classList.remove('wrong','active')},450);state.errors++;state.streak=0;updateHud();sfx('bad');say('Эти элементы не образуют пару. Сравни правило и результат.');pairState.left=pairState.right=null;save()}}}
+function success(){const q=questions[state.index];state.answered=true;state.score+=q.points;state.correct++;state.streak++;state.results.push({index:state.index,ok:true,attempts:state.attempts+1});unlock();updateHud();feedback('ok','✅ Улика подтверждена. '+shortPraise());setMood('happy');say('Отлично. Эта часть досье восстановлена.');disableAnswers();$('#solutionBtn').style.display='inline-flex';$('#nextBtn').style.display='inline-flex';$('#checkBtn').style.display='none';sfx('ok');$('#questionCard').classList.add('pop');setTimeout(()=>$('#questionCard').classList.remove('pop'),400);save();}
+function fail(msg,keepEditable=false){state.attempts++;state.errors++;state.streak=0;updateHud();setMood('sad');say('Есть несостыковка. Используй подсказку и проверь ход рассуждений.');feedback('bad','⚠️ '+msg+' Попытка '+state.attempts+' из 2.');sfx('bad');$('#questionCard').classList.add('shake');setTimeout(()=>$('#questionCard').classList.remove('shake'),380);if(state.attempts>=2){state.answered=true;state.results.push({index:state.index,ok:false,attempts:2});disableAnswers();$('#solutionBtn').style.display='inline-flex';$('#nextBtn').style.display='inline-flex';$('#checkBtn').style.display='none';feedback('bad','⚠️ Попытки закончились. Открой подробное решение и разберись с уликой перед переходом дальше.')}else{openHint();if(!keepEditable){document.querySelectorAll('.option.wrong,.step.wrong').forEach(b=>{b.disabled=true})}}save();}
+function disableAnswers(){document.querySelectorAll('#answerArea button,#answerArea input').forEach(x=>x.disabled=true);}
+function feedback(type,html){const f=$('#feedback');f.className='feedback show '+type;f.innerHTML=html;}
+function shortPraise(){return ['Цепочка преобразований верна.','Формула применена точно.','Математический след совпал.','Хорошая проверка условий.'][state.index%4];}
+function unlock(){if(state.streak>=3)state.ach[0]=true;if(state.correct>=5)state.ach[1]=true;if(state.correct>=12)state.ach[2]=true;}
+function openHint(){const q=questions[state.index];$('#modalTitle').textContent='💡 Подсказка';$('#modalBody').innerHTML=q.hint;$('#modal').classList.add('show');}
+function openSolution(){const q=questions[state.index];$('#modalTitle').textContent='📜 Подробное решение';$('#modalBody').innerHTML=q.solution;$('#modal').classList.add('show');}
+function next(){if(!state.answered)return;state.index++;state.answered=false;save();render();}
+function finish(){state.index=questions.length;save();showScreen('finalScreen');$('#progress').style.width='100%';const passed=state.correct>=11;$('#finalTitle').textContent=passed?'🕵️ Дело раскрыто!':'📁 Досье пока неполное';$('#finalScore').textContent=state.correct+'/'+questions.length;$('#fCorrect').textContent=state.correct;$('#fErrors').textContent=state.errors;$('#fPoints').textContent=state.score;$('#finalText').textContent=passed?'Ты восстановил ключевые свойства степеней и квадратных корней. Подмена обнаружена: виновником оказалась неверная формула, в которой показатели при возведении степени в степень складывали вместо умножения.':'Часть улик восстановлена, но несколько формул ещё требуют проверки. Повтори свойства степени, арифметического квадратного корня и правило √(x²)=|x|, затем проведи расследование снова.';const arr=[];if(state.ach[0])arr.push('🏅 Чистый след');if(state.ach[1])arr.push('🏅 Эксперт по корням');if(state.ach[2])arr.push('🏆 Главный следователь');$('#finalAwards').innerHTML=arr.length?'Открытые достижения: <b>'+arr.join(' • ')+'</b>':'Достижения откроются при новом расследовании.';if(passed){sfx('win');confetti()}else sfx('lose');}
+function confetti(){const c=$('#confetti');c.innerHTML='';for(let i=0;i<80;i++){const x=document.createElement('i');x.style.left=Math.random()*100+'vw';x.style.setProperty('--x',(Math.random()*180-90)+'px');x.style.setProperty('--r',(Math.random()*720-360)+'deg');x.style.animationDuration=(2.5+Math.random()*2)+'s';x.style.animationDelay=(Math.random()*.8)+'s';x.style.background=['#d9b46b','#6ac28f','#75b8d4','#9b8bd8','#f2d699'][i%5];c.appendChild(x)}setTimeout(()=>c.innerHTML='',5200);}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1600);}
+function fs(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.();}
+function start(newGame=true){initAudio();if(newGame)resetState();showScreen('gameScreen');render();}
+function home(){showScreen('startScreen');const s=load();$('#resumeBtn').style.display=(s&&s.index>0&&s.index<questions.length)?'inline-flex':'none';}
+$('#startBtn').onclick=()=>start(true);$('#resumeBtn').onclick=()=>{const s=load();if(s){state=s;$('#volume').value=state.volume??.35;showScreen('gameScreen');render()}};$('#resetBtn').onclick=()=>{localStorage.removeItem(STORAGE);resetState();home();toast('Сохранение сброшено')};
+$('#nextBtn').onclick=next;$('#hintBtn').onclick=openHint;$('#solutionBtn').onclick=openSolution;$('#modalClose').onclick=()=>$('#modal').classList.remove('show');$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('show')};
+$('#soundBtn').onclick=toggleSound;$('#volume').oninput=e=>{state.volume=+e.target.value;if(masterGain)masterGain.gain.value=state.volume;save()};$('#fsBtn').onclick=fs;$('#fsBtnStart').onclick=fs;$('#fsBtnFinal').onclick=fs;$('#quitBtn').onclick=home;$('#homeBtn').onclick=home;$('#againBtn').onclick=()=>start(true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').classList.contains('show'))$('#modal').classList.remove('show')});
+window.addEventListener('error',e=>{console.error('Ошибка игры:',e.error||e.message)});
+(function boot(){const s=load();if(s){$('#resumeBtn').style.display=(s.index>0&&s.index<questions.length)?'inline-flex':'none'}$('#soundBtn').textContent='🔊';})();
+</script>
+</body>
+</html>
