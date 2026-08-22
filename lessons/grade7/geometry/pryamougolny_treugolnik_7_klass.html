@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Прямоугольный треугольник — 7 класс</title>
+<script>
+window.MathJax = {tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{--bg:#f4f0e5;--card:#fffaf0;--text:#344238;--muted:#6f786d;--accent:#789b78;--accent2:#e4eddd;--ok:#e2efe1;--bad:#f5e5dc;--line:#d8d1bd}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text);font-size:16px}
+button,input,select{font:inherit} button{cursor:pointer}.app{max-width:1100px;margin:auto;padding:16px}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.title{font-weight:700;font-size:22px;margin-right:auto}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:8px}.tab{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;white-space:nowrap}.tab.active{background:var(--accent);color:white}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 2px 8px #0000000a}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}.theory{background:#f8f4e9;border:1px solid var(--line);border-radius:14px;padding:14px;align-self:start}
+.qhead{display:flex;justify-content:space-between;gap:12px;align-items:center}.badge{font-size:13px;color:var(--muted)}.opts{display:grid;gap:8px;margin:14px 0}.opt{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);padding:10px;border-radius:10px;background:#fff}
+input[type=text]{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px}.actions,.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 12px}.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.feedback{margin-top:10px;padding:10px;border-radius:10px;display:none}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.history{font-size:14px;margin-top:8px}.scratch-wrap{margin-top:14px}.scratch{width:100%;height:220px;border:1px dashed #9aa6ba;border-radius:10px;background:white;touch-action:none}
+.bank,.dropzone{display:flex;gap:8px;flex-wrap:wrap;min-height:48px;padding:9px;border:1px dashed #9aa6ba;border-radius:10px;margin:10px 0}.chip{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:white;user-select:none}.dropzone .chip{background:var(--accent2)}
+.order{display:grid;gap:8px}.order-row{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:8px;background:#fff}.order-row span{flex:1}
+.content-list button{display:block;width:100%;text-align:left;margin:8px 0}.teacher table{width:100%;border-collapse:collapse}.teacher th,.teacher td{border:1px solid var(--line);padding:8px;text-align:left}
+.settings{display:flex;gap:8px;flex-wrap:wrap}.progress{font-weight:600}
+:focus-visible{outline:3px solid #b58f62;outline-offset:2px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.theory{order:2}.title{width:100%}}
+@media print{
+ body{background:#fff;font-family:"Times New Roman",serif;font-size:16pt}.app{max-width:none;padding:0}.top,.tabs,.actions,.nav,.theory,.scratch-wrap,.feedback,.history,.teacher-ui{display:none!important}
+ .panel{display:none!important}.panel.print-target{display:block!important}.card{border:0;box-shadow:none;padding:0}.print-q{break-inside:avoid;margin:0 0 12mm}.gridpaper{height:35mm;margin-top:5mm;background-image:linear-gradient(#bbb 1px,transparent 1px),linear-gradient(90deg,#bbb 1px,transparent 1px);background-size:5mm 5mm}
+ @page{size:A4;margin:15mm}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="title">Прямоугольный треугольник — 7 класс</div>
+    <div class="progress" id="progress">Выполнено 0 из 21</div>
+    <button class="btn" onclick="toggleFull()">На весь экран</button>
+    <button class="btn" onclick="resetAll()">Сбросить результаты</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <main id="main"></main>
+</div>
+<script>
+// ===== ЕДИНЫЙ БЛОК ДАННЫХ =====
+// Настройки листа: попытки, оформление и длительность.
+const settings={attempts:3,duration:60,fontSize:16,theme:"light"};
+
+// Задания заранее проверены. Для кратких ответов используются допустимые эквиваленты.
+const sections=[
+ {id:"s1",title:"1. Прямоугольный треугольник",theory:`
+ <h3>Теория</h3><p><b>Прямоугольный треугольник</b> — треугольник, у которого один угол равен \\(90^\\circ\\).</p>
+ <p>Стороны, образующие прямой угол, — <b>катеты</b>. Сторона напротив прямого угла — <b>гипотенуза</b>.</p>
+ <p>Сумма углов треугольника равна \\(180^\\circ\\), поэтому сумма двух острых углов прямоугольного треугольника равна \\(90^\\circ\\).</p>`,
+ qs:[
+  {id:"q1",type:"fill",level:"базовый",skill:"термины",text:"Восстановите определение: «Треугольник, у которого один угол равен ___, называется ___».",bank:["90°","прямоугольным","60°","равнобедренным"],answer:["90°","прямоугольным"],hint:"Вспомните величину прямого угла.",explain:"Прямоугольный треугольник имеет один угол 90°."},
+  {id:"q2",type:"multi",level:"базовый",skill:"элементы прямоугольного треугольника",text:"Выберите все верные утверждения.",options:["Гипотенуза лежит напротив прямого угла.","Катеты образуют прямой угол.","В прямоугольном треугольнике два прямых угла.","Сумма острых углов равна 90°."],answer:[0,1,3],hint:"Проверьте определение и сумму углов.",explain:"Прямой угол один; катеты его образуют, гипотенуза лежит напротив, а острые углы в сумме дают 90°."},
+  {id:"q3",type:"short",level:"средний",skill:"углы",text:"В прямоугольном треугольнике один острый угол равен \\(37^\\circ\\). Найдите второй острый угол.",answer:["53","53°"],hint:"Сумма двух острых углов равна 90°.",explain:"90° − 37° = 53°."},
+  {id:"q4",type:"single",level:"средний",skill:"распознавание гипотенузы",text:"В треугольнике \\(ABC\\) угол \\(C=90^\\circ\\). Какая сторона является гипотенузой?",options:["AC","BC","AB","Нельзя определить"],answer:2,hint:"Гипотенуза лежит напротив прямого угла.",explain:"Напротив угла C находится сторона AB."},
+  {id:"q5",type:"error",level:"повышенный",skill:"логическое обоснование",text:"Ученик рассуждает: 1) \\(\\angle C=90^\\circ\\). 2) \\(\\angle A=48^\\circ\\). 3) \\(\\angle B=180^\\circ-48^\\circ=132^\\circ\\). 4) Значит, \\(\\angle B=132^\\circ\\). Укажите первую ошибочную строку.",options:["1","2","3","4"],answer:2,hint:"Вычитать нужно сумму уже известных углов.",explain:"В строке 3 забыли учесть прямой угол: B = 180° − 90° − 48° = 42°."},
+  {id:"q16",type:"short",level:"средний",skill:"вычисление углов",text:"В прямоугольном треугольнике один острый угол равен \(64^\circ\). Найдите второй острый угол.",answer:["26","26°"],hint:"Сумма двух острых углов прямоугольного треугольника равна 90°.",explain:"90° − 64° = 26°."},
+  {id:"q17",type:"short",level:"повышенный",skill:"вычисление углов по условию",text:"Один острый угол прямоугольного треугольника в 2 раза больше другого. Найдите меньший угол.",answer:["30","30°"],hint:"Обозначьте меньший угол за x, тогда второй равен 2x.",explain:"x + 2x = 90°, значит 3x = 90° и x = 30°."}
+ ]},
+ {id:"s2",title:"2. Свойства",theory:`
+ <h3>Теория</h3><p><b>Свойство 1.</b> Сумма острых углов прямоугольного треугольника равна \\(90^\\circ\\).</p>
+ <p><b>Свойство 2.</b> Катет, лежащий напротив угла \\(30^\\circ\\), равен половине гипотенузы.</p>
+ <p><b>Обратное свойство.</b> Если катет равен половине гипотенузы, то угол, лежащий напротив этого катета, равен \\(30^\\circ\\).</p>`,
+ qs:[
+  {id:"q6",type:"order",level:"базовый",skill:"воспроизведение свойства",text:"Восстановите формулировку свойства в правильном порядке.",items:["Катет","лежащий напротив угла 30°","равен","половине гипотенузы"],answer:[0,1,2,3],hint:"Сначала назовите сторону, затем её положение и отношение длин.",explain:"Катет, лежащий напротив угла 30°, равен половине гипотенузы."},
+  {id:"q7",type:"short",level:"средний",skill:"свойство катета против 30°",text:"Гипотенуза прямоугольного треугольника равна 18 см, а один острый угол — \\(30^\\circ\\). Найдите катет, лежащий напротив этого угла.",answer:["9","9 см","9см"],hint:"Катет напротив 30° равен половине гипотенузы.",explain:"18 : 2 = 9 см."},
+  {id:"q8",type:"single",level:"средний",skill:"обратное свойство",text:"В прямоугольном треугольнике катет равен 7 см, гипотенуза — 14 см. Чему равен угол напротив этого катета?",options:["30°","45°","60°","90°"],answer:0,hint:"Катет составляет половину гипотенузы.",explain:"По обратному свойству угол напротив катета, равного половине гипотенузы, равен 30°."},
+  {id:"q9",type:"short",level:"повышенный",skill:"цепочка свойств",text:"В прямоугольном треугольнике \\(ABC\\), \\(\\angle C=90^\\circ\\), \\(AB=20\\), \\(AC=10\\). Найдите \\(\\angle B\\).",answer:["30","30°"],hint:"Сравните катет AC с гипотенузой AB и определите угол напротив AC.",explain:"AC = AB/2, значит угол напротив AC, то есть ∠B, равен 30°."},
+  {id:"q10",type:"error",level:"повышенный",skill:"применение свойства",text:"Найдите ошибку: 1) гипотенуза равна 24 см; 2) угол напротив катета \\(a\\) равен 30°; 3) поэтому \\(a=24\\cdot2=48\\) см; 4) ответ: 48 см.",options:["1","2","3","4"],answer:2,hint:"Катет напротив 30° меньше гипотенузы.",explain:"В строке 3 нужно делить гипотенузу пополам: a = 12 см."},
+  {id:"q18",type:"short",level:"средний",skill:"свойство катета против 30°",text:"Катет, лежащий напротив угла \(30^\circ\), равен 11 см. Найдите гипотенузу.",answer:["22","22 см","22см"],hint:"Катет напротив 30° равен половине гипотенузы.",explain:"Гипотенуза в 2 раза больше: 11 · 2 = 22 см."},
+  {id:"q19",type:"short",level:"повышенный",skill:"цепочка вычислений",text:"В прямоугольном треугольнике один острый угол равен \(30^\circ\), а катет напротив него равен 8 см. Найдите гипотенузу и второй острый угол. Введите ответ в виде: 16;60",answer:["16;60","16; 60","16 60","16;60°"],hint:"Используйте свойство катета напротив 30°, затем сумму острых углов.",explain:"Гипотенуза: 8 · 2 = 16 см. Второй острый угол: 90° − 30° = 60°."}
+ ]},
+ {id:"s3",title:"3. Признаки равенства",theory:`
+ <h3>Теория</h3><p>Прямоугольные треугольники равны, если соответственно равны:</p>
+ <ol><li>два катета;</li><li>катет и прилежащий к нему острый угол;</li><li>гипотенуза и острый угол;</li><li>гипотенуза и катет.</li></ol>
+ <p>Прямые углы уже равны, поэтому общие признаки равенства треугольников упрощаются.</p>`,
+ qs:[
+  {id:"q11",type:"fill",level:"базовый",skill:"воспроизведение признаков",text:"Заполните пропуски: прямоугольные треугольники равны по гипотенузе и ___; по двум ___; по катету и прилежащему ___ углу.",bank:["катету","катетам","острому","прямому","гипотенузам"],answer:["катету","катетам","острому"],hint:"Вспомните три из четырёх специальных признаков.",explain:"Верно: по гипотенузе и катету; по двум катетам; по катету и прилежащему острому углу."},
+  {id:"q12",type:"single",level:"средний",skill:"выбор признака",text:"Даны два прямоугольных треугольника. У них соответственно равны гипотенузы и по одному катету. Какой признак применим?",options:["По двум катетам","По гипотенузе и катету","По катету и острому углу","Данных недостаточно"],answer:1,hint:"Названия равных элементов буквально указывают на признак.",explain:"Это признак равенства по гипотенузе и катету."},
+  {id:"q13",type:"multi",level:"средний",skill:"распознавание достаточных данных",text:"Какие наборы данных гарантируют равенство двух прямоугольных треугольников? Выберите все.",options:["Равны два соответствующих катета.","Равны гипотенузы и соответствующие катеты.","Равны только гипотенузы.","Равны гипотенузы и по одному соответствующему острому углу.","Равен только один катет."],answer:[0,1,3],hint:"Нужно достаточно данных для одного из специальных признаков.",explain:"Достаточны: два катета; гипотенуза и катет; гипотенуза и острый угол."},
+  {id:"q14",type:"single",level:"повышенный",skill:"доказательство равенства",text:"В прямоугольных треугольниках \\(ABC\\) и \\(A_1B_1C_1\\): \\(\\angle C=\\angle C_1=90^\\circ\\), \\(AB=A_1B_1\\), \\(\\angle A=\\angle A_1\\). Как обосновать равенство треугольников?",options:["По гипотенузе и острому углу","По двум катетам","По гипотенузе и катету","Равенство не следует"],answer:0,hint:"AB и A₁B₁ лежат напротив прямых углов.",explain:"AB и A₁B₁ — гипотенузы, а углы A и A₁ — соответствующие острые углы."},
+  {id:"q15",type:"short",level:"повышенный",skill:"доказательство и вывод",text:"Два прямоугольных треугольника имеют равные гипотенузы по 13 см и равные соответствующие катеты по 5 см. В первом треугольнике второй катет равен 12 см. Чему равен второй катет второго треугольника? В ответ введите число.",answer:["12","12 см","12см"],hint:"Сначала установите равенство треугольников по специальному признаку.",explain:"Треугольники равны по гипотенузе и катету, поэтому их соответствующие вторые катеты равны: 12 см."},
+  {id:"q20",type:"short",level:"средний",skill:"равенство треугольников и вычисление",text:"Два прямоугольных треугольника равны по гипотенузе и катету. В первом один из соответствующих острых углов равен \(38^\circ\). Найдите соответствующий острый угол второго треугольника.",answer:["38","38°"],hint:"У равных треугольников соответствующие углы равны.",explain:"После установления равенства треугольников соответствующие острые углы равны, значит угол равен 38°."},
+  {id:"q21",type:"short",level:"повышенный",skill:"равенство и вычисление углов",text:"Два прямоугольных треугольника равны по гипотенузе и острому углу. В первом треугольнике второй острый угол равен \(57^\circ\). Найдите оба острых угла второго треугольника. Введите меньший, затем больший через точку с запятой.",answer:["33;57","33; 57","33 57","33°;57°"],hint:"Сначала найдите недостающий острый угол первого треугольника.",explain:"В первом треугольнике второй угол равен 90° − 57° = 33°. У равного ему второго треугольника острые углы также 33° и 57°."}
+ ]}
+];
+
+const state={tab:"contents",qIndex:{s1:0,s2:0,s3:0},answers:{},attempts:{},history:{},done:{},usedHint:{}};
+const main=document.getElementById("main"),tabs=document.getElementById("tabs");
+const allQs=sections.flatMap(s=>s.qs);
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const shuffled={};
+allQs.forEach(q=>{if(q.options) shuffled[q.id]=shuffle(q.options.map((v,i)=>({v,i}))); if(q.bank) shuffled[q.id]=shuffle(q.bank.map((v,i)=>({v,i})))});
+function tabButton(id,label){return `<button class="tab ${state.tab===id?'active':''}" onclick="openTab('${id}')">${label}</button>`}
+function renderTabs(){tabs.innerHTML=tabButton("contents","Содержание")+sections.map(s=>tabButton(s.id,s.title)).join("")+tabButton("teacher","Для учителя")}
+function openTab(id){state.tab=id;render();window.scrollTo({top:0,behavior:"smooth"})}
+function render(){renderTabs();updateProgress(); if(state.tab==="contents") return renderContents(); if(state.tab==="teacher") return renderTeacher(); renderSection(sections.find(s=>s.id===state.tab)); if(window.MathJax?.typesetPromise) MathJax.typesetPromise();}
+function renderContents(){
+ main.innerHTML=`<section class="panel active card"><h1>Рабочий лист: прямоугольный треугольник</h1><p>7 класс · повышенный уровень · ориентировочно 60 минут.</p>
+ <p>Цель: воспроизвести теорию, применять свойства прямоугольного треугольника и обосновывать равенство прямоугольных треугольников.</p>
+ <div class="content-list">${sections.map(s=>`<button class="btn" onclick="openTab('${s.id}')"><b>${s.title}</b> — ${s.qs.length} заданий</button>`).join("")}</div>
+ <p><b>Как работать:</b> отвечайте на задания и нажимайте «Проверить». При ошибке получите короткую подсказку. После трёх неудачных попыток появятся ответ и объяснение.</p>
+ <button class="btn" onclick="printStudent()">Печать ученического листа</button></section>`;
+}
+function qInput(q){
+ const saved=state.answers[q.id];
+ if(q.type==="short") return `<input id="ans-${q.id}" type="text" value="${esc(saved||"")}" oninput="state.answers['${q.id}']=this.value" aria-label="Ответ">`;
+ if(q.type==="single"||q.type==="error") return `<div class="opts">${shuffled[q.id].map(o=>`<label class="opt"><input type="radio" name="${q.id}" value="${o.i}" ${String(saved)===String(o.i)?'checked':''} onchange="state.answers['${q.id}']=Number(this.value)"> ${o.v}</label>`).join("")}</div>`;
+ if(q.type==="multi"){let arr=Array.isArray(saved)?saved:[];return `<div class="opts">${shuffled[q.id].map(o=>`<label class="opt"><input type="checkbox" value="${o.i}" ${arr.includes(o.i)?'checked':''} onchange="multiChange('${q.id}',this)"> ${o.v}</label>`).join("")}</div>`}
+ if(q.type==="fill"){let arr=Array.isArray(saved)?saved:[];return `<div class="bank">${shuffled[q.id].map(o=>`<button class="chip" draggable="true" ondragstart="dragText(event,'${q.id}','${esc(o.v)}')" onclick="addFill('${q.id}','${esc(o.v)}')">${o.v}</button>`).join("")}</div><div class="dropzone" ondragover="event.preventDefault()" ondrop="dropFill(event,'${q.id}')">${arr.map((v,i)=>`<button class="chip" onclick="removeFill('${q.id}',${i})">${v}</button>`).join("")}</div><small>Перетащите или нажмите элементы в нужном порядке.</small>`}
+ if(q.type==="order"){let arr=Array.isArray(saved)?saved:shuffle(q.items.map((_,i)=>i));state.answers[q.id]=arr;return `<div class="order">${arr.map((idx,pos)=>`<div class="order-row" draggable="true" ondragstart="dragOrder(event,'${q.id}',${pos})" ondragover="event.preventDefault()" ondrop="dropOrder(event,'${q.id}',${pos})"><span>${q.items[idx]}</span><button class="btn" onclick="moveOrder('${q.id}',${pos},-1)">↑</button><button class="btn" onclick="moveOrder('${q.id}',${pos},1)">↓</button></div>`).join("")}</div>`}
+}
+function renderSection(s){
+ const i=state.qIndex[s.id],q=s.qs[i],h=(state.history[q.id]||[]).join(" → ");
+ main.innerHTML=`<section class="panel active"><div class="grid"><article class="card"><div class="qhead"><h2>Задание ${i+1} из ${s.qs.length}</h2><span class="badge">${q.level} · ${q.skill}</span></div>
+ <div>${q.text}</div>${qInput(q)}
+ <div class="actions"><button class="btn primary" onclick="check('${s.id}','${q.id}')">Проверить</button><button class="btn" onclick="showHint('${q.id}')">Подсказка</button></div>
+ <div id="fb-${q.id}" class="feedback"></div><div class="history">${h?`История попыток: ${h}`:""}</div>
+ ${scratch(q.id)}
+ <div class="nav"><button class="btn" onclick="prevQ('${s.id}')">← Назад</button><button class="btn" onclick="nextQ('${s.id}')">Далее →</button><button class="btn" onclick="openTab('contents')">Содержание</button></div>
+ </article><aside class="theory">${s.theory}</aside></div></section>`;
+ initCanvas(q.id);
+}
+function scratch(id){return `<div class="scratch-wrap"><details><summary><b>Черновик</b></summary><div class="actions"><button class="btn" onclick="tool='pen'">Ручка</button><button class="btn" onclick="tool='eraser'">Ластик</button><button class="btn" onclick="clearCanvas('${id}')">Очистить</button></div><canvas class="scratch" id="canvas-${id}"></canvas></details></div>`}
+let tool="pen",dragData=null;
+function initCanvas(id){let c=document.getElementById("canvas-"+id);if(!c)return;let r=c.getBoundingClientRect();c.width=Math.max(300,r.width*devicePixelRatio);c.height=220*devicePixelRatio;let ctx=c.getContext("2d");ctx.scale(devicePixelRatio,devicePixelRatio);let down=false,last=null;function p(e){let b=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return [t.clientX-b.left,t.clientY-b.top]}function start(e){down=true;last=p(e);e.preventDefault()}function move(e){if(!down)return;let cur=p(e);ctx.lineCap="round";ctx.lineWidth=tool==="eraser"?16:2;ctx.strokeStyle=tool==="eraser"?"white":"black";ctx.beginPath();ctx.moveTo(...last);ctx.lineTo(...cur);ctx.stroke();last=cur;e.preventDefault()}function end(){down=false}["mousedown","touchstart"].forEach(x=>c.addEventListener(x,start,{passive:false}));["mousemove","touchmove"].forEach(x=>c.addEventListener(x,move,{passive:false}));["mouseup","mouseleave","touchend"].forEach(x=>c.addEventListener(x,end))}
+function clearCanvas(id){let c=document.getElementById("canvas-"+id);c.getContext("2d").clearRect(0,0,c.width,c.height)}
+function multiChange(id,el){let a=Array.isArray(state.answers[id])?[...state.answers[id]]:[];let v=Number(el.value);if(el.checked&&!a.includes(v))a.push(v);if(!el.checked)a=a.filter(x=>x!==v);state.answers[id]=a}
+function addFill(id,v){let a=Array.isArray(state.answers[id])?[...state.answers[id]]:[];a.push(v);state.answers[id]=a;render()}
+function removeFill(id,i){state.answers[id].splice(i,1);render()}
+function dragText(e,id,v){dragData={id,v};e.dataTransfer.setData("text/plain",v)} function dropFill(e,id){e.preventDefault();if(dragData&&dragData.id===id)addFill(id,dragData.v)}
+function dragOrder(e,id,pos){dragData={id,pos}} function dropOrder(e,id,pos){e.preventDefault();if(!dragData||dragData.id!==id)return;let a=[...state.answers[id]],x=a.splice(dragData.pos,1)[0];a.splice(pos,0,x);state.answers[id]=a;render()}
+function moveOrder(id,pos,d){let a=[...state.answers[id]],n=pos+d;if(n<0||n>=a.length)return;[a[pos],a[n]]=[a[n],a[pos]];state.answers[id]=a;render()}
+function norm(v){return String(v??"").toLowerCase().trim().replace(/\s+/g," ").replace(/,/g,".").replace(/[;,.]+$/,"")}
+function correct(q){
+ let a=state.answers[q.id];
+ if(q.type==="short") return q.answer.some(x=>{let nx=norm(x),na=norm(a);let numx=parseFloat(nx),numa=parseFloat(na);return nx===na||(!isNaN(numx)&&!isNaN(numa)&&numx===numa)});
+ if(q.type==="single"||q.type==="error") return Number(a)===q.answer;
+ if(q.type==="multi") return Array.isArray(a)&&[...a].sort().join()===[...q.answer].sort().join();
+ if(q.type==="fill") return Array.isArray(a)&&a.map(norm).join("|")===q.answer.map(norm).join("|");
+ if(q.type==="order") return Array.isArray(a)&&a.join()==q.answer.join();
+ return false;
+}
+function answerText(q){if(q.type==="single"||q.type==="error")return q.options[q.answer];if(q.type==="multi")return q.answer.map(i=>q.options[i]).join("; ");if(q.type==="short")return q.answer[0];if(q.type==="fill")return q.answer.join(" / ");if(q.type==="order")return q.answer.map(i=>q.items[i]).join(" → ")}
+function check(sid,qid){
+ let q=allQs.find(x=>x.id===qid);state.attempts[qid]=(state.attempts[qid]||0)+1;let ok=correct(q);state.history[qid]=state.history[qid]||[];state.history[qid].push(ok?"✅":"❌");if(ok)state.done[qid]=true;
+ let fb=document.getElementById("fb-"+qid);fb.className="feedback "+(ok?"ok":"bad");
+ if(ok)fb.innerHTML="✓ Верно. "+q.explain;
+ else if(state.attempts[qid]>=settings.attempts)fb.innerHTML=`Пока неверно. Попытки исчерпаны.<br><b>Правильный ответ:</b> ${answerText(q)}<br>${q.explain}`;
+ else fb.innerHTML=`Пока неверно. ${q.hint} Осталось попыток: ${settings.attempts-state.attempts[qid]}.`;
+ document.querySelector(".history").innerHTML="История попыток: "+state.history[qid].join(" → ");updateProgress();
+}
+function showHint(id){let q=allQs.find(x=>x.id===id);state.usedHint[id]=true;let fb=document.getElementById("fb-"+id);fb.className="feedback bad";fb.textContent="Подсказка: "+q.hint}
+function prevQ(sid){let si=sections.findIndex(s=>s.id===sid),i=state.qIndex[sid];if(i>0)state.qIndex[sid]--;else if(si>0){state.tab=sections[si-1].id;state.qIndex[state.tab]=sections[si-1].qs.length-1}else state.tab="contents";render()}
+function nextQ(sid){let si=sections.findIndex(s=>s.id===sid),s=sections[si],i=state.qIndex[sid];if(i<s.qs.length-1)state.qIndex[sid]++;else if(si<sections.length-1){state.tab=sections[si+1].id;state.qIndex[state.tab]=0}else state.tab="teacher";render()}
+function updateProgress(){document.getElementById("progress").textContent=`Выполнено ${Object.keys(state.done).length} из ${allQs.length}`}
+function renderTeacher(){
+ let total=allQs.length,score=Object.keys(state.done).length,p=Math.round(score/total*100),lvl=p>=85?"высокий":p>=70?"достаточный":p>=50?"базовый":"требует повторения";
+ let rows=sections.map(s=>{let n=s.qs.filter(q=>state.done[q.id]).length,pp=Math.round(n/s.qs.length*100);return `<tr><td>${s.title}</td><td>${n}/${s.qs.length}</td><td>${pp}%</td></tr>`}).join("");
+ let errs=allQs.filter(q=>(state.history[q.id]||[]).includes("❌"));
+ let strengths=sections.filter(s=>s.qs.filter(q=>state.done[q.id]).length/s.qs.length>=.8).map(s=>s.title.replace(/^\d+\.\s*/,""));
+ let weak=errs.map(q=>q.skill).filter((v,i,a)=>a.indexOf(v)===i);
+ main.innerHTML=`<section class="panel active card teacher"><div class="teacher-ui"><h1>Для учителя</h1><p><b>Общий результат:</b> ${score} из ${total} — ${p}% · уровень: <b>${lvl}</b>.</p>
+ <table><thead><tr><th>Подтема</th><th>Выполнено</th><th>Результат</th></tr></thead><tbody>${rows}</tbody></table>
+ <h3>Анализ ошибок</h3>${errs.length?`<ul>${errs.map(q=>`<li><b>${q.id.toUpperCase()}</b>: ${q.skill}; история: ${(state.history[q.id]||[]).join(" → ")}</li>`).join("")}</ul>`:"<p>Ошибок пока не зафиксировано.</p>"}
+ <p><b>Сильные стороны:</b> ${strengths.length?strengths.join(", "):"пока недостаточно данных"}.</p>
+ <p><b>Зоны затруднений:</b> ${weak.length?weak.join(", "):"по выполненным заданиям не выявлены"}.</p>
+ <p><b>Рекомендации:</b> ${weak.length?"повторить формулировки соответствующих свойств/признаков и затем решить 2–3 задачи на их выбор и обоснование.":"продолжить задания повышенной сложности с кратким обоснованием выбора свойства или признака."}</p>
+ <button class="btn" onclick="printTeacher()">Печать подробного отчёта</button></div>
+ <h2>Подробности по заданиям</h2><table><thead><tr><th>№</th><th>Тип</th><th>Сложность</th><th>Навык</th><th>История</th><th>Ответ</th></tr></thead><tbody>${allQs.map(q=>`<tr><td>${q.id.toUpperCase()}</td><td>${q.type}</td><td>${q.level}</td><td>${q.skill}</td><td>${(state.history[q.id]||[]).join(" → ")||"—"}</td><td>${answerText(q)}</td></tr>`).join("")}</tbody></table></section>`;
+}
+function printStudent(){
+ let old=main.innerHTML;main.innerHTML=`<section class="panel active print-target card"><h1>Прямоугольный треугольник</h1>${sections.map(s=>`<h2>${s.title}</h2>${s.qs.map((q,i)=>`<div class="print-q"><b>${i+1}.</b> ${q.text}${q.options?`<div>${q.options.map((x,j)=>`${String.fromCharCode(1040+j)}) ${x}`).join("<br>")}</div>`:""}${q.bank?`<div>Банк: ${q.bank.join("; ")}</div>`:""}${q.items?`<div>${q.items.map((x,j)=>`${j+1}) ${x}`).join("<br>")}</div>`:""}<div class="gridpaper"></div></div>`).join("")}`).join("")}<h2>Справочный материал</h2>${sections.map(s=>s.theory).join("")}</section>`; if(window.MathJax?.typesetPromise) MathJax.typesetPromise().then(()=>{window.print();main.innerHTML=old;render()});else{window.print();main.innerHTML=old;render()}
+}
+function printTeacher(){document.querySelector(".teacher").classList.add("print-target");window.print();document.querySelector(".teacher")?.classList.remove("print-target")}
+function resetAll(){if(confirm("Сбросить все результаты текущей сессии?")){state.answers={};state.attempts={};state.history={};state.done={};state.usedHint={};state.qIndex={s1:0,s2:0,s3:0};state.tab="contents";render()}}
+function toggleFull(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
+render();
+</script>
+</body>
+</html>
