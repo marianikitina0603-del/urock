@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ОГЭ №20 — Решение уравнений</title>
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --blue:#1762b6; --blue2:#1d6fd1; --blue3:#0f4e99; --ink:#132645;
+  --muted:#5d6f86; --line:#d6e0eb; --soft:#f4f8fc; --panel:#ffffff;
+  --ok:#eef9f0; --okline:#b8dfc0; --bad:#fff0f0; --badline:#efb9b9;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(135deg,#f8fbfd 0%,#f1f6fa 55%,#f8fafc 100%);color:var(--ink);font-family:Arial,"Segoe UI",sans-serif;min-height:100vh}
+.wrap{max-width:1540px;margin:0 auto;padding:8px 14px 28px}
+.hero{display:none}
+.tabs{display:grid;grid-template-columns:repeat(8,minmax(145px,1fr));gap:6px;overflow-x:auto;padding:0 0 0;border-bottom:3px solid var(--blue);background:transparent;position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}
+.tab{min-height:108px;border:1px solid #cdd9e5;border-bottom:none;background:rgba(255,255,255,.88);padding:12px 12px 10px;border-radius:10px 10px 0 0;cursor:pointer;color:#12376a;box-shadow:0 1px 4px #173d6a10;font-weight:500;white-space:normal;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px;font-size:18px;line-height:1.15;transition:.18s}
+.tab .num{font-size:22px;font-weight:700}.tab .short{font-size:17px;color:#17345d}
+.tab:hover{background:#fff;transform:translateY(-1px)}
+.tab.active{border:2px solid var(--blue);border-bottom:2px solid var(--blue);box-shadow:0 0 0 1px #1762b615 inset;background:#f9fcff}
+.workspace{display:grid;grid-template-columns:340px minmax(0,1fr);gap:30px;padding-top:24px}
+.sidebar{min-width:0}
+.sidebox{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:18px;box-shadow:0 2px 8px #173d6a0a}
+.sidebox h3{margin:0;padding:17px 18px;border-bottom:1px solid var(--line);font-size:19px;color:#1b5baa;background:linear-gradient(#fff,#fbfdff)}
+.blocknav{padding:8px}
+.navbtn{width:100%;border:0;background:transparent;color:#1c2d4a;text-align:left;padding:13px 12px;border-radius:8px;display:grid;grid-template-columns:32px 1fr;align-items:start;gap:8px;font-size:16px;line-height:1.3;cursor:pointer;margin:2px 0}
+.navbtn .ico{color:var(--blue);font-size:24px;line-height:1;text-align:center;font-weight:700}
+.navbtn:hover{background:#edf5ff}
+.navbtn.active{background:linear-gradient(180deg,#2875d2,#0f5cb8);color:#fff;box-shadow:0 4px 10px #1762b62c}
+.navbtn.active .ico{color:#fff}
+.info{padding:14px 18px;font-size:15px;line-height:1.65}.info b{color:#1556a3}.rubricLine{margin:0 0 14px}.rubricLine:last-child{margin-bottom:0}
+.maincard{background:rgba(255,255,255,.93);border:1px solid #e0e7ef;border-radius:10px;box-shadow:0 5px 16px #203a5615;min-height:690px;overflow:hidden}
+.taskhead{padding:24px 24px 8px}.taskhead h2{font-size:26px;line-height:1.2;margin:0 0 12px;color:#1a5caf}.taskhead p{margin:0;color:#20304d;font-size:16px}
+.taskbody{padding:10px 24px 18px;font-size:18px;line-height:1.7;min-height:485px}.taskbody p{margin:10px 0 14px}.taskbody mjx-container{font-size:112%!important}
+.eqblock{margin:16px 0 20px;font-size:21px}.worked{background:#fbfdff;border-left:4px solid #6ea6df;padding:12px 14px;border-radius:8px}
+.solution-line{padding:8px 10px;margin:5px 0;border-left:3px solid #d1dfec;background:#fbfdff;border-radius:5px}.restore-line{font-size:21px;line-height:2.35}.restore-line mjx-container{margin:0 .12em!important}
+.dropzone{display:inline-flex;min-width:135px;min-height:46px;padding:5px 10px;margin:0 6px;border:2px dashed #246bd0;border-radius:8px;vertical-align:middle;align-items:center;justify-content:center;background:#fff;box-shadow:0 1px 3px #1762b612}.dropzone.filled{border-style:solid;background:#f8fbff}
+.bankwrap{border-top:1px solid var(--line);margin-top:20px;padding-top:18px}.banktitle{font-size:16px;margin-bottom:10px}.bank{display:flex;flex-wrap:wrap;gap:12px;padding:0;background:transparent}.dragitem{padding:9px 15px;border:1px solid #9db6d3;border-radius:8px;background:#fff;cursor:grab;user-select:none;box-shadow:0 1px 3px #173d6a0d}.dragitem.used{opacity:.35}
+.choice{display:block;border:1px solid #d4dee8;border-radius:8px;padding:11px 12px;margin:8px 0;background:#fbfdff;cursor:pointer;font-size:16px}.choice:hover{background:#f0f6fd}.choice input{accent-color:var(--blue)}
+textarea{width:100%;min-height:210px;resize:vertical;padding:13px;border:1px solid #aebdcb;border-radius:8px;font-size:16px;line-height:1.5;background:#fff}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.gap{width:135px;padding:10px;border:1px solid #91a8be;border-radius:7px;font-size:16px;text-align:center;background:#fff}
+.grade-solution{background:#f7fbff;border-left:4px solid #5e9fd1;padding:12px 14px;border-radius:8px}.grade-solution div{margin:7px 0}.rubric{font-size:14px;background:#f4f7f9;padding:10px;border-radius:8px}
+.actions{border-top:1px solid #e1e8ef;padding:18px 24px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(255,255,255,.8)}
+.btn{border:1px solid #a9bed6;background:#fff;color:#1559a8;padding:11px 19px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:8px}.btn:hover{background:#f2f7fd}.btn.primary{margin-left:auto;background:linear-gradient(180deg,#2a75d0,#1763be);border-color:#1763be;color:#fff;padding:12px 25px;box-shadow:0 3px 8px #1762b628}.btn.primary:hover{filter:brightness(.97)}
+.feedback{font-weight:700;padding:8px 12px;border-radius:7px}.feedback:empty{display:none}.ok{background:var(--ok);color:#207335;border:1px solid var(--okline)}.bad{background:var(--bad);color:#9a2020;border:1px solid var(--badline)}
+.status{margin:0 24px 24px;border:1px solid #b8dfc0;background:linear-gradient(90deg,#f2fbf4,#fbfffc);color:#1a6c30;border-radius:8px;padding:12px 16px;font-size:15px;display:flex;align-items:center;gap:10px}.status .dot{width:24px;height:24px;border-radius:50%;background:#2c9a4d;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-family:Georgia,serif}
+.panel{display:none}.panel.active{display:block}.sectionview{display:none}.sectionview.active{display:block}.footer{display:none}
+@media(max-width:1100px){.tabs{grid-template-columns:repeat(8,150px)}.workspace{grid-template-columns:270px minmax(0,1fr);gap:18px}.tab{min-height:96px}.sidebox h3{font-size:17px}.navbtn{font-size:14px}.taskhead h2{font-size:23px}}
+@media(max-width:760px){.wrap{padding:6px}.tabs{grid-template-columns:repeat(8,135px)}.tab{min-height:88px;font-size:14px}.tab .num{font-size:19px}.tab .short{font-size:14px}.workspace{display:block;padding-top:12px}.sidebar{margin-bottom:14px}.sidebox:nth-child(n+2){display:none}.blocknav{display:flex;overflow-x:auto;gap:6px}.navbtn{min-width:210px}.maincard{min-height:0}.taskhead{padding:18px 16px 6px}.taskbody{padding:8px 16px 14px;min-height:0}.actions{padding:14px 16px}.status{margin:0 16px 16px}.btn.primary{margin-left:0}.restore-line{font-size:18px}}
+@media print{.tabs,.sidebar,.actions,.status{display:none!important}.workspace{display:block}.panel{display:block!important}.sectionview{display:block!important}.maincard{box-shadow:none;border:0;min-height:0;page-break-after:always}.wrap{max-width:none}.taskbody{min-height:0}}
+
+/* Бежево-зелёная тема */
+:root{
+  --blue:#6f8a4b; --blue2:#7d9858; --blue3:#4f6737; --ink:#2f3a2a;
+  --muted:#6f7467; --line:#d9d1bb; --soft:#f2efe4; --panel:#fffdf7;
+  --ok:#eef5e7; --okline:#bfd0a8; --bad:#f9ece8; --badline:#d8b8ad;
+}
+body{background:linear-gradient(135deg,#f5f0e4 0%,#ece8d8 55%,#f7f4eb 100%);color:var(--ink)}
+.tabs{border-bottom-color:#6f8a4b}
+.tab{border-color:#d8d0bc;background:rgba(255,253,247,.92);color:#435534;box-shadow:0 1px 4px #4f673710}
+.tab .short{color:#556648}.tab:hover{background:#fffdf7}.tab.active{border-color:#6f8a4b;background:#f7f8ee;box-shadow:0 0 0 1px #6f8a4b20 inset}
+.sidebox{background:rgba(255,253,247,.9);border-color:#d9d1bb;box-shadow:0 2px 8px #4f67370a}
+.sidebox h3{color:#5c743f;background:linear-gradient(#fffdf8,#f7f4ea);border-bottom-color:#d9d1bb}
+.navbtn{color:#384332}.navbtn .ico{color:#6f8a4b}.navbtn:hover{background:#edf2df}.navbtn.active{background:linear-gradient(180deg,#809a5c,#607a42);box-shadow:0 4px 10px #4f67372c}
+.info b{color:#5c743f}.maincard{background:rgba(255,253,247,.96);border-color:#dfd7c3;box-shadow:0 5px 16px #4f673715}
+.taskhead h2{color:#5c743f}.worked,.grade-solution{background:#f7f8ef;border-left-color:#8fa56b}.solution-line{border-left-color:#d6dbc4;background:#fbfaf4}
+.dropzone{border-color:#789354;background:#fffdf8;box-shadow:0 1px 3px #4f673712}.dropzone.filled{background:#f2f5e9}.bankwrap{border-top-color:#d9d1bb}.dragitem{border-color:#aebc95;background:#fffdf8;box-shadow:0 1px 3px #4f67370d}
+.choice{border-color:#d9d1bb;background:#fbfaf5}.choice:hover{background:#f1f4e8}.choice input{accent-color:#6f8a4b}
+.gap{border-color:#aeb79b;background:#fffdf8}.actions{border-top-color:#e0dac8;background:rgba(250,248,239,.88)}
+.btn{border-color:#aebc95;background:#fffdf8;color:#5c743f}.btn:hover{background:#f1f4e8}.btn.primary{background:linear-gradient(180deg,#809a5c,#637d45);border-color:#637d45;color:#fff;box-shadow:0 3px 8px #4f673728}
+.status{border-color:#bfd0a8;background:linear-gradient(90deg,#f2f6e9,#fbfcf5);color:#4b6635}.status .dot{background:#718e4d}
+.scratch-wrap{margin-top:20px}.scratch-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.scratch-title{font-weight:700;color:#53683c}.scratchpad{width:100%;height:260px;display:block;background:#fffdf8;border:1px solid #cfc7b2;border-radius:10px;touch-action:none;cursor:crosshair;box-shadow:inset 0 0 0 1px #ffffff80}.scratch-note{font-size:13px;color:#777565;margin-top:6px}
+
+</style></head>
+<body><div class="wrap"><div class="tabs" id="tabs"></div><main id="app"></main></div>
+<script>
+const data=[
+{n:'20.2',type:'Группировка и разложение кубического уравнения на множители',worked:{eq:'x^3+2x^2=16x+32',steps:['Перенесём всё в левую часть: $x^3+2x^2-16x-32=0$.','Сгруппируем: $x^2(x+2)-16(x+2)=0$.','Вынесем общий множитель: $(x+2)(x^2-16)=0$.','$(x+2)(x-4)(x+4)=0$.','Ответ: $x=-4;-2;4$.']},restore:{eq:'x^3+3x^2=25x+75',parts:['$x^3+3x^2-25x-75=0$','$x^2(x+3)-25(x+3)=0$','$(x+3)(x^2-25)=0$','$(x+3)(x-5)(x+5)=0$'],gaps:[['x+3','x+3'],['25','25'],['5','5']]},error:{eq:'x^3-4x^2=9x-36',lines:['$x^3-4x^2-9x+36=0$','$x^2(x-4)-9(x-4)=0$','$(x-4)(x^2-9)=0$','$x=4;\\;x=3$'],correct:4},own:{eq:'x^3+6x^2=4x+24',ans:['-6','-2','2']},grade:{eq:'x^3+x^2=16x+16',solution:'$x^3+x^2-16x-16=0$ → $x^2(x+1)-16(x+1)=0$ → $(x+1)(x^2-16)=0$ → $(x+1)(x-4)(x+4)=0$ → $x=-1;4;16$.',score:0}},
+{n:'20.3',type:'Разложение многочлена группировкой',worked:{eq:'x^3+2x^2-9x-18=0',steps:['Сгруппируем: $(x^3+2x^2)+(-9x-18)=0$.','$x^2(x+2)-9(x+2)=0$.','$(x+2)(x^2-9)=0$.','$(x+2)(x-3)(x+3)=0$.','Ответ: $x=-3;-2;3$.']},restore:{eq:'x^3-5x^2-4x+20=0',parts:['$x^2(x-5)-4(x-5)=0$','$(x-5)(x^2-4)=0$','$(x-5)(x-2)(x+2)=0$'],gaps:[['x-5','x-5'],['4','4'],['2','2']]},error:{eq:'x^3+4x^2-x-4=0',lines:['$x^2(x+4)-1(x+4)=0$','$(x+4)(x^2-1)=0$','$x=-4;\\;x=1;\\;x=-1$'],correct:0},own:{eq:'x^3-3x^2-16x+48=0',ans:['-4','3','4']},grade:{eq:'x^3+5x^2-9x-45=0',solution:'$(x^3+5x^2)+(-9x-45)=0$ → $x^2(x+5)-9(x+5)=0$ → $(x+5)(x^2-9)=0$ → $(x+5)(x-3)(x+3)=0$ → $x=5;-3;3$.',score:1}},
+{n:'20.4',type:'Вынесение общего выражения и разложение на множители',worked:{eq:'x(x^2-6x+9)=4(x-3)',steps:['Заметим: $x^2-6x+9=(x-3)^2$.','$x(x-3)^2=4(x-3)$.','Перенесём: $(x-3)[x(x-3)-4]=0$.','$x=3$ или $x^2-3x-4=0$.','$(x-4)(x+1)=0$. Ответ: $x=-1;3;4$.']},restore:{eq:'x(x^2+4x+4)=3(x+2)',parts:['$x(x+2)^2=3(x+2)$','$(x+2)[x(x+2)-3]=0$','$(x+2)(x^2+2x-3)=0$'],gaps:[['x+2','x+2'],['3','3'],['-3','-3']]},error:{eq:'x(x^2-2x+1)=6(x-1)',lines:['$x(x-1)^2=6(x-1)$','Делим обе части на $(x-1)$: $x(x-1)=6$','$x^2-x-6=0$','$x=-2;3$'],correct:2},own:{eq:'x(x^2+6x+9)=4(x+3)',ans:['-4','-3','1']},grade:{eq:'x(x^2-8x+16)=5(x-4)',solution:'$x^2-8x+16=(x-4)^2$ → $x(x-4)^2=5(x-4)$ → $x(x-4)^2-5(x-4)=0$ → $(x-4)[x(x-4)-5]=0$ → $x=4$ или $x^2-4x-5=0$ → $(x-5)(x+1)=0$ → $x=-1;4;5$.',score:2}},
+{n:'20.5',type:'Уравнение вида $x^4=(x-a)^2$',worked:{eq:'x^4=(x-6)^2',steps:['Представим $x^4=(x^2)^2$.','$(x^2)^2-(x-6)^2=0$.','По разности квадратов: $(x^2-x+6)(x^2+x-6)=0$.','$x^2-x+6=0$ корней не имеет.','$x^2+x-6=(x+3)(x-2)=0$. Ответ: $x=-3;2$.']},restore:{eq:'x^4=(x-4)^2',parts:['$(x^2)^2-(x-4)^2=0$','$(x^2-x+4)(x^2+x-4)=0$'],gaps:[['x-4','x-4'],['x^2+x-4','x^2+x-4']]},error:{eq:'x^4=(x-2)^2',lines:['$(x^2-x+2)(x^2+x-2)=0$','$x^2-x+2=0$ — корней нет','$x^2+x-2=0$','$x=1;\\;x=-2$'],correct:4},own:{eq:'x^4=(x-12)^2',ans:['-4','3']},grade:{eq:'x^4=(x-6)^2',solution:'$x^4-(x-6)^2=0$ → $(x^2-x+6)(x^2+x-6)=0$ → $x^2-x+6=0:\\;x=2;-3$ → $x^2+x-6=0:\\;x=2;-3$ → $x=-3;2$.',score:0}},
+{n:'20.6',type:'Дробно-рациональное уравнение, замена $t=1/x$',worked:{eq:'\\frac{1}{x^2}+\\frac{5}{x}-6=0',steps:['ОДЗ: $x\\ne0$. Введём $t=\\frac1x$.','Получаем $t^2+5t-6=0$.','$(t+6)(t-1)=0$, поэтому $t=-6$ или $t=1$.','$\\frac1x=-6$ или $\\frac1x=1$.','Ответ: $x=-\\frac16;1$.']},restore:{eq:'\\frac{1}{x^2}-\\frac{3}{x}-4=0',parts:['$t=\\frac1x$, $t^2-3t-4=0$','$(t-4)(t+1)=0$'],gaps:[['4','4'],['-1','-1']]},error:{eq:'\\frac{1}{x^2}+\\frac{3}{x}-10=0',lines:['$t=\\frac1x$','$t^2+3t-10=0$','$t=2$ или $t=-5$','$x=2$ или $x=-5$'],correct:4},own:{eq:'\\frac{1}{x^2}+\\frac{2}{x}-8=0',ans:['-0.25','0.5','-1/4','1/2']},grade:{eq:'\\frac{1}{x^2}-\\frac{5}{x}+6=0',solution:'$x\\ne0$ → $t=\\frac{1}{x}$ → $t^2-5t+6=0$ → $(t-2)(t-3)=0$ → $t=2;3$ → $\\frac{1}{x}=2;\\frac{1}{x}=3$ → $x=2;\\frac{1}{3}$.',score:1}},
+{n:'20.7',type:'Биквадратное уравнение относительно выражения $(x-a)^2$',worked:{eq:'(x-2)^4-5(x-2)^2+4=0',steps:['Пусть $t=(x-2)^2$, тогда $t\\ge0$.','$t^2-5t+4=0$.','$t=1$ или $t=4$.','$(x-2)^2=1$ или $(x-2)^2=4$.','Ответ: $x=0;1;3;4$.']},restore:{eq:'(x+1)^4-10(x+1)^2+9=0',parts:['$t=(x+1)^2$','$t^2-10t+9=0$','$t=1$ или $t=9$'],gaps:[['x+1','x+1'],['10','10'],['9','9']]},error:{eq:'(x-3)^4-13(x-3)^2+36=0',lines:['$t=(x-3)^2$','$t^2-13t+36=0$','$t=4$ или $t=9$','$(x-3)^2=4$ даёт $x=1;5$, $(x-3)^2=9$ даёт $x=6$'],correct:4},own:{eq:'(x-1)^4-5(x-1)^2+4=0',ans:['-1','0','2','3']},grade:{eq:'(x+2)^4-17(x+2)^2+16=0',solution:'$t=(x+2)^2,\\;t\\ge0$ → $t^2-17t+16=0$ → $(t-1)(t-16)=0$ → $t=1;16$ → $(x+2)^2=1:\\;x=-3;-1$ → $(x+2)^2=16:\\;x=-6;2$ → $x=-6;-3;-1;2$.',score:2}},
+{n:'20.8',type:'Уравнение с радикалом, сокращение одинаковых выражений',worked:{eq:'x^2-4x+\\sqrt{5-x}=\\sqrt{5-x}+12',steps:['ОДЗ: $x\\le5$.','Одинаковые радикалы стоят в обеих частях — вычтем их.','$x^2-4x=12$.','$x^2-4x-12=0$, $(x-6)(x+2)=0$.','Из $x=6$ и $x=-2$ условию ОДЗ соответствует только $x=-2$.']},restore:{eq:'x^2-2x+\\sqrt{4-x}=\\sqrt{4-x}+8',parts:['ОДЗ: $x\\le4$','$x^2-2x=8$','$x^2-2x-8=0$'],gaps:[['4','4'],['8','8'],['-2','-2']]},error:{eq:'x^2-5x+\\sqrt{6-x}=\\sqrt{6-x}+6',lines:['ОДЗ: $x\\le6$','$x^2-5x=6$','$x^2-5x-6=0$','$x=-1;6$. Поэтому ответ: $6$.'],correct:4},own:{eq:'x^2-3x+\\sqrt{5-x}=\\sqrt{5-x}+10',ans:['-2']},grade:{eq:'x^2-4x+\\sqrt{7-x}=\\sqrt{7-x}+5',solution:'$x\\le7$ → $x^2-4x=5$ → $x^2-4x-5=0$ → $(x-5)(x+1)=0$ → $x=5;-1$ → $x=-1;5$.',score:2}},
+{n:'20.9',type:'Сумма квадратов равна нулю',worked:{eq:'(x^2-25)^2+(x^2+2x-15)^2=0',steps:['Сумма квадратов неотрицательна и равна нулю только тогда, когда оба квадрата равны нулю.','$x^2-25=0$ и $x^2+2x-15=0$.','Первое: $x=\\pm5$.','Второе: $(x+5)(x-3)=0$, то есть $x=-5;3$.','Общий корень двух уравнений: $x=-5$.']},restore:{eq:'(x^2-16)^2+(x^2+x-12)^2=0',parts:['$x^2-16=0$ и $x^2+x-12=0$','$x=\\pm4$','$(x+4)(x-3)=0$'],gaps:[['16','16'],['4','4'],['-4','-4']]},error:{eq:'(x^2-9)^2+(x^2-2x-3)^2=0',lines:['$x^2-9=0$ и $x^2-2x-3=0$','Из первого: $x=-3;3$','Из второго: $x=-1;3$','Ответ: $x=-3;-1;3$'],correct:4},own:{eq:'(x^2-4)^2+(x^2-x-6)^2=0',ans:['-2']},grade:{eq:'(x^2-36)^2+(x^2+5x-6)^2=0',solution:'$x^2-36=0$ или $x^2+5x-6=0$ → $(x-6)(x+6)=0$ → $x=-6;6$ → $(x+6)(x-1)=0$ → $x=-6;1$ → $x=-6;1;6$.',score:0}}
+];
+function norm(s){return String(s).trim().toLowerCase().replace(/\s+/g,'').replace(/,/g,'.').replace(/−/g,'-').replace(/;/g,',')}
+function parseAnswers(s){return norm(s).split(',').filter(Boolean).map(v=>{if(v.includes('/')){let[a,b]=v.split('/').map(Number);return a/b}return Number(v)}).filter(v=>!Number.isNaN(v)).sort((a,b)=>a-b)}
+function sameSet(a,b){let A=parseAnswers(a),B=[...new Set(b.map(v=>{if(String(v).includes('/')){let[p,q]=String(v).split('/').map(Number);return p/q}return Number(v)}))].sort((x,y)=>x-y);return A.length===B.length&&A.every((v,i)=>Math.abs(v-B[i])<1e-8)}
+function fb(el,ok){el.className='feedback '+(ok?'ok':'bad');el.textContent=ok?'Верно':'Неверно'}
+const labels=['Кубические','Группировка','Общий множитель','Биквадратные','Дробно-рациональные','Замена выражения','С радикалом','Сумма квадратов'];
+const navTitles=['Разобранный пример','Восстановите решение','Найдите ошибку','Решите самостоятельно','Выставьте баллы за решение'];
+const icons=['▣','✚','⌕','✎','★'];
+const tabs=document.getElementById('tabs'),app=document.getElementById('app');
+function mathify(s){return String(s).replace(/\$([^$]+)\$/g,(m,x)=>`\\(${x}\\)`)}
+
+// 20.2: ровно три пропуска — во 2-й строке, в 3-й строке и в ответе.
+data[0].restore.items=['25','x^2-25','-5; -3; 5'];
+data[0].restore.templates=[
+  String.raw`<span class="math-inline">\(x^3+3x^2-25x-75=0\)</span>`,
+  String.raw`<span class="math-inline">\(x^2(x+3)-\)</span>{{0}}<span class="math-inline">\((x+3)=0\)</span>`,
+  String.raw`<span class="math-inline">\((x+3)\)</span>{{1}}<span class="math-inline">\(=0\)</span>`,
+  String.raw`<span class="math-inline">Ответ: \(x=\)</span>{{2}}`
+];
+
+data.forEach((d,i)=>{
+  tabs.insertAdjacentHTML('beforeend',`<button class="tab ${i?'':'active'}" data-i="${i}"><span class="num">${d.n}</span><span class="short">${labels[i]}</span></button>`);
+  let restoreTokens=d.restore.items ? [...d.restore.items] : d.restore.gaps.map(g=>g[0]);
+  let restoreLines;
+  if(d.restore.templates){
+    restoreLines=d.restore.templates.map(tpl=>{
+      let rendered=tpl.replace(/\{\{(\d+)\}\}/g,(m,n)=>{
+        let token=restoreTokens[Number(n)];
+        if(token===undefined) return '';
+        return `<span class="dropzone" data-a="${String(token).replace(/"/g,'&quot;')}"></span>`;
+      });
+      return `<div class="solution-line restore-line">${rendered}</div>`;
+    }).join('');
+  }else{
+    restoreLines=d.restore.parts.map((x,j)=>{
+      let token=restoreTokens[j%restoreTokens.length];
+      let raw=x, zone=`<span class="dropzone" data-a="${token.replace(/"/g,'&quot;')}"></span>`;
+      if(raw.startsWith('$')&&raw.endsWith('$')) raw=raw.slice(1,-1);
+      let shown;
+      if(raw.includes(token)){
+        let k=raw.indexOf(token),a=raw.slice(0,k),b=raw.slice(k+token.length);
+        shown=(a?mathify(`$${a}$`):``)+zone+(b?mathify(`$${b}$`):``);
+      }else{
+        shown=mathify(raw)+` `+zone;
+      }
+      return `<div class="solution-line restore-line">${shown}</div>`;
+    }).join('');
+  }
+  let bank=[...restoreTokens].sort(()=>Math.random()-.5).map((t,j)=>`<span class="dragitem" draggable="true" data-v="${t.replace(/"/g,'&quot;')}" data-id="${j}">\\(${t}\\)</span>`).join('');
+
+  const sections=[
+    `<section class="sectionview active" data-s="0"><div class="taskhead"><h2>1. Разобранный пример</h2><p>Изучите последовательность решения аналогичного уравнения.</p></div><div class="taskbody"><div class="eqblock">Решите уравнение: $$${d.worked.eq}$$</div><div class="worked">${d.worked.steps.map(s=>`<div class="solution-line">${mathify(s)}</div>`).join('')}</div></div><div class="status"><span class="dot">i</span>Разобранный пример предназначен для изучения способа решения.</div></section>`,
+    `<section class="sectionview" data-s="1"><div class="taskhead"><h2>2. Восстановите решение (перетаскиванием)</h2><p>Перетащите выражения в пропуски непосредственно в решении.</p></div><div class="taskbody"><div class="eqblock">$$${d.restore.eq}=0$$</div>${restoreLines}<div class="bankwrap"><div class="banktitle">Перетащите сюда нужные выражения:</div><div class="bank">${bank}</div></div></div><div class="actions"><button class="btn resetRestore">↻&nbsp; Сбросить</button><span class="feedback restoreFeedback"></span><button class="btn primary checkRestore">✓&nbsp; Проверить</button></div><div class="status"><span class="dot">i</span>Решите задание и нажмите «Проверить».</div></section>`,
+    `<section class="sectionview" data-s="2"><div class="taskhead"><h2>3. Найдите ошибку</h2><p>Укажите строку, в которой впервые допущена ошибка.</p></div><div class="taskbody"><div class="eqblock">Уравнение: $$${d.error.eq}$$</div>${d.error.lines.map((x,j)=>`<label class="choice"><input type="radio" name="err${i}" value="${j+1}"> ${mathify(x)}</label>`).join('')}</div><div class="actions"><span class="feedback errorFeedback"></span><button class="btn primary checkError">✓&nbsp; Проверить</button></div><div class="status"><span class="dot">i</span>Выберите одну строку решения.</div></section>`,
+    `<section class="sectionview" data-s="3"><div class="taskhead"><h2>4. Решите самостоятельно</h2><p>Решите уравнение в черновике и внесите только окончательный ответ.</p></div><div class="taskbody"><div class="eqblock">Решите уравнение: $$${d.own.eq}$$</div><div class="row"><input class="gap ownAns" style="width:320px" placeholder="Введите ответ через ;"></div><div class="scratch-wrap"><div class="scratch-head"><span class="scratch-title">Черновик</span><button type="button" class="btn clearScratch">Очистить черновик</button></div><canvas class="scratchpad"></canvas><div class="scratch-note">Можно писать мышью, стилусом или пальцем.</div></div></div><div class="actions"><span class="feedback ownFeedback"></span><button class="btn primary checkOwn">✓&nbsp; Проверить ответ</button></div><div class="status"><span class="dot">i</span>В поле ответа укажите только корни; несколько корней вводите через точку с запятой.</div></section>`,
+    `<section class="sectionview" data-s="4"><div class="taskhead"><h2>5. Выставьте баллы за решение</h2></div><div class="taskbody"><div class="eqblock">Уравнение: $$${d.grade.eq}$$</div><div class="grade-solution"><b>Решение ученика</b>${d.grade.solution.split('→').map(x=>`<div>${mathify(x.trim())}</div>`).join('')}</div><p><b>Сколько баллов?</b></p><label class="choice"><input type="radio" name="grade${i}" value="0"> 0 баллов</label><label class="choice"><input type="radio" name="grade${i}" value="1"> 1 балл</label><label class="choice"><input type="radio" name="grade${i}" value="2"> 2 балла</label></div><div class="actions"><button class="btn resetGrade">↻&nbsp; Сбросить</button><span class="feedback gradeFeedback"></span><button class="btn primary checkGrade">✓&nbsp; Проверить</button></div></section>`
+  ].join('');
+
+  const nav=navTitles.map((t,j)=>`<button class="navbtn ${j?'':'active'}" data-s="${j}"><span class="ico">${icons[j]}</span><span>${j+1}. ${t}</span></button>`).join('');
+  app.insertAdjacentHTML('beforeend',`<article class="panel ${i?'':'active'}" data-i="${i}"><div class="workspace"><aside class="sidebar"><div class="sidebox"><h3>Навигация по блоку</h3><div class="blocknav">${nav}</div></div><div class="sidebox"><div class="info"><b>Тип уравнений</b><br>${mathify(d.type)}.</div></div><div class="sidebox"><div class="info"><b>Критерии оценивания (макс. 2 балла)</b><p class="rubricLine"><strong>2 балла</strong> — обоснованно получен верный ответ.</p><p class="rubricLine"><strong>1 балл</strong> — решение доведено до конца, но допущена арифметическая ошибка.</p><p class="rubricLine"><strong>0 баллов</strong> — решение не соответствует ни одному из критериев.</p></div></div></aside><div class="maincard">${sections}</div></div></article>`);
+});
+
+function activatePanel(i){
+  document.querySelectorAll('.tab,.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelector(`.tab[data-i="${i}"]`).classList.add('active');
+  document.querySelector(`.panel[data-i="${i}"]`).classList.add('active');
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([document.querySelector(`.panel[data-i="${i}"]`)]);
+}
+tabs.onclick=e=>{let b=e.target.closest('.tab');if(!b)return;activatePanel(b.dataset.i);window.scrollTo({top:0,behavior:'smooth'})};
+
+document.querySelectorAll('.panel').forEach((p,i)=>{
+  let d=data[i], dragged=null;
+  p.querySelector('.blocknav').addEventListener('click',e=>{let b=e.target.closest('.navbtn');if(!b)return;p.querySelectorAll('.navbtn,.sectionview').forEach(x=>x.classList.remove('active'));b.classList.add('active');p.querySelector(`.sectionview[data-s="${b.dataset.s}"]`).classList.add('active');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([p.querySelector(`.sectionview[data-s="${b.dataset.s}"]`)]);});
+  p.querySelectorAll('.dragitem').forEach(it=>{it.addEventListener('dragstart',()=>dragged=it);it.addEventListener('click',()=>dragged=it)});
+  p.querySelectorAll('.dropzone').forEach(z=>{
+    z.addEventListener('dragover',e=>e.preventDefault());
+    const place=()=>{if(!dragged)return;if(z.dataset.itemId){let old=p.querySelector(`.dragitem[data-id="${z.dataset.itemId}"]`);if(old)old.classList.remove('used')}z.innerHTML=`\\(${dragged.dataset.v}\\)`;z.dataset.item=dragged.dataset.v;z.dataset.itemId=dragged.dataset.id;z.classList.add('filled');dragged.classList.add('used');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([z]);dragged=null};
+    z.addEventListener('drop',e=>{e.preventDefault();place()});z.addEventListener('click',place);
+  });
+  p.querySelector('.resetRestore').onclick=()=>{p.querySelectorAll('.dropzone').forEach(z=>{z.innerHTML='';z.dataset.item='';z.dataset.itemId='';z.classList.remove('filled')});p.querySelectorAll('.dragitem').forEach(x=>x.classList.remove('used'));let f=p.querySelector('.restoreFeedback');f.className='feedback restoreFeedback';f.textContent='';dragged=null};
+  const canvas=p.querySelector('.scratchpad');
+  if(canvas){
+    const ctx=canvas.getContext('2d'); let drawing=false, last=null;
+    const resize=()=>{const r=canvas.getBoundingClientRect(),ratio=window.devicePixelRatio||1;const old=document.createElement('canvas');old.width=canvas.width;old.height=canvas.height;old.getContext('2d').drawImage(canvas,0,0);canvas.width=Math.max(1,Math.round(r.width*ratio));canvas.height=Math.max(1,Math.round(r.height*ratio));ctx.setTransform(ratio,0,0,ratio,0,0);ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#3f4937';};
+    requestAnimationFrame(resize);
+    const point=e=>{const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+    canvas.addEventListener('pointerdown',e=>{drawing=true;last=point(e);canvas.setPointerCapture(e.pointerId)});
+    canvas.addEventListener('pointermove',e=>{if(!drawing)return;const q=point(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(q.x,q.y);ctx.stroke();last=q});
+    const stop=()=>{drawing=false;last=null}; canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);
+    p.querySelector('.clearScratch').onclick=()=>{ctx.clearRect(0,0,canvas.width,canvas.height)};
+  }
+  p.querySelector('.checkRestore').onclick=()=>{let ok=[...p.querySelectorAll('.dropzone')].every(x=>norm(x.dataset.item||'')===norm(x.dataset.a));fb(p.querySelector('.restoreFeedback'),ok)};
+  p.querySelector('.checkError').onclick=()=>{let x=p.querySelector(`input[name="err${i}"]:checked`);fb(p.querySelector('.errorFeedback'),!!x&&Number(x.value)===d.error.correct)};
+  p.querySelector('.checkOwn').onclick=()=>fb(p.querySelector('.ownFeedback'),sameSet(p.querySelector('.ownAns').value,d.own.ans));
+  p.querySelector('.resetGrade').onclick=()=>{p.querySelectorAll(`input[name="grade${i}"]`).forEach(x=>x.checked=false);let f=p.querySelector('.gradeFeedback');f.className='feedback gradeFeedback';f.textContent=''};
+  p.querySelector('.checkGrade').onclick=()=>{let x=p.querySelector(`input[name="grade${i}"]:checked`);fb(p.querySelector('.gradeFeedback'),!!x&&Number(x.value)===d.grade.score)};
+});</script></body></html>
