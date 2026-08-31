@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тренажёр: точка на тригонометрическом круге</title>
+  <style>
+    :root{
+      --bg1:#eef7ff;
+      --bg2:#f7f1ff;
+      --card:#ffffff;
+      --ink:#26324a;
+      --muted:#667085;
+      --accent:#6c63ff;
+      --accent2:#20b8a6;
+      --danger:#ef476f;
+      --success:#18a875;
+      --line:#dfe6f2;
+      --shadow:0 16px 40px rgba(46, 58, 89, .14);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Inter, "Segoe UI", Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(108,99,255,.16), transparent 28%),
+        radial-gradient(circle at 90% 85%, rgba(32,184,166,.14), transparent 30%),
+        linear-gradient(135deg,var(--bg1),var(--bg2));
+    }
+    button{font:inherit}
+    .page{
+      width:min(1200px, 96vw);
+      margin:0 auto;
+      padding:24px 0 34px;
+    }
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .title-wrap h1{
+      margin:0;
+      font-size:clamp(25px,3vw,40px);
+      line-height:1.08;
+    }
+    .title-wrap p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:15px;
+    }
+    .stats-btn{
+      border:0;
+      border-radius:14px;
+      padding:12px 16px;
+      color:#fff;
+      background:linear-gradient(135deg,var(--accent),#8a65e8);
+      cursor:pointer;
+      box-shadow:0 8px 18px rgba(108,99,255,.24);
+      transition:.2s;
+      white-space:nowrap;
+    }
+    .stats-btn:hover{transform:translateY(-2px)}
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);
+      gap:20px;
+    }
+    .card{
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(255,255,255,.8);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+    }
+    .circle-card{
+      min-height:660px;
+      padding:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    #circle{
+      width:min(100%, 650px);
+      height:auto;
+      aspect-ratio:1/1;
+      display:block;
+      cursor:crosshair;
+      touch-action:manipulation;
+    }
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .task-card{padding:22px}
+    .badge-row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .badge{
+      background:#f0efff;
+      color:#554dd8;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+    }
+    .score-badge{
+      background:#ebfbf7;
+      color:#11866f;
+    }
+    .question{
+      text-align:center;
+      padding:22px 12px;
+      background:linear-gradient(135deg,#f8f8ff,#eefbf8);
+      border:1px solid var(--line);
+      border-radius:18px;
+    }
+    .question small{
+      display:block;
+      color:var(--muted);
+      margin-bottom:10px;
+      font-size:14px;
+    }
+    #angleText{
+      font-family:"Cambria Math","Times New Roman",serif;
+      font-size:clamp(36px,6vw,58px);
+      font-weight:700;
+      color:#2d315b;
+      min-height:68px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .fraction{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      line-height:1;
+      vertical-align:middle;
+      padding:0 .08em;
+    }
+    .fraction .top{
+      padding:0 .18em .08em;
+      border-bottom:2px solid currentColor;
+    }
+    .fraction .bottom{padding-top:.08em}
+    .instructions{
+      margin:16px 0 0;
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.55;
+      text-align:center;
+    }
+    .feedback{
+      min-height:54px;
+      margin-top:14px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:10px 12px;
+      font-weight:700;
+      background:#f7f8fb;
+      color:var(--muted);
+      border:1px solid var(--line);
+    }
+    .feedback.ok{
+      background:#eafaf4;
+      color:var(--success);
+      border-color:#b9ecd9;
+    }
+    .feedback.bad{
+      background:#fff0f4;
+      color:var(--danger);
+      border-color:#ffc4d2;
+    }
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+    .btn{
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      cursor:pointer;
+      font-weight:800;
+      transition:.18s;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-secondary{background:#eef1f7;color:#344054}
+    .btn-hint{background:#fff4d8;color:#9a6700}
+    .btn-reset{background:#ffecef;color:#b42348}
+    .progress-card{padding:18px 20px}
+    .progress-head{
+      display:flex;
+      justify-content:space-between;
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .progress{
+      height:12px;
+      background:#edf0f6;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .progress > div{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      transition:width .3s ease;
+    }
+    .legend{
+      padding:18px 20px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.55;
+    }
+    .legend strong{color:var(--ink)}
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(24,31,50,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:20;
+      backdrop-filter:blur(4px);
+    }
+    .modal.open{display:flex}
+    .modal-card{
+      width:min(680px,96vw);
+      max-height:90vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 24px 70px rgba(0,0,0,.25);
+      padding:24px;
+    }
+    .modal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .modal-head h2{margin:0}
+    .close{
+      width:38px;height:38px;
+      border:0;border-radius:50%;
+      font-size:22px;cursor:pointer;
+      background:#f0f2f7;color:#344054;
+    }
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-bottom:18px;
+    }
+    .stat{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 10px;
+      text-align:center;
+      background:#fafbfe;
+    }
+    .stat b{display:block;font-size:26px;color:#353b67}
+    .stat span{font-size:12px;color:var(--muted)}
+    .history{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+    .history th,.history td{
+      border-bottom:1px solid var(--line);
+      padding:9px 6px;
+      text-align:left;
+    }
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:20px;
+    }
+    @media(max-width:900px){
+      .layout{grid-template-columns:1fr}
+      .circle-card{min-height:auto}
+      .side{grid-row:1}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:520px){
+      .header{align-items:flex-start;flex-direction:column}
+      .stats-btn{width:100%}
+      .actions{grid-template-columns:1fr}
+      .task-card{padding:16px}
+      .circle-card{padding:6px;border-radius:18px}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>Точка на тригонометрическом круге</h1>
+        <p>Нажмите на точку, соответствующую заданному углу.</p>
+      </div>
+      <button class="stats-btn" id="openStats">📊 Посмотреть статистику</button>
+    </header>
+
+    <section class="layout">
+      <div class="card circle-card">
+        <canvas id="circle" width="700" height="700" aria-label="Тригонометрический круг"></canvas>
+      </div>
+
+      <aside class="side">
+        <div class="card task-card">
+          <div class="badge-row">
+            <span class="badge" id="taskBadge">Задание 1 из 64</span>
+            <span class="badge score-badge" id="scoreBadge">Верно: 0</span>
+          </div>
+
+          <div class="question">
+            <small>Найдите точку для угла</small>
+            <div id="angleText"></div>
+          </div>
+
+          <p class="instructions">
+            На окружности отмечены стандартные точки. Нажмите на нужную точку.
+            Угол отсчитывается против часовой стрелки от положительного направления оси <b>x</b>.
+          </p>
+
+          <div class="feedback" id="feedback">Выберите точку на окружности</div>
+
+          <div class="actions">
+            <button class="btn btn-hint" id="hintBtn">💡 Подсказка</button>
+            <button class="btn btn-secondary" id="showAnswerBtn">👁 Показать ответ</button>
+            <button class="btn btn-primary" id="nextBtn">Следующее задание</button>
+            <button class="btn btn-reset" id="resetBtn">↻ Начать заново</button>
+          </div>
+        </div>
+
+        <div class="card progress-card">
+          <div class="progress-head">
+            <span>Прогресс</span>
+            <span id="progressText">0 / 64</span>
+          </div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+
+        <div class="card legend">
+          <strong>В тренажёре 64 задания.</strong><br>
+          Используются стандартные углы, кратные
+          <span style="font-family:'Cambria Math','Times New Roman',serif;">π/6, π/4, π/3 и π/2</span>,
+          включая отрицательные углы и углы больше
+          <span style="font-family:'Cambria Math','Times New Roman',serif;">2π</span>.
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="modal" id="statsModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>📊 Статистика</h2>
+        <button class="close" id="closeStats" aria-label="Закрыть">×</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat"><b id="sDone">0</b><span>выполнено</span></div>
+        <div class="stat"><b id="sCorrect">0</b><span>верных</span></div>
+        <div class="stat"><b id="sMistakes">0</b><span>ошибок</span></div>
+        <div class="stat"><b id="sAccuracy">0%</b><span>точность</span></div>
+      </div>
+      <div id="historyWrap"></div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('circle');
+  const ctx = canvas.getContext('2d');
+  const angleText = document.getElementById('angleText');
+  const feedback = document.getElementById('feedback');
+  const taskBadge = document.getElementById('taskBadge');
+  const scoreBadge = document.getElementById('scoreBadge');
+  const progressText = document.getElementById('progressText');
+  const progressBar = document.getElementById('progressBar');
+
+  const TOTAL = 64;
+  const basePoints = [
+    {n:0,d:1,label:'0'},
+    {n:1,d:6,label:'π/6'},
+    {n:1,d:4,label:'π/4'},
+    {n:1,d:3,label:'π/3'},
+    {n:1,d:2,label:'π/2'},
+    {n:2,d:3,label:'2π/3'},
+    {n:3,d:4,label:'3π/4'},
+    {n:5,d:6,label:'5π/6'},
+    {n:1,d:1,label:'π'},
+    {n:7,d:6,label:'7π/6'},
+    {n:5,d:4,label:'5π/4'},
+    {n:4,d:3,label:'4π/3'},
+    {n:3,d:2,label:'3π/2'},
+    {n:5,d:3,label:'5π/3'},
+    {n:7,d:4,label:'7π/4'},
+    {n:11,d:6,label:'11π/6'}
+  ];
+
+  function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b]} return a||1; }
+  function simplify(n,d){
+    const g=gcd(n,d);
+    return {n:n/g,d:d/g};
+  }
+  function fracHTML(n,d){
+    if(n===0) return '0';
+    const sign=n<0?'−':'';
+    const an=Math.abs(n);
+    if(d===1){
+      if(an===1) return sign+'π';
+      return sign+an+'π';
+    }
+    const top=(an===1?'π':an+'π');
+    return sign+`<span class="fraction"><span class="top">${top}</span><span class="bottom">${d}</span></span>`;
+  }
+  function plainAngle(n,d){
+    if(n===0) return '0';
+    const sign=n<0?'−':'';
+    const an=Math.abs(n);
+    if(d===1) return sign+(an===1?'π':an+'π');
+    return sign+(an===1?'π':an+'π')+'/'+d;
+  }
+
+  function makeTasks(){
+    const variants = [
+      {k:0},{k:1},{k:-1},{k:2}
+    ];
+    const list=[];
+    basePoints.forEach((p,idx)=>{
+      variants.forEach(v=>{
+        const n = p.n + 2*p.d*v.k;
+        const s=simplify(n,p.d);
+        list.push({
+          target:idx,
+          n:s.n,
+          d:s.d,
+          shown:plainAngle(s.n,s.d)
+        });
+      });
+    });
+    for(let i=list.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [list[i],list[j]]=[list[j],list[i]];
+    }
+    return list.slice(0,TOTAL);
+  }
+
+  let tasks=makeTasks();
+  let index=0;
+  let correct=0;
+  let mistakes=0;
+  let answered=false;
+  let attemptsCurrent=0;
+  let history=[];
+  let highlighted=null;
+
+  function current(){return tasks[index];}
+
+  function draw(){
+    const w=canvas.width,h=canvas.height;
+    const cx=w/2, cy=h/2, r=Math.min(w,h)*0.36;
+    ctx.clearRect(0,0,w,h);
+
+    ctx.fillStyle='#fbfcff';
+    ctx.fillRect(0,0,w,h);
+
+    ctx.strokeStyle='#d8deea';
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(45,cy); ctx.lineTo(w-45,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,45); ctx.lineTo(cx,h-45); ctx.stroke();
+
+    ctx.fillStyle='#667085';
+    ctx.font='24px Segoe UI';
+    ctx.fillText('x',w-58,cy-12);
+    ctx.fillText('y',cx+12,58);
+    ctx.fillText('1',cx+r-5,cy+29);
+    ctx.fillText('−1',cx-r-21,cy+29);
+    ctx.fillText('1',cx+12,cy-r+8);
+    ctx.fillText('−1',cx+12,cy+r+8);
+
+    ctx.strokeStyle='#5b64d8';
+    ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+
+    basePoints.forEach((p,i)=>{
+      const a=p.n/p.d*Math.PI;
+      const x=cx+r*Math.cos(a);
+      const y=cy-r*Math.sin(a);
+
+      ctx.beginPath();
+      ctx.arc(x,y, highlighted===i ? 13 : 9,0,Math.PI*2);
+      if(highlighted===i){
+        ctx.fillStyle='#ffb703';
+        ctx.shadowColor='rgba(255,183,3,.45)';
+        ctx.shadowBlur=18;
+      }else{
+        ctx.fillStyle='#ffffff';
+        ctx.shadowBlur=0;
+      }
+      ctx.fill();
+      ctx.shadowBlur=0;
+      ctx.strokeStyle=highlighted===i?'#c77d00':'#6c63ff';
+      ctx.lineWidth=3;
+      ctx.stroke();
+    });
+
+    ctx.fillStyle='#2f3a56';
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fill();
+  }
+
+  function showTask(){
+    const t=current();
+    angleText.innerHTML=fracHTML(t.n,t.d);
+    taskBadge.textContent=`Задание ${index+1} из ${TOTAL}`;
+    scoreBadge.textContent=`Верно: ${correct}`;
+    progressText.textContent=`${history.length} / ${TOTAL}`;
+    progressBar.style.width=`${history.length/TOTAL*100}%`;
+    feedback.className='feedback';
+    feedback.textContent='Выберите точку на окружности';
+    answered=false;
+    attemptsCurrent=0;
+    highlighted=null;
+    draw();
+  }
+
+  function pointFromEvent(e){
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width;
+    const scaleY=canvas.height/rect.height;
+    const px=(e.clientX-rect.left)*scaleX;
+    const py=(e.clientY-rect.top)*scaleY;
+    const cx=canvas.width/2,cy=canvas.height/2,r=Math.min(canvas.width,canvas.height)*0.36;
+    let best=-1,bestDist=Infinity;
+    basePoints.forEach((p,i)=>{
+      const a=p.n/p.d*Math.PI;
+      const x=cx+r*Math.cos(a);
+      const y=cy-r*Math.sin(a);
+      const dist=Math.hypot(px-x,py-y);
+      if(dist<bestDist){bestDist=dist;best=i;}
+    });
+    return bestDist<38?best:-1;
+  }
+
+  canvas.addEventListener('click',e=>{
+    if(answered) return;
+    const chosen=pointFromEvent(e);
+    if(chosen<0){
+      feedback.className='feedback bad';
+      feedback.textContent='Нажмите точнее на одну из отмеченных точек.';
+      return;
+    }
+    attemptsCurrent++;
+    if(chosen===current().target){
+      correct++;
+      answered=true;
+      highlighted=chosen;
+      feedback.className='feedback ok';
+      feedback.textContent=attemptsCurrent===1?'Верно! Отличная работа.':'Верно! Точка найдена.';
+      history.push({
+        angle:current().shown,
+        result:'Верно',
+        attempts:attemptsCurrent
+      });
+      updateSummary();
+      draw();
+    }else{
+      mistakes++;
+      highlighted=chosen;
+      feedback.className='feedback bad';
+      feedback.textContent='Пока неверно. Попробуйте ещё раз.';
+      updateSummary();
+      draw();
+    }
+  });
+
+  document.getElementById('hintBtn').addEventListener('click',()=>{
+    const t=current();
+    const normalized=basePoints[t.target];
+    const a=normalized.n/normalized.d*Math.PI;
+    const deg=Math.round(a*180/Math.PI);
+    const quadrant =
+      deg===0||deg===90||deg===180||deg===270 ? 'на одной из координатных осей' :
+      deg<90?'в I четверти':deg<180?'во II четверти':deg<270?'в III четверти':'в IV четверти';
+    feedback.className='feedback';
+    feedback.innerHTML=`Подсказка: приведите угол к промежутку от 0 до 2π. Искомая точка находится ${quadrant}.`;
+  });
+
+  document.getElementById('showAnswerBtn').addEventListener('click',()=>{
+    highlighted=current().target;
+    draw();
+    const p=basePoints[current().target];
+    feedback.className='feedback';
+    feedback.innerHTML=`Ответ: точка для угла ${fracHTML(p.n,p.d)}.`;
+  });
+
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    if(!answered){
+      feedback.className='feedback bad';
+      feedback.textContent='Сначала найдите правильную точку.';
+      return;
+    }
+    if(index<TOTAL-1){
+      index++;
+      showTask();
+    }else{
+      feedback.className='feedback ok';
+      feedback.textContent='Тренажёр завершён! Откройте статистику.';
+      document.getElementById('statsModal').classList.add('open');
+      updateStatsModal();
+    }
+  });
+
+  function resetAll(){
+    tasks=makeTasks();
+    index=0; correct=0; mistakes=0; answered=false; attemptsCurrent=0; history=[];
+    updateSummary();
+    showTask();
+  }
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    if(confirm('Начать тренировку заново? Текущая статистика будет очищена.')) resetAll();
+  });
+
+  function updateSummary(){
+    scoreBadge.textContent=`Верно: ${correct}`;
+    progressText.textContent=`${history.length} / ${TOTAL}`;
+    progressBar.style.width=`${history.length/TOTAL*100}%`;
+    save();
+  }
+
+  function updateStatsModal(){
+    const done=history.length;
+    const totalAttempts=correct+mistakes;
+    const accuracy=totalAttempts?Math.round(correct/totalAttempts*100):0;
+    document.getElementById('sDone').textContent=done;
+    document.getElementById('sCorrect').textContent=correct;
+    document.getElementById('sMistakes').textContent=mistakes;
+    document.getElementById('sAccuracy').textContent=accuracy+'%';
+
+    const wrap=document.getElementById('historyWrap');
+    if(!history.length){
+      wrap.innerHTML='<div class="empty">Пока нет выполненных заданий.</div>';
+      return;
+    }
+    wrap.innerHTML=`
+      <table class="history">
+        <thead><tr><th>№</th><th>Угол</th><th>Результат</th><th>Попыток</th></tr></thead>
+        <tbody>
+          ${history.map((h,i)=>`<tr><td>${i+1}</td><td>${h.angle}</td><td>${h.result}</td><td>${h.attempts}</td></tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  const modal=document.getElementById('statsModal');
+  document.getElementById('openStats').addEventListener('click',()=>{updateStatsModal();modal.classList.add('open')});
+  document.getElementById('closeStats').addEventListener('click',()=>modal.classList.remove('open'));
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.classList.remove('open')});
+
+  function save(){
+    try{
+      localStorage.setItem('trigCircleTrainerStats',JSON.stringify({correct,mistakes,history}));
+    }catch(e){}
+  }
+
+  draw();
+  showTask();
+})();
+</script>
+</body>
+</html>

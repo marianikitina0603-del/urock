@@ -1,0 +1,3244 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Интерактивные сечения</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f5f8;color:#20232a}
+.wrap{max-width:1100px;margin:auto;padding:18px}
+.layout{display:grid;grid-template-columns:285px 1fr;gap:16px}
+.panel,.stage{background:#fff;border:1px solid #ddd;border-radius:18px}
+.panel{padding:16px}.stage{padding:12px}
+h1{font-size:22px;margin:0 0 16px}h2{font-size:15px;margin:18px 0 8px}
+select,button{width:100%;padding:10px;border:1px solid #c9cbd1;border-radius:10px;background:#fff;font-size:14px}
+button{cursor:pointer;margin-top:9px}
+label{display:block;font-size:13px;margin:10px 0 5px}
+input[type=range]{width:100%}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#ece9ff;color:#5744bd;font-size:13px;font-weight:bold}
+.muted{color:#6b6f78;font-size:13px;line-height:1.45}
+.stageHead{display:flex;justify-content:space-between;align-items:center;padding:4px 5px}
+svg{display:block;width:100%;background:#fff;border-radius:14px;touch-action:none}
+.info{padding:10px 12px;background:#f1f2f6;border-radius:10px;font-size:13px;margin-top:8px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.panel{order:2}.stage{order:1}}
+</style>
+
+<style id="actionToolbarStyle">
+#actionToolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:14px 0;
+  padding:12px;
+  background:#ffffff;
+  border:1px solid #d9e1ff;
+  border-radius:16px;
+  box-shadow:0 4px 12px rgba(40,60,120,.08);
+}
+#actionToolbar button{
+  padding:10px 16px;
+  border-radius:12px;
+  border:none;
+  background:#6754c7;
+  color:white;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+}
+#actionToolbar button:hover{
+  transform:translateY(-1px);
+  opacity:.9;
+}
+</style>
+
+
+<style>
+#toolsPanel{
+ display:flex;
+ flex-wrap:wrap;
+ gap:10px;
+ margin:14px 0;
+ padding:14px;
+ background:#f4f7ff;
+ border:1px solid #cdd8ff;
+ border-radius:16px;
+}
+#toolsPanel .toolsTitle{
+ width:100%;
+ font-weight:700;
+ font-size:16px;
+}
+#toolsPanel button{
+ padding:9px 14px;
+ border-radius:10px;
+ font-weight:600;
+ cursor:pointer;
+}
+</style>
+
+<style id="realButtonLayoutFix">
+/* Только блоки инструментов */
+#zoomIn, #zoomOut,
+#extendEdge, #showAdditionalPoints,
+#makeDashed, #checkAnswer {
+    width:120px !important;
+    min-width:120px !important;
+    height:34px !important;
+    min-height:34px !important;
+    padding:3px 6px !important;
+    font-size:12px !important;
+    line-height:1.1 !important;
+    box-sizing:border-box !important;
+}
+
+/* если кнопки лежат рядом с общим контейнером */
+button[id="zoomIn"],
+button[id="zoomOut"],
+button[id="extendEdge"],
+button[id="showAdditionalPoints"],
+button[id="makeDashed"],
+button[id="checkAnswer"]{
+    margin:3px !important;
+}
+
+/* Находимся только в области кнопок, не трогаем фигуру */
+.tools,
+.controls,
+.control-buttons,
+.buttons-row,
+.button-row{
+    display:grid !important;
+    grid-template-columns:120px 120px !important;
+    gap:6px !important;
+}
+</style>
+
+
+<style id="finalButtonSizeFix">
+/* Финальная настройка размеров кнопок */
+#zoomIn,
+#zoomOut {
+    width:70px !important;
+    min-width:70px !important;
+    height:32px !important;
+    font-size:12px !important;
+    padding:2px !important;
+}
+
+/* Основные кнопки инструментов */
+#extendEdge,
+#showAdditionalPoints,
+#makeDashed,
+#makeSolid,
+#checkAnswer {
+    width:135px !important;
+    min-width:135px !important;
+    height:52px !important;
+    min-height:52px !important;
+    font-size:14px !important;
+    padding:5px 8px !important;
+    white-space:normal !important;
+    line-height:1.15 !important;
+}
+
+/* контейнеры кнопок */
+#zoomIn + #zoomOut {
+    margin-left:5px !important;
+}
+</style>
+
+
+<style id="percentHeightOnlyFix">
+/* ТОЛЬКО увеличение высоты кнопок на 10%, остальное без изменений */
+#extendEdge,
+#showAdditionalPoints,
+#makeDashed,
+#makeSolid,
+#checkAnswer {
+    height:58px !important;
+    min-height:58px !important;
+}
+</style>
+
+
+<style id="clearButtonInToolbar">
+#clearPoints {
+    width:135px !important;
+    min-width:135px !important;
+    height:58px !important;
+    min-height:58px !important;
+    font-size:14px !important;
+    padding:5px 8px !important;
+    white-space:normal !important;
+    line-height:1.15 !important;
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<div class="layout">
+
+<aside class="panel">
+<h1>Сечения многогранников</h1>
+
+<h2 style="margin-top:0">Выбор фигуры</h2>
+<select id="figureSelect">
+  <option value="cube" selected>Куб</option>
+  <option value="prism">Треугольная призма</option>
+  <option value="pyramid">Четырёхугольная пирамида</option>
+  <option value="triangularPyramid">Треугольная пирамида</option>
+</select>
+
+<h2>Построение сечения</h2>
+<select id="constructionType">
+  <option value="threePoints" selected>1. Через три точки</option>
+  <option value="parallel">2. Параллельно прямой</option>
+  <option value="perpendicular">3. Перпендикулярно прямой</option>
+</select>
+
+<h2>Задания</h2>
+<select id="taskSelect">
+  <option value="" selected disabled>Выберите задание</option>
+  <option value="task1">Задача 1</option>
+  <option value="task2">Задача 2</option>
+  <option value="task3">Задача 3</option>
+  <option value="task4">Задача 4</option><option value="task5">Задача 5</option><option value="task6">Задача 6</option><option value="task7">Задача 7</option><option value="task8">Задача 8</option><option value="task9">Задача 9</option><option value="task10">Задача 10</option>
+</select>
+
+<div class="muted" style="margin-top:8px">
+  Выберите задание из списка.
+</div>
+
+<!-- НИЖЕ выбора задания находится уже само выбранное задание -->
+<div id="selectedTask" style="margin-top:22px;padding-top:16px;border-top:1px solid #e1e2e6">
+  <div id="emptyTaskMessage" class="muted" style="padding:16px 4px;text-align:center">
+  Выберите задание
+</div>
+<div id="taskControls" style="display:none">
+<span class="badge">Задача 1</span>
+<h2>Положение фигуры</h2>
+<div style="margin-top:10px">
+  <div class="muted" style="margin-bottom:6px">Масштаб рисунка</div>
+  <button id="zoomOut" type="button" title="Уменьшить">🔍−</button>
+  <button id="zoomIn" type="button" title="Увеличить">🔍+</button>
+</div>
+
+  <label for="yaw">Поворот вправо / влево</label>
+  <input id="yaw" type="range" min="-180" max="180" value="-45">
+
+  <label for="pitch">Наклон вверх / вниз</label>
+  <input id="pitch" type="range" min="-75" max="75" value="35.264">
+
+  <button id="resetView">Сбросить положение</button>
+
+  <h2>Построение</h2>
+  <div class="muted">
+    Нажимайте на рёбра многогранника, чтобы ставить точки ученика. После выбора двух точек автоматически строится отрезок.
+  </div>
+  
+
+
+
+
+</div>
+</aside>
+
+<main class="stage">
+
+<div id="instructionBox" style="
+  margin:14px 0;
+  padding:16px 18px;
+  border-radius:14px;
+  background:#f4f7ff;
+  border:1px solid #cdd8ff;
+  color:#24324a;
+  line-height:1.5;
+">
+  <div style="font-size:18px;font-weight:700;margin-bottom:10px;">
+    Как построить сечение
+  </div>
+
+  <div><b>1.</b> Выберите любые две точки на рёбрах многогранника — между ними автоматически появится отрезок сечения.</div>
+  <div><b>2.</b> Каждый построенный отрезок является частью прямой сечения. При необходимости его можно продолжить.</div>
+  <div><b>3.</b> Если не понятно, с каким ребром получить пересечение, нажмите кнопку <b>«Продлить ребро»</b> и получите дополнительные точки пересечения.</div>
+  <div><b>4.</b> Дополнительные точки можно использовать для построения новых отрезков сечения.</div>
+  <div><b>5.</b> Если линия должна быть невидимой, используйте кнопку <b>«Сделать отрезок пунктиром»</b>.</div>
+  <div><b>6.</b> После полного построения сечения нажмите кнопку <b>«Проверить»</b>.</div>
+</div>
+
+<div id="toolsPanel">
+<div class="toolsTitle">Инструменты построения</div><button id="makeDashed" style="display:block">Сделать отрезок пунктиром</button>
+<button id="makeSolid" style="display:block;margin-top:6px">Сделать линию сплошной</button>
+<div id="solidMode" style="display:none;margin-top:8px">
+<div id="solidToolbar"><div id="solidHint" class="muted">Выберите ребра</div>
+<button id="confirmSolid" style="margin-top:8px">Подтвердить выбор</button></div>
+</div>
+<button id="extendEdge" type="button" style="display:block;margin-top:6px">Продлить ребро</button>
+<button id="showAdditionalPoints" type="button" style="display:block;margin-top:6px">Показать дополнительные точки</button>
+<div id="extendMode" style="display:none;margin-top:8px">
+  <div id="extendHint" class="muted">Выберите ребро</div>
+  <button id="confirmExtend" type="button" style="margin-top:8px">Подтвердить выбор</button>
+</div>
+<div id="dashedMode" style="display:none;margin-top:8px">
+  <div id="dashedToolbar">
+<div id="dashedHint" class="muted">Выберите ребра</div>
+  <button id="confirmDashed" style="margin-top:8px">Подтвердить выбор</button>
+</div>
+</div>
+
+<button id="checkAnswer">Проверить</button>
+<button id="clearPoints">Очистить точки</button></div>
+<div class="stageHead">
+<strong>Задание №1</strong>
+<span id="pointCount" class="muted">0 точек ученика</span>
+</div>
+
+<svg id="scene" viewBox="0 0 760 560">
+<g id="faces"></g>
+<g id="edges"></g>
+<g id="dimensions"></g>
+<g id="studentExtensions"></g>
+<g id="manualDashedEdges"></g>
+<g id="selectedStudentPoints"></g>
+<g id="taskAnnotations"></g>
+<g id="studentSegments"></g>
+<g id="correctSection"></g>
+<g id="points"></g>
+<g id="labels"></g>
+</svg>
+<div id="ratioQuestion" style="display:none;margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:12px;background:#f8f8fb">
+  <div style="font-size:14px;font-weight:600;margin-bottom:8px">
+    В каком отношении сечение делит ребро AB?
+  </div>
+  <input id="ratioAnswer" type="text" placeholder="Например: 1:1"
+         style="width:100%;padding:9px;border:1px solid #c9cbd1;border-radius:9px;font-size:14px">
+</div>
+
+<div id="ratioQuestion2" style="display:none;margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:12px;background:#f8f8fb">
+  <div style="font-size:14px;font-weight:600;margin-bottom:8px">
+    В каком отношении сечение делит ребро CC₁ (считая от вершины C)?
+  </div>
+  <input id="ratioAnswer2" type="text" placeholder="Например: 1:4"
+         style="width:100%;padding:9px;border:1px solid #c9cbd1;border-radius:9px;font-size:14px">
+</div>
+
+<div id="ratioQuestion3" style="display:none;margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:12px;background:#f8f8fb">
+  <div style="font-size:14px;font-weight:600;margin-bottom:8px">
+    В каком отношении плоскость сечения делит ребро CC₁ (считая от вершины C₁)?
+  </div>
+  <input id="ratioAnswer3" type="text" placeholder="Например: 4:13"
+         style="width:100%;padding:9px;border:1px solid #c9cbd1;border-radius:9px;font-size:14px">
+</div>
+
+<div id="shapeQuestion" style="display:none;margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:12px;background:#f8f8fb">
+  <div style="font-size:14px;font-weight:600;margin-bottom:8px">
+    Какой фигурой является сечение?
+  </div>
+  <input id="shapeAnswer" type="text" placeholder="Введите название фигуры"
+         style="width:100%;padding:9px;border:1px solid #c9cbd1;border-radius:9px;font-size:14px">
+</div>
+
+<div id="areaQuestion" style="display:none;margin-top:14px;padding:12px;border:1px solid #ddd;border-radius:12px;background:#f8f8fb">
+  <div style="font-size:14px;font-weight:600;margin-bottom:8px">
+    Чему равна площадь сечения?
+  </div>
+  <input id="areaAnswer" type="text" placeholder="Введите ответ"
+         style="width:100%;padding:9px;border:1px solid #c9cbd1;border-radius:9px;font-size:14px">
+</div>
+
+
+</div>
+
+
+
+<div id="constructionNotice" class="muted" style="margin-top:10px">
+  
+</div>
+<div id="info" class="info" style="display:none"></div>
+</main>
+
+</div>
+</div>
+
+<script>
+(function(){
+
+const scene=document.getElementById('scene');
+const faces=document.getElementById('faces');
+const edgesGroup=document.getElementById('edges');
+const dimensions=document.getElementById('dimensions');
+const studentExtensions=document.getElementById('studentExtensions');
+const manualDashedEdges=document.getElementById('manualDashedEdges');
+const selectedStudentPoints=document.getElementById('selectedStudentPoints');
+const taskAnnotations=document.getElementById('taskAnnotations');
+const studentSegments=document.getElementById('studentSegments');
+const correctSection=document.getElementById('correctSection');
+const checkAnswer=document.getElementById('checkAnswer');
+const pointsGroup=document.getElementById('points');
+const labels=document.getElementById('labels');
+
+const yawInput=document.getElementById('yaw');
+const pitchInput=document.getElementById('pitch');
+const resetView=document.getElementById('resetView');
+const clearPoints=document.getElementById('clearPoints');
+const figureSelect=document.getElementById('figureSelect');
+const taskSelect=document.getElementById('taskSelect');
+const constructionTypeSelect=document.getElementById('constructionType');
+const pointCount=document.getElementById('pointCount');
+const info=document.getElementById('info');
+const makeDashed=document.getElementById('makeDashed');
+const dashedModeBox=document.getElementById('dashedMode');
+const solidModeBox=document.getElementById('solidMode');
+const solidHint=document.getElementById('solidHint');
+const confirmSolid=document.getElementById('confirmSolid');
+
+const confirmDashed=document.getElementById('confirmDashed');
+const extendEdge=document.getElementById('extendEdge');
+const extendModeBox=document.getElementById('extendMode');
+const confirmExtend=document.getElementById('confirmExtend');
+const showAdditionalPoints=document.getElementById('showAdditionalPoints');
+const zoomIn=document.getElementById('zoomIn');
+const zoomOut=document.getElementById('zoomOut');
+const areaQuestion=document.getElementById('areaQuestion');
+const areaAnswer=document.getElementById('areaAnswer');
+const ratioQuestion2=document.getElementById('ratioQuestion2');
+const ratioAnswer2=document.getElementById('ratioAnswer2');
+const ratioQuestion3=document.getElementById('ratioQuestion3');
+const ratioAnswer3=document.getElementById('ratioAnswer3');
+document.getElementById('ratioQuestion').style.display='none';
+document.getElementById('ratioQuestion2').style.display='none';
+document.getElementById('ratioQuestion3').style.display='none';
+document.getElementById('shapeQuestion').style.display='none';
+areaQuestion.style.display='none';
+
+const PY_H=7.5;
+const PY={
+  A:[-4,-2.3094010768,0],
+  B:[4,-2.3094010768,0],
+  C:[0,4.6188021536,0],
+  M:[0,0,PY_H]
+};
+const PY_EDGES=[
+  ['A','B'],['B','C'],['C','A'],
+  ['A','M'],['B','M'],['C','M']
+];
+function pyramidPointOnEdge(a,b,t){
+ return [
+  a[0]+(b[0]-a[0])*t,
+  a[1]+(b[1]-a[1])*t,
+  a[2]+(b[2]-a[2])*t
+ ];
+}
+
+function getPY_D(){return pyramidPointOnEdge(PY.A,PY.C,0.5);}
+function getPY_E(){return pyramidPointOnEdge(PY.A,PY.B,0.5);}
+function getPY_L(){return pyramidPointOnEdge(PY.A,PY.M,0.75);}
+
+const PY_D_proxy={get p(){return getPY_D();}};
+const PY_E_proxy={get p(){return getPY_E();}};
+const PY_L_proxy={get p(){return getPY_L();}};
+
+
+zoomIn.addEventListener('click',function(){
+ zoomScale=Math.min(2.2,zoomScale+0.15);
+ draw();
+});
+
+zoomOut.addEventListener('click',function(){
+ zoomScale=Math.max(0.55,zoomScale-0.15);
+ draw();
+});
+
+const emptyTaskMessage=document.getElementById('emptyTaskMessage');
+const taskControls=document.getElementById('taskControls');
+
+const V={
+ A:[-2,-2,-2], B:[2,-2,-2], C:[2,2,-2], D:[-2,2,-2],
+ A1:[-2,-2,2], B1:[2,-2,2], C1:[2,2,2], D1:[-2,2,2]
+};
+
+const bottomEdges=[['A','B'],['B','C'],['C','D'],['D','A']];
+const topEdges=[['A1','B1'],['B1','C1'],['C1','D1'],['D1','A1']];
+const verticalEdges=[['A','A1'],['B','B1'],['C','C1'],['D','D1']];
+const allEdges=bottomEdges.concat(topEdges,verticalEdges);
+
+// Для будущих задач отношение задаётся как [1,2] -> подписи x и 2x.
+const ratioAnnotations={};
+
+// Задача 1:
+// X — середина AB, Y — середина B1C1, Z — середина AD.
+// Дополнительные точки сечения:
+// середина BB1, середина D1C1 и середина DD1.
+const X1=edgePoint(['A','B'],0.5);
+const Y1=edgePoint(['B1','C1'],0.5);
+const Z1=edgePoint(['A','D'],0.5);
+const BB1mid1=edgePoint(['B','B1'],0.5);
+const D1C1mid1=edgePoint(['D1','C1'],0.5);
+const DD1mid1=edgePoint(['D','D1'],0.5);
+const O=[0,0,-2];
+
+let yaw=-45*Math.PI/180;
+let pitch=35.2643897*Math.PI/180;
+let student=[];
+let sectionClosed=false;
+let pendingSectionPoint=null;
+let sectionSegments=[];
+let additionalConnections=[];
+let pendingAdditionalConnectionPoint=null;
+let answerShown=false;
+let currentTask=null;
+let constructionType='threePoints';
+let dashedMode=false;
+let solidMode=false;
+let solidEdges=[];
+let solidConstructionSegments=[];
+let dashedEdges=[];
+let dashedStudentSegments=[];
+let dashedConstructionSegments=[];
+let extendMode=false;
+let extendedEdges=[];
+let additionalPoints=[];
+let shownAdditionalKeys=[];
+let zoomScale=1;
+
+
+function rotate(p){
+ const x=p[0],y=p[1],z=p[2];
+ const cy=Math.cos(yaw),sy=Math.sin(yaw);
+ const x1=x*cy-y*sy;
+ const y1=x*sy+y*cy;
+ const cp=Math.cos(pitch),sp=Math.sin(pitch);
+ const y2=y1*cp-z*sp;
+ const z2=y1*sp+z*cp;
+ return [x1,y2,z2];
+}
+
+function project(p){
+ if(figureSelect && figureSelect.value==='triangularPyramid') return projectPyramid(p);
+ const q=rotate(p);
+ const scale=78*zoomScale;
+ return {x:380+q[0]*scale,y:300-q[1]*scale,z:q[2]};
+}
+
+
+function projectPyramid(p){
+ const q=rotate(p);
+ const scale=30*zoomScale;
+ return {x:380+q[0]*scale,y:360-q[1]*scale,z:q[2]};
+}
+
+function drawPyramidLine(edge){
+ const a=projectPyramid(PY[edge[0]]);
+ const b=projectPyramid(PY[edge[1]]);
+ const l=el('line');
+ l.setAttribute('x1',a.x); l.setAttribute('y1',a.y);
+ l.setAttribute('x2',b.x); l.setAttribute('y2',b.y);
+ const dashed=dashedEdges.some(function(e){return sameEdge(e,edge);});
+ const solid=solidEdges.some(function(e){return sameEdge(e,edge);});
+ l.setAttribute('stroke',(dashed&&!solid)?'#555':'#20232a');
+ l.setAttribute('stroke-width','2.7');
+ if(dashed&&!solid)l.setAttribute('stroke-dasharray','7 6');
+ l.setAttribute('stroke-linecap','round');
+ edgesGroup.appendChild(l);
+}
+
+function drawPyramidSegment(a,b,dashed){
+ const p1=projectPyramid(a),p2=projectPyramid(b);
+ const l=el('line');
+ l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);
+ l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+ const segKey=segmentKey(
+   {p:a,vertex:null,edge:null,t:null},
+   {p:b,vertex:null,edge:null,t:null}
+ );
+ const solid=solidConstructionSegments.indexOf(segKey)!==-1;
+ l.setAttribute('stroke',(dashed&&!solid)?'#555':'#6754c7');
+ l.setAttribute('stroke-width',(dashed&&!solid)?'2.7':'4');
+ if(dashed&&!solid)l.setAttribute('stroke-dasharray','7 6');
+ l.setAttribute('stroke-linecap','round');
+ l.setAttribute('pointer-events','none');
+ studentSegments.appendChild(l);
+}
+
+function drawPyramidPoint(p,name,color,r=8){
+ const q=projectPyramid(p);
+ const c=el('circle');
+ c.setAttribute('cx',q.x);c.setAttribute('cy',q.y);
+ c.setAttribute('r',r);c.setAttribute('fill',color);
+ c.setAttribute('stroke','#20232a');c.setAttribute('stroke-width','2');
+ c.setAttribute('pointer-events','none');
+ pointsGroup.appendChild(c);
+ const t=el('text');
+ t.setAttribute('x',q.x+10);t.setAttribute('y',q.y-10);
+ t.setAttribute('font-size','18');t.setAttribute('font-weight','700');
+ t.setAttribute('fill',color);t.setAttribute('pointer-events','none');
+ t.textContent=name; labels.appendChild(t);
+}
+
+function drawPyramidTick(p1,p2){
+ const a=projectPyramid(p1),b=projectPyramid(p2);
+ const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);
+ if(len<1)return;
+ const nx=-dy/len,ny=dx/len,s=6,cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;
+ const l=el('line');
+ l.setAttribute('x1',cx-nx*s);l.setAttribute('y1',cy-ny*s);
+ l.setAttribute('x2',cx+nx*s);l.setAttribute('y2',cy+ny*s);
+ l.setAttribute('stroke','#333');l.setAttribute('stroke-width','2');
+ l.setAttribute('pointer-events','none');taskAnnotations.appendChild(l);
+}
+
+function drawPyramidLabel(p1,p2,text){
+ const a=projectPyramid(p1),b=projectPyramid(p2);
+ const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);
+ if(len<1)return;
+ let nx=-dy/len,ny=dx/len;if(ny>0){nx=-nx;ny=-ny;}
+ const cx=(a.x+b.x)/2+nx*16,cy=(a.y+b.y)/2+ny*16;
+ const t=el('text');t.setAttribute('x',cx);t.setAttribute('y',cy);
+ t.setAttribute('text-anchor','middle');t.setAttribute('font-size','15');
+ t.setAttribute('font-weight','700');t.setAttribute('fill','#333');
+ t.setAttribute('pointer-events','none');t.textContent=text;taskAnnotations.appendChild(t);
+}
+
+function pyramidPointByName(name){
+ if(name==='D')return getPY_D();
+ if(name==='E')return getPY_E();
+ if(name==='L')return getPY_L();
+ return PY[name];
+}
+
+function drawPyramidCorrect(){
+ if(!answerShown)return;
+ const pts=[getPY_D(),getPY_E(),getPY_L()];
+ const poly=el('polygon');
+ poly.setAttribute('points',pts.map(function(p){const q=projectPyramid(p);return q.x+','+q.y;}).join(' '));
+ poly.setAttribute('fill','#20a05a');poly.setAttribute('fill-opacity','.22');
+ poly.setAttribute('stroke','none');correctSection.appendChild(poly);
+ for(let i=0;i<3;i++){
+   const a=projectPyramid(pts[i]),b=projectPyramid(pts[(i+1)%3]);
+   const l=el('line');l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);
+   l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);
+   l.setAttribute('stroke','#20a05a');l.setAttribute('stroke-width','5');
+   l.setAttribute('stroke-linecap','round');l.setAttribute('pointer-events','none');
+   correctSection.appendChild(l);
+ }
+}
+
+function drawPyramid(){
+ faces.innerHTML='';edgesGroup.innerHTML='';dimensions.innerHTML='';
+ studentExtensions.innerHTML='';manualDashedEdges.innerHTML='';
+ selectedStudentPoints.innerHTML='';taskAnnotations.innerHTML='';
+ studentSegments.innerHTML='';correctSection.innerHTML='';pointsGroup.innerHTML='';labels.innerHTML='';
+ if(!currentTask){pointCount.textContent='0 точек ученика';return;}
+
+ const base=el('polygon');
+ base.setAttribute('points',['A','B','C'].map(function(n){const q=projectPyramid(PY[n]);return q.x+','+q.y;}).join(' '));
+ base.setAttribute('fill','#f4f5f8');base.setAttribute('opacity','.6');faces.appendChild(base);
+ [['A','B','M'],['B','C','M'],['C','A','M']].forEach(function(ns,i){
+   const f=el('polygon');
+   f.setAttribute('points',ns.map(function(n){const q=projectPyramid(PY[n]);return q.x+','+q.y;}).join(' '));
+   f.setAttribute('fill',i===1?'#eef0f8':'#f8f8fb');f.setAttribute('opacity','.55');faces.appendChild(f);
+ });
+ PY_EDGES.forEach(drawPyramidLine);
+ ['A','B','C','M'].forEach(function(name){
+   const q=projectPyramid(PY[name]);const t=el('text');
+   t.setAttribute('x',q.x+7);t.setAttribute('y',q.y-8);t.setAttribute('font-size','16');
+   t.setAttribute('fill','#20232a');t.setAttribute('pointer-events','none');t.textContent=name;labels.appendChild(t);
+ });
+
+ const D=getPY_D(),E=getPY_E(),L=getPY_L();
+ drawPyramidPoint(D,'D','#2F6BFF');drawPyramidPoint(E,'E','#2F6BFF');drawPyramidPoint(L,'L','#2F6BFF');
+ drawPyramidTick(PY.A,E);drawPyramidTick(E,PY.B);drawPyramidTick(PY.A,D);drawPyramidTick(D,PY.C);
+ drawPyramidLabel(D,PY.C,'4');drawPyramidLabel(PY.B,E,'4');drawPyramidLabel(L,PY.M,'4');
+
+ // Тот же общий рендер, что у куба.
+ drawStudentExtensions();drawExtendedEdges();drawManualDashedEdges();
+ drawAdditionalPoints();drawSelectedStudentPoints();drawPendingSectionPoint();drawTaskAnnotations();
+ getConstructionSegments().forEach(function(seg){
+   const a=project(seg.a.p),b=project(seg.b.p);const line=el('line');
+   line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);
+   if(constructionSegmentIsDashed(seg.key)){line.setAttribute('stroke','#555');line.setAttribute('stroke-width','2.7');line.setAttribute('stroke-dasharray','7 6');}
+   else{line.setAttribute('stroke','#6754c7');line.setAttribute('stroke-width','4');}
+   line.setAttribute('stroke-linecap','round');line.setAttribute('pointer-events','none');studentSegments.appendChild(line);
+ });
+
+ student.forEach(function(s){
+   if(s.predefinedName)return;
+   const q=project(s.p);const c=el('circle');
+   c.setAttribute('cx',q.x);c.setAttribute('cy',q.y);c.setAttribute('r','7');c.setAttribute('fill','#6754c7');
+   c.setAttribute('stroke','#20232a');c.setAttribute('stroke-width','2');c.setAttribute('pointer-events','none');pointsGroup.appendChild(c);
+ });
+ pointCount.textContent=student.length+' точек ученика';
+ drawPyramidCorrect();
+}
+
+function pyramidCommonClick(e){
+ const r=scene.getBoundingClientRect();
+ const mx=(e.clientX-r.left)*760/r.width,my=(e.clientY-r.top)*560/r.height;
+
+ // Режим "Сделать линию сплошной": сначала выбираем линии.
+ if(solidMode){
+   let best=null;
+   PY_EDGES.forEach(function(edge){
+     const a=projectPyramid(PY[edge[0]]),b=projectPyramid(PY[edge[1]]);
+     const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);
+     if(dashedEdges.some(function(e){return sameEdge(e,edge);})&&(!best||d<best.d))best={type:'edge',edge:edge,d:d};
+   });
+   getConstructionSegments().forEach(function(seg){
+     if(!constructionSegmentIsDashed(seg.key))return;
+     const a=project(seg.a.p),b=project(seg.b.p),dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);
+     if(!best||d<best.d)best={type:'construction',key:seg.key,d:d};
+   });
+   if(best&&best.d<=22){
+     if(best.type==='edge'){
+       const exists=solidEdges.some(function(e){return sameEdge(e,best.edge);});
+       if(exists)solidEdges=solidEdges.filter(function(e){return !sameEdge(e,best.edge);});
+       else solidEdges.push(best.edge.slice());
+     }else{
+       const exists=solidConstructionSegments.indexOf(best.key)!==-1;
+       if(exists)solidConstructionSegments=solidConstructionSegments.filter(function(k){return k!==best.key;});
+       else solidConstructionSegments.push(best.key);
+     }
+     solidHint.textContent='Выберите линии и нажмите «Подтвердить выбор»';
+     drawPyramid();
+   }
+   return;
+ }
+ // Режим продления — та же логика, что у куба, только рёбра пирамиды.
+ if(extendMode){
+   let best=null;
+   PY_EDGES.forEach(function(edge){
+     const a=projectPyramid(PY[edge[0]]),b=projectPyramid(PY[edge[1]]);const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);
+     if(!best||d<best.d)best={edge:edge,d:d};
+   });
+   if(best&&best.d<=22){
+     if(!extendedEdges.some(function(edge){return sameEdge(edge,best.edge);}))extendedEdges.push(best.edge.slice());
+     info.style.display='block';info.innerHTML='Выбрано ребро <b>'+best.edge[0]+best.edge[1]+'</b> для продления.';drawPyramid();
+   }
+   return;
+ }
+
+ if(dashedMode){
+   let best=null;
+   PY_EDGES.forEach(function(edge){
+     const a=projectPyramid(PY[edge[0]]),b=projectPyramid(PY[edge[1]]);const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);if(!best||d<best.d)best={edge:edge,d:d};
+   });
+   getConstructionSegments().forEach(function(seg){
+     const a=project(seg.a.p),b=project(seg.b.p),dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);
+     if(!best||d<best.d)best={type:'construction',key:seg.key,d:d};
+   });
+   if(best&&best.d<=22){
+     if(best.type==='edge'){
+       const ex=dashedEdges.some(function(edge){return sameEdge(edge,best.edge);});
+       if(ex)dashedEdges=dashedEdges.filter(function(edge){return !sameEdge(edge,best.edge);});else dashedEdges.push(best.edge.slice());
+     }else{
+       const ex=dashedConstructionSegments.indexOf(best.key)!==-1;
+       if(ex)dashedConstructionSegments=dashedConstructionSegments.filter(function(k){return k!==best.key;});else dashedConstructionSegments.push(best.key);
+     }
+     drawPyramid();
+   }
+   return;
+ }
+
+ // Точно тот же принцип выбора двух точек, что у куба.
+ let hitPoint=null;
+ const predefined=[
+   {name:'D',p:getPY_D()},{name:'E',p:getPY_E()},{name:'L',p:getPY_L()}
+ ];
+ let ph=null;
+ predefined.forEach(function(item){const p=projectPyramid(item.p),d=Math.hypot(mx-p.x,my-p.y);if(d<=20&&(!ph||d<ph.d))ph={name:item.name,p:item.p,d:d};});
+ if(ph){hitPoint={p:ph.p,predefinedName:ph.name,vertex:null,edge:null,t:null,additional:false};}
+ else{
+   let vh=null;
+   Object.keys(PY).forEach(function(name){const p=projectPyramid(PY[name]),d=Math.hypot(mx-p.x,my-p.y);if(d<=18&&(!vh||d<vh.d))vh={name:name,p:PY[name],d:d};});
+   if(vh)hitPoint={p:[...vh.p],predefinedName:null,vertex:vh.name,edge:null,t:null,additional:false};
+   else{
+     let best=null;
+     PY_EDGES.forEach(function(edge){const a=projectPyramid(PY[edge[0]]),b=projectPyramid(PY[edge[1]]),dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+       let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(.03,Math.min(.97,t));const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);if(!best||d<best.d)best={edge:edge,t:t,d:d};});
+     if(best&&best.d<=25)hitPoint={p:pyramidPointOnEdge(PY[best.edge[0]],PY[best.edge[1]],best.t),predefinedName:null,vertex:null,edge:best.edge,t:best.t,additional:false};
+   }
+ }
+
+ let additionalHit=null;
+ additionalPoints.forEach(function(item){const p=project(item.p),d=Math.hypot(mx-p.x,my-p.y);if(d<=18&&(!additionalHit||d<additionalHit.d))additionalHit={item:item,d:d};});
+ if(additionalHit)hitPoint={p:additionalHit.item.p,predefinedName:null,vertex:null,edge:null,t:null,additional:true,key:additionalHit.item.key};
+ if(!hitPoint)return;
+
+ if(pendingSectionPoint&&pointSame3D(pendingSectionPoint.p,hitPoint.p)){info.style.display='block';info.innerHTML='Точка уже выбрана.';return;}
+
+ if(pendingSectionPoint){
+   const a=pendingSectionPoint,b=hitPoint;
+   function addStudentPointIfNeededP(item){
+     const existing=student.find(function(s){return pointSame3D(s.p,item.p);});if(existing)return existing;
+     const s={vertex:item.vertex||null,edge:item.edge||null,t:item.t==null?null:item.t,predefinedName:item.predefinedName||null,p:[item.p[0],item.p[1],item.p[2]]};student.push(s);return s;
+   }
+   if(a.additional||b.additional){addAdditionalConnection(a,b);info.style.display='block';info.innerHTML='Отрезок построен.';}
+   else{const sa=addStudentPointIfNeededP(a),sb=addStudentPointIfNeededP(b);if(addSectionSegment(sa,sb)){info.style.display='block';info.innerHTML='Отрезок построен.';}else{info.style.display='block';info.innerHTML='Этот отрезок уже построен.';}}
+   pendingSectionPoint=null;pendingAdditionalConnectionPoint=null;drawPyramid();return;
+ }
+ pendingSectionPoint=hitPoint;pendingAdditionalConnectionPoint=hitPoint.additional?hitPoint:null;
+ info.style.display='block';
+ if(hitPoint.additional)info.innerHTML='Выбрана дополнительная точка. Выберите вторую точку.';
+ else if(hitPoint.predefinedName)info.innerHTML='Выбрана точка <b>'+hitPoint.predefinedName+'</b>. Выберите вторую точку.';
+ else if(hitPoint.vertex)info.innerHTML='Выбрана вершина <b>'+hitPoint.vertex+'</b>. Выберите вторую точку.';
+ else info.innerHTML='Выбрана точка на ребре <b>'+hitPoint.edge[0]+hitPoint.edge[1]+'</b>. Выберите вторую точку.';
+ drawPyramid();
+}
+
+function edgePoint(edge,t){
+ const a=V[edge[0]],b=V[edge[1]];
+ return [
+  a[0]+(b[0]-a[0])*t,
+  a[1]+(b[1]-a[1])*t,
+  a[2]+(b[2]-a[2])*t
+ ];
+}
+
+// При клике допускаем погрешность ±15% длины ребра.
+const CORRECT_TOLERANCE=0.15;
+
+// Задача 2:
+// K — середина B1C1.
+// Плоскость проходит через B, K и D.
+// Новая точка сечения M2 — середина C1D1.
+const K2=edgePoint(['B1','C1'],0.5);
+const M2=edgePoint(['C1','D1'],0.5);
+
+// Задача 3:
+// M находится на AA1 и AM:MA1=2:1.
+// N — середина BC.
+// Новая точка P на BB1 делит BB1 в отношении BP:PB1=1:2.
+const M3=edgePoint(['A','A1'],2/3);
+const N3=edgePoint(['B','C'],0.5);
+const P3=edgePoint(['B','B1'],1/3);
+// Задача 4:
+// P на DD1: DP=10 из DD1=12 => t=5/6 от D к D1.
+// Q на BB1: B1Q=4 => BQ=8 => t=2/3 от B к B1.
+const P4=edgePoint(['D','D1'],10/12);
+const Q4=edgePoint(['B','B1'],8/12);
+const Cmid4=edgePoint(['C','C1'],0.5);
+
+// Задача 5:
+// P на AA1: AP:PA1=1:3 => AP=1/4 AA1.
+// Q на BB1: BQ:QB1=3:1 => BQ=3/4 BB1.
+// R на B1C1: B1R:RC1=1:1 => середина.
+const P5=edgePoint(['A','A1'],1/4);
+const Q5=edgePoint(['B','B1'],3/4);
+const R5=edgePoint(['B1','C1'],0.5);
+const B1C1mid5=edgePoint(['B1','C1'],0.5);
+const D1C1mid5=edgePoint(['D1','C1'],0.5);
+const D1D5=edgePoint(['D1','D'],1/4);
+// Задача 6 — только данные задачи, без изменения существующего функционала.
+const P6=edgePoint(['A','D'],1/3);       // AP:PD=1:2
+const Q6=edgePoint(['A1','D1'],1/2);     // A1Q:QD1=1:1
+const R6=edgePoint(['B1','C1'],1/4);     // B1R:RC1=1:3
+const S6=edgePoint(['B','C'],1/12);      // BS:SC=1:11
+
+// Задача 7:
+// M на AB: AM:MB=1:2.
+// N на BC: BN:NC=1:1.
+// P на DD1: DP:PD1=1:1.
+// S на CC1: CS:SC1=1:4.
+// T на AA1: AT:TA1=1:9.
+const M7=edgePoint(['A','B'],1/3);
+const N7=edgePoint(['B','C'],1/2);
+const P7=edgePoint(['D','D1'],1/2);
+const S7=edgePoint(['C','C1'],1/5);
+const T7=edgePoint(['A','A1'],1/10);
+// Задача 8:
+// M на AB: AM:MB=1:2; N на BC: BN:NC=1:1; P на DD1: DP:PD1=1:1.
+// Дополнительные точки: CC1 в отношении 1:4 от C; AA1 в отношении 1:9 от A.
+const M8t=edgePoint(['A','B'],1/3);
+const N8t=edgePoint(['B','C'],1/2);
+const P8t=edgePoint(['D','D1'],1/2);
+const S8t=edgePoint(['C','C1'],1/5);
+const T8t=edgePoint(['A','A1'],1/10);
+
+
+// Задача 8:
+// M на A1D1: A1M = MD1.
+// N на AB: AN:NB = 3:1.
+// P на D1C1: C1P:PD1 = 1:2.
+//
+// Дополнительные точки, которые строит ученик:
+// T8 на AA1: AT8:T8A1 = 9:8.
+// U8 на BC: BU8:U8C = 3:13.
+// S8 на CC1: C1S8:S8C = 4:13.
+const M8=edgePoint(['A1','D1'],1/2);
+const N8=edgePoint(['A','B'],3/4);
+const P8=edgePoint(['C1','D1'],1/3);
+const T8=edgePoint(['A','A1'],9/17);
+const U8=edgePoint(['B','C'],3/16);
+const S8=edgePoint(['C1','C'],4/17);
+
+// Задача 10:
+// Плоскость содержит диагональ AB1 и проходит через середину DD1.
+// Заданные точки: A, B1 и середина DD1.
+// Дополнительная точка, которую строит ученик:
+// середина D1C1.
+const Dmid10=edgePoint(['D','D1'],0.5);
+const Cmid10=edgePoint(['D1','C1'],0.5);
+
+
+
+
+
+function el(tag){
+ return document.createElementNS('http://www.w3.org/2000/svg',tag);
+}
+
+function drawLine(edge){
+ const a=project(V[edge[0]]),b=project(V[edge[1]]);
+ const l=el('line');
+ l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);
+ l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);
+
+ // Если ребро выбрано для пунктирного отображения,
+ // заменяем обычную сплошную линию, а не рисуем вторую поверх неё.
+ const dashed=dashedEdges.some(function(e){
+   return sameEdge(e,edge);
+ });
+ const solid=solidEdges.some(function(e){
+   return sameEdge(e,edge);
+ });
+
+ if(dashed && !solid){
+   l.setAttribute('stroke','#555');
+   l.setAttribute('stroke-width','2.7');
+   l.setAttribute('stroke-dasharray','7 6');
+ }else{
+   l.setAttribute('stroke','#20232a');
+   l.setAttribute('stroke-width','2.7');
+ }
+
+ l.setAttribute('stroke-linecap','round');
+ edgesGroup.appendChild(l);
+}
+
+function drawPoint(p,text,color){
+ const q=project(p);
+ const c=el('circle');
+ c.setAttribute('cx',q.x);c.setAttribute('cy',q.y);
+ c.setAttribute('r','8');
+ c.setAttribute('fill',color);
+ c.setAttribute('stroke','#20232a');
+ c.setAttribute('stroke-width','2.5');
+ pointsGroup.appendChild(c);
+
+ const t=el('text');
+ t.setAttribute('x',q.x+11);t.setAttribute('y',q.y-10);
+ t.setAttribute('font-size','18');
+ t.setAttribute('font-weight','700');
+ t.setAttribute('fill',color);
+ t.textContent=text;
+ labels.appendChild(t);
+}
+
+function drawDimension(p1,p2,text,offset){
+ const a=project(p1),b=project(p2);
+
+ const dx=b.x-a.x;
+ const dy=b.y-a.y;
+ const len=Math.hypot(dx,dy)||1;
+
+ // Основная размерная линия.
+ const ax=a.x;
+ const ay=a.y;
+ const bx=b.x;
+ const by=b.y;
+
+ const l=el('line');
+ l.setAttribute('x1',ax);
+ l.setAttribute('y1',ay);
+ l.setAttribute('x2',bx);
+ l.setAttribute('y2',by);
+ l.setAttribute('stroke','#6754c7');
+ l.setAttribute('stroke-width','2');
+ dimensions.appendChild(l);
+
+ // Засечки перпендикулярно отрезку.
+ const nx=-dy/len;
+ const ny=dx/len;
+
+ [[ax,ay],[bx,by]].forEach(function(p){
+   const tick=el('line');
+   tick.setAttribute('x1',p[0]-nx*7);
+   tick.setAttribute('y1',p[1]-ny*7);
+   tick.setAttribute('x2',p[0]+nx*7);
+   tick.setAttribute('y2',p[1]+ny*7);
+   tick.setAttribute('stroke','#6754c7');
+   tick.setAttribute('stroke-width','2');
+   dimensions.appendChild(tick);
+ });
+
+ // Подпись ВСЕГДА слева от отрезка в экранных координатах.
+ // "Лево" здесь означает меньшую X-координату относительно самого отрезка.
+ const midX=(ax+bx)/2;
+ const midY=(ay+by)/2;
+
+ const t=el('text');
+ t.setAttribute('x',Math.min(ax,bx)-Math.max(18,offset));
+ t.setAttribute('y',midY+6);
+ t.setAttribute('text-anchor','end');
+ t.setAttribute('font-size','18');
+ t.setAttribute('font-weight','700');
+ t.setAttribute('fill','#6754c7');
+ t.textContent=text;
+ dimensions.appendChild(t);
+}
+
+function drawCorrectSection(){
+ if(!answerShown)return;
+
+ let section;
+
+ if(currentTask==='task8'){
+   section=[M8t,N8t,S8t,P8t,T8t];
+ }else if(currentTask==='task9'){
+   section=[M8,P8,S8,U8,N8,T8];
+ }else if(currentTask==='task10'){
+   section=[V.A,V.B1,Cmid10,Dmid10];
+ }else if(currentTask==='task7'){
+   section=[M7,N7,S7,P7,T7];
+ }else if(currentTask==='task6'){
+   section=[P6,S6,R6,Q6];
+ }else if(currentTask==='task1'){
+   section=[X1,BB1mid1,Y1,D1C1mid1,DD1mid1,Z1];
+ }else if(currentTask==='task2'){
+   // Сечение задачи 2: B — K — M2 — D.
+   section=[V.B,K2,M2,V.D];
+  }else if(currentTask==='task3'){
+   // Сечение задачи 3: D — M — P — N.
+   section=[V.D,M3,P3,N3];
+ }else if(currentTask==='task4'){
+   // Сечение задачи 4: A1 — P — Cmid — Q.
+   section=[V.A1,P4,Cmid4,Q4];
+ }else{
+   // Сечение задачи 5:
+   // P — Q — R — T — S,
+   // T — середина D1C1,
+   // S — точка на D1D, D1S:SD=1:3.
+   section=[P5,Q5,R5,D1C1mid5,D1D5];
+ }
+
+ const polygon=el('polygon');
+ polygon.setAttribute('points',section.map(function(p){
+   const q=project(p);
+   return q.x+','+q.y;
+ }).join(' '));
+ polygon.setAttribute('fill','#20a05a');
+ polygon.setAttribute('fill-opacity','.22');
+ polygon.setAttribute('stroke','none');
+ correctSection.appendChild(polygon);
+
+ for(let i=0;i<section.length;i++){
+   const a=project(section[i]);
+   const b=project(section[(i+1)%section.length]);
+
+   const line=el('line');
+   line.setAttribute('x1',a.x);
+   line.setAttribute('y1',a.y);
+   line.setAttribute('x2',b.x);
+   line.setAttribute('y2',b.y);
+   line.setAttribute('stroke','#20a05a');
+   line.setAttribute('stroke-width','5');
+   line.setAttribute('stroke-linecap','round');
+   correctSection.appendChild(line);
+ }
+
+ if(currentTask==='task8'){
+   [S8t,T8t].forEach(function(p){
+     const q=project(p);
+     const c=el('circle');
+     c.setAttribute('cx',q.x); c.setAttribute('cy',q.y);
+     c.setAttribute('r','8');
+     c.setAttribute('fill','#20a05a');
+     c.setAttribute('stroke','#fff');
+     c.setAttribute('stroke-width','3');
+     correctSection.appendChild(c);
+   });
+ }else if(currentTask==='task9'){
+   [T8,U8,S8].forEach(function(p){
+     const q=project(p);
+     const c=el('circle');
+     c.setAttribute('cx',q.x);
+     c.setAttribute('cy',q.y);
+     c.setAttribute('r','8');
+     c.setAttribute('fill','#20a05a');
+     c.setAttribute('stroke','#fff');
+     c.setAttribute('stroke-width','3');
+     correctSection.appendChild(c);
+   });
+ }else if(currentTask==='task10'){
+   const q=project(Cmid10);
+   const c=el('circle');
+   c.setAttribute('cx',q.x);
+   c.setAttribute('cy',q.y);
+   c.setAttribute('r','8');
+   c.setAttribute('fill','#20a05a');
+   c.setAttribute('stroke','#fff');
+   c.setAttribute('stroke-width','3');
+   correctSection.appendChild(c);
+ }else if(currentTask==='task7'){
+   [S7,T7].forEach(function(p){
+     const q=project(p);
+     const c=el('circle');
+     c.setAttribute('cx',q.x); c.setAttribute('cy',q.y);
+     c.setAttribute('r','8');
+     c.setAttribute('fill','#20a05a');
+     c.setAttribute('stroke','#fff');
+     c.setAttribute('stroke-width','3');
+     correctSection.appendChild(c);
+   });
+ }else if(currentTask==='task6'){
+   const q=project(S6);
+   const c=el('circle');
+   c.setAttribute('cx',q.x);
+   c.setAttribute('cy',q.y);
+   c.setAttribute('r','8');
+   c.setAttribute('fill','#20a05a');
+   c.setAttribute('stroke','#fff');
+   c.setAttribute('stroke-width','3');
+   correctSection.appendChild(c);
+ }else if(currentTask==='task1'){
+   [BB1mid1,D1C1mid1,DD1mid1].forEach(function(p){
+     const q=project(p);
+     const c=el('circle');
+     c.setAttribute('cx',q.x);
+     c.setAttribute('cy',q.y);
+     c.setAttribute('r','8');
+     c.setAttribute('fill','#20a05a');
+     c.setAttribute('stroke','#fff');
+     c.setAttribute('stroke-width','3');
+     correctSection.appendChild(c);
+   });
+ }else if(currentTask==='task2'){
+   const q=project(M2);
+   const c=el('circle');
+   c.setAttribute('cx',q.x);
+   c.setAttribute('cy',q.y);
+   c.setAttribute('r','8');
+   c.setAttribute('fill','#20a05a');
+   c.setAttribute('stroke','#fff');
+   c.setAttribute('stroke-width','3');
+   correctSection.appendChild(c);
+ }else if(currentTask==='task5'){
+   [D1C1mid5,D1D5].forEach(function(p){
+     const q=project(p);
+     const c=el('circle');
+     c.setAttribute('cx',q.x);
+     c.setAttribute('cy',q.y);
+     c.setAttribute('r','8');
+     c.setAttribute('fill','#20a05a');
+     c.setAttribute('stroke','#fff');
+     c.setAttribute('stroke-width','3');
+     correctSection.appendChild(c);
+   });
+ }else{
+   const q=project(P3);
+   const c=el('circle');
+   c.setAttribute('cx',q.x);
+   c.setAttribute('cy',q.y);
+   c.setAttribute('r','8');
+   c.setAttribute('fill','#20a05a');
+   c.setAttribute('stroke','#fff');
+   c.setAttribute('stroke-width','3');
+   correctSection.appendChild(c);
+ }
+}
+
+// Находим пересечение луча с границей куба.
+// Это позволяет продолжать построенную прямую пунктиром
+// от крайней точки до поверхности куба.
+function rayToCubeBoundary(p,dir){
+ const boundsMin=[0,0,0];
+ const boundsMax=[4,4,4];
+ let best=Infinity;
+
+ for(let axis=0;axis<3;axis++){
+   if(Math.abs(dir[axis])<1e-9)continue;
+
+   const target=dir[axis]>0 ? boundsMax[axis] : boundsMin[axis];
+   const t=(target-p[axis])/dir[axis];
+
+   if(t<=1e-7)continue;
+
+   const q=[
+     p[0]+dir[0]*t,
+     p[1]+dir[1]*t,
+     p[2]+dir[2]*t
+   ];
+
+   if(
+     q[0]>=-1e-7 && q[0]<=4+1e-7 &&
+     q[1]>=-1e-7 && q[1]<=4+1e-7 &&
+     q[2]>=-1e-7 && q[2]<=4+1e-7
+   ){
+     best=Math.min(best,t);
+   }
+ }
+
+ if(!isFinite(best))return null;
+
+ return [
+   p[0]+dir[0]*best,
+   p[1]+dir[1]*best,
+   p[2]+dir[2]*best
+ ];
+}
+
+function drawDashedExtension(p,dir){
+ /*
+   Продолжение строим НЕ до границы куба, а длинным лучом.
+   Поэтому оно гарантированно видно даже тогда, когда
+   крайняя точка уже лежит на ребре/грани куба.
+
+   Сам отрезок между двумя выбранными точками рисуется
+   отдельно в studentSegments цветным.
+   Здесь всегда только пунктир.
+ */
+ const extensionLength=8;
+
+ const q=[
+   p[0]+dir[0]*extensionLength,
+   p[1]+dir[1]*extensionLength,
+   p[2]+dir[2]*extensionLength
+ ];
+
+ const a=project(p);
+ const b=project(q);
+
+ if(Math.hypot(a.x-b.x,a.y-b.y)<3)return;
+
+ const line=el('line');
+ line.setAttribute('x1',a.x);
+ line.setAttribute('y1',a.y);
+ line.setAttribute('x2',b.x);
+ line.setAttribute('y2',b.y);
+ line.setAttribute('stroke','#555');
+ line.setAttribute('stroke-width','2.5');
+ line.setAttribute('stroke-dasharray','7 6');
+ line.setAttribute('stroke-linecap','round');
+ line.setAttribute('pointer-events','none');
+
+ studentExtensions.appendChild(line);
+}
+
+function drawStudentExtensions(){
+ const segments=getConstructionSegments().filter(function(seg){
+   return seg.type==='section';
+ });
+ if(!segments.length)return;
+
+ // Каждая реально построенная пара точек продлевается отдельно.
+ segments.forEach(function(seg){
+   const p1=seg.a.p;
+   const p2=seg.b.p;
+   const dir=[p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]];
+   const len=Math.hypot(dir[0],dir[1],dir[2]);
+   if(len<1e-9)return;
+   const unit=[dir[0]/len,dir[1]/len,dir[2]/len];
+   drawDashedExtension(p1,[-unit[0],-unit[1],-unit[2]]);
+   drawDashedExtension(p2,unit);
+ });
+}
+
+function edgeKey(edge){
+ return edge[0]+'_'+edge[1];
+}
+
+function sameEdge(a,b){
+ return (a[0]===b[0] && a[1]===b[1]) ||
+        (a[0]===b[1] && a[1]===b[0]);
+}
+
+function drawManualDashedEdges(){
+ manualDashedEdges.innerHTML='';
+ selectedStudentPoints.innerHTML='';
+ taskAnnotations.innerHTML='';
+}
+
+function studentSegmentIsDashed(index){
+ return dashedStudentSegments.indexOf(index)!==-1;
+}
+
+function isExtendedEdge(edge){
+ return extendedEdges.some(function(e){
+   return sameEdge(e,edge);
+ });
+}
+
+function drawExtendedEdges(){
+ if(!extendedEdges.length)return;
+
+ extendedEdges.forEach(function(edge){
+   const verts=figureSelect.value==='triangularPyramid'?PY:V;
+   const p1=verts[edge[0]];
+   const p2=verts[edge[1]];
+
+   const dx=p2[0]-p1[0];
+   const dy=p2[1]-p1[1];
+   const dz=p2[2]-p1[2];
+   const len=Math.hypot(dx,dy,dz);
+   if(len<1e-9)return;
+
+   const u=[dx/len,dy/len,dz/len];
+
+   // Продлеваем выбранное ребро в обе стороны.
+   const L=7;
+   const a3=[
+     p1[0]-u[0]*L,
+     p1[1]-u[1]*L,
+     p1[2]-u[2]*L
+   ];
+   const b3=[
+     p2[0]+u[0]*L,
+     p2[1]+u[1]*L,
+     p2[2]+u[2]*L
+   ];
+
+   const a=project(a3);
+   const b=project(b3);
+
+   const line=el('line');
+   line.setAttribute('x1',a.x);
+   line.setAttribute('y1',a.y);
+   line.setAttribute('x2',b.x);
+   line.setAttribute('y2',b.y);
+   line.setAttribute('stroke','#555');
+   line.setAttribute('stroke-width','2.5');
+   line.setAttribute('stroke-dasharray','7 6');
+   line.setAttribute('stroke-linecap','round');
+   line.setAttribute('pointer-events','none');
+   studentExtensions.appendChild(line);
+ });
+}
+
+
+function dot3(a,b){
+ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+}
+
+function sub3(a,b){
+ return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+}
+
+function add3(a,b){
+ return [a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+}
+
+function mul3(a,s){
+ return [a[0]*s,a[1]*s,a[2]*s];
+}
+
+function lineLineIntersection3D(p1,d1,p2,d2,tol=1e-5){
+ const w=sub3(p1,p2);
+ const a=dot3(d1,d1);
+ const b=dot3(d1,d2);
+ const c=dot3(d2,d2);
+ const d=dot3(d1,w);
+ const e=dot3(d2,w);
+ const den=a*c-b*b;
+
+ if(Math.abs(den)<1e-9)return null;
+
+ const t=(b*e-c*d)/den;
+ const u=(a*e-b*d)/den;
+
+ const q1=add3(p1,mul3(d1,t));
+ const q2=add3(p2,mul3(d2,u));
+ const dist=Math.hypot(q1[0]-q2[0],q1[1]-q2[1],q1[2]-q2[2]);
+
+ if(dist>tol)return null;
+
+ return [
+   (q1[0]+q2[0])/2,
+   (q1[1]+q2[1])/2,
+   (q1[2]+q2[2])/2
+ ];
+}
+
+function getSectionLines(){
+ const result=[];
+
+ getConstructionSegments().forEach(function(seg){
+   const p=seg.a.p;
+   const q=seg.b.p;
+   const d=sub3(q,p);
+
+   if(Math.hypot(d[0],d[1],d[2])>1e-7){
+     result.push({p:p,d:d,key:seg.key});
+   }
+ });
+
+ return result;
+}
+
+function additionalPointKey(p){
+ return p.map(function(v){return Math.round(v*10000)/10000;}).join(',');
+}
+
+function findAdditionalPoints(){
+ const found=[];
+
+ extendedEdges.forEach(function(edge){
+   const verts=figureSelect.value==='triangularPyramid'?PY:V;
+   const ep1=verts[edge[0]];
+   const ep2=verts[edge[1]];
+   const ed=sub3(ep2,ep1);
+
+   getSectionLines().forEach(function(section){
+     const hit=lineLineIntersection3D(ep1,ed,section.p,section.d,1e-4);
+     if(!hit)return;
+
+     const key=additionalPointKey(hit);
+
+     if(!found.some(function(item){return item.key===key;})){
+       found.push({p:hit,key:key});
+     }
+   });
+ });
+
+ return found;
+}
+
+function drawAdditionalPoints(){
+ additionalPoints.forEach(function(item){
+   const p=project(item.p);
+
+   const circle=el('circle');
+   circle.setAttribute('cx',p.x);
+   circle.setAttribute('cy',p.y);
+   circle.setAttribute('r','7');
+   circle.setAttribute('fill','#ff9f43');
+   circle.setAttribute('stroke','#ffffff');
+   circle.setAttribute('stroke-width','2');
+   circle.setAttribute('pointer-events','none');
+   pointsGroup.appendChild(circle);
+
+   const label=el('text');
+   label.setAttribute('x',p.x+10);
+   label.setAttribute('y',p.y-10);
+   label.setAttribute('fill','#2F6BFF');
+   label.setAttribute('font-size','13');
+   label.setAttribute('font-weight','700');
+   label.textContent='доп. точка';
+   labels.appendChild(label);
+ });
+}
+
+function drawPendingSectionPoint(){
+ if(!pendingSectionPoint)return;
+
+ const p=project(pendingSectionPoint.p);
+ const c=el('circle');
+ c.setAttribute('cx',p.x);
+ c.setAttribute('cy',p.y);
+ c.setAttribute('r','10');
+ c.setAttribute('fill','none');
+ c.setAttribute('stroke','#ff9f43');
+ c.setAttribute('stroke-width','3');
+ c.setAttribute('stroke-dasharray','3 3');
+ c.setAttribute('pointer-events','none');
+ selectedStudentPoints.appendChild(c);
+}
+
+function drawSelectedStudentPoints(){
+ student.forEach(function(item,index){
+   const p=project(item.p);
+
+   // Светящийся ореол.
+   const glow=el('circle');
+   glow.setAttribute('cx',p.x);
+   glow.setAttribute('cy',p.y);
+   glow.setAttribute('r','11');
+   glow.setAttribute('fill','none');
+   glow.setAttribute('stroke','#2F6BFF');
+   glow.setAttribute('stroke-width','3');
+   glow.setAttribute('opacity','0.45');
+   glow.setAttribute('pointer-events','none');
+   selectedStudentPoints.appendChild(glow);
+
+   // Яркая точка поверх обычной точки.
+   const dot=el('circle');
+   dot.setAttribute('cx',p.x);
+   dot.setAttribute('cy',p.y);
+   dot.setAttribute('r','5.5');
+   dot.setAttribute('fill','#2F6BFF');
+   dot.setAttribute('stroke','#ffffff');
+   dot.setAttribute('stroke-width','2');
+   dot.setAttribute('pointer-events','none');
+   selectedStudentPoints.appendChild(dot);
+
+   // Номер выбора, чтобы было понятно, в каком порядке точки были нажаты.
+   const label=el('text');
+   label.setAttribute('x',p.x+9);
+   label.setAttribute('y',p.y-9);
+   label.setAttribute('fill','#2F6BFF');
+   label.setAttribute('font-size','12');
+   label.setAttribute('font-weight','700');
+   label.setAttribute('pointer-events','none');
+   label.textContent=String(index+1);
+   selectedStudentPoints.appendChild(label);
+ });
+}
+
+
+function drawTick(p1,p2){
+ const a=project(p1),b=project(p2);
+ const dx=b.x-a.x,dy=b.y-a.y;
+ const len=Math.hypot(dx,dy);
+ if(len<1)return;
+ const nx=-dy/len,ny=dx/len;
+ const cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;
+ const s=6;
+
+ const l=el('line');
+ l.setAttribute('x1',cx-nx*s);
+ l.setAttribute('y1',cy-ny*s);
+ l.setAttribute('x2',cx+nx*s);
+ l.setAttribute('y2',cy+ny*s);
+ l.setAttribute('stroke','#333');
+ l.setAttribute('stroke-width','2');
+ l.setAttribute('stroke-linecap','round');
+ l.setAttribute('pointer-events','none');
+ taskAnnotations.appendChild(l);
+}
+
+function drawSegmentLabel(p1,p2,text){
+ const a=project(p1),b=project(p2);
+ const dx=b.x-a.x,dy=b.y-a.y;
+ const len=Math.hypot(dx,dy);
+ if(len<1)return;
+
+ let nx=-dy/len,ny=dx/len;
+ // Всегда размещаем подпись с одной и той же стороны
+ // относительно экранного отрезка.
+ if(ny>0){nx=-nx;ny=-ny;}
+
+ const cx=(a.x+b.x)/2+nx*14;
+ const cy=(a.y+b.y)/2+ny*14;
+
+ const t=el('text');
+ t.setAttribute('x',cx);
+ t.setAttribute('y',cy);
+ t.setAttribute('text-anchor','middle');
+ t.setAttribute('fill','#333');
+ t.setAttribute('font-size','13');
+ t.setAttribute('font-weight','600');
+ t.setAttribute('pointer-events','none');
+ t.textContent=text;
+ taskAnnotations.appendChild(t);
+}
+
+function drawTaskAnnotations(){
+ taskAnnotations.innerHTML='';
+
+ if(currentTask==='task2'){
+   // K — середина B1C1: одинаковые черточки на обеих половинах.
+   const b1=V.B1,c1=V.C1,k=K2;
+   drawTick(b1,k);
+   drawTick(k,c1);
+ }
+
+
+ if(currentTask==='task3'){
+   // N — середина BC.
+   drawTick(V.B,N3);
+   drawTick(N3,V.C);
+
+   // AM:MA1=2:1 -> над частями x-отрезков: 2x и x.
+   drawSegmentLabel(V.A,M3,'2x');
+   drawSegmentLabel(M3,V.A1,'x');
+ }
+
+ // Для задач, где в условии задано отношение, сюда передаём
+ // отношение как [1,2], [2,3] и т.д. и получаем x, 2x, 3x...
+ // Для текущей задачи 1 указаны точные длины 6 и 2, поэтому
+ // они остаются отдельными числовыми подписями.
+ if(currentTask==='task1'){
+   drawTick(V.A,X1); drawTick(X1,V.B);
+   drawTick(V.B1,Y1); drawTick(Y1,V.C1);
+   drawTick(V.A,Z1); drawTick(Z1,V.D);
+ }
+
+ if(currentTask==='task4'){
+   // Подписи заданных отрезков.
+   drawSegmentLabel(V.D,P4,'10');
+   drawSegmentLabel(P4,V.D1,'2');
+   drawSegmentLabel(V.B1,Q4,'4');
+ }
+ if(currentTask==='task5'){
+   drawSegmentLabel(V.A,P5,'x');
+   drawSegmentLabel(P5,V.A1,'3x');
+   drawSegmentLabel(V.B,Q5,'3y');
+   drawSegmentLabel(Q5,V.B1,'y');
+   drawSegmentLabel(V.B1,R5,'z');
+   drawSegmentLabel(R5,V.C1,'z');
+ }
+ if(currentTask==='task6'){
+   drawSegmentLabel(V.A,P6,'x');
+   drawSegmentLabel(P6,V.D,'2x');
+   drawSegmentLabel(V.A1,Q6,'y');
+   drawSegmentLabel(Q6,V.D1,'y');
+   drawSegmentLabel(V.B1,R6,'z');
+   drawSegmentLabel(R6,V.C1,'3z');
+ }
+ if(currentTask==='task7'){
+   drawSegmentLabel(V.A,M7,'x');
+   drawSegmentLabel(M7,V.B,'2x');
+   drawSegmentLabel(V.B,N7,'y');
+   drawSegmentLabel(N7,V.C,'y');
+   drawSegmentLabel(V.D,P7,'z');
+   drawSegmentLabel(P7,V.D1,'z');
+ }
+ if(currentTask==='task8'){
+   drawSegmentLabel(V.A,M8t,'x');
+   drawSegmentLabel(M8t,V.B,'2x');
+   drawSegmentLabel(V.B,N8t,'y');
+   drawSegmentLabel(N8t,V.C,'y');
+   drawSegmentLabel(V.D,P8t,'z');
+   drawSegmentLabel(P8t,V.D1,'z');
+ }
+ if(currentTask==='task9'){
+   drawSegmentLabel(V.A1,M8,'x');
+   drawSegmentLabel(M8,V.D1,'x');
+   drawSegmentLabel(V.A,N8,'3y');
+   drawSegmentLabel(N8,V.B,'y');
+   drawSegmentLabel(V.C1,P8,'z');
+   drawSegmentLabel(P8,V.D1,'2z');
+ }
+}
+
+
+function pointSame3D(a,b){
+ return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<1e-5;
+}
+
+function segmentKey(a,b){
+ const p1=additionalPointKey(a.p);
+ const p2=additionalPointKey(b.p);
+ return p1<p2 ? p1+'|'+p2 : p2+'|'+p1;
+}
+
+function getConstructionSegments(){
+ const result=[];
+
+ sectionSegments.forEach(function(seg,index){
+   result.push({
+     a:seg.a,
+     b:seg.b,
+     type:'section',
+     index:index,
+     key:'s:'+index+':'+segmentKey(seg.a,seg.b)
+   });
+ });
+
+ additionalConnections.forEach(function(seg,index){
+   result.push({
+     a:seg.a,
+     b:seg.b,
+     type:'additional',
+     index:index,
+     key:'a:'+index+':'+segmentKey(seg.a,seg.b)
+   });
+ });
+
+ return result;
+}
+
+function constructionSegmentIsDashed(key){
+ return dashedConstructionSegments.indexOf(key)!==-1;
+}
+
+function addSectionSegment(a,b){
+ if(pointSame3D(a.p,b.p))return false;
+
+ const key=segmentKey(a,b);
+ if(sectionSegments.some(function(seg){
+   return segmentKey(seg.a,seg.b)===key;
+ }))return false;
+
+ sectionSegments.push({a:a,b:b});
+ return true;
+}
+
+function addAdditionalConnection(a,b){
+ if(pointSame3D(a.p,b.p))return false;
+
+ const key=segmentKey(a,b);
+ if(additionalConnections.some(function(seg){
+   return segmentKey(seg.a,seg.b)===key;
+ }))return false;
+
+ additionalConnections.push({a:a,b:b});
+ return true;
+}
+
+function draw(){
+ if(figureSelect.value==='triangularPyramid'){
+   drawPyramid();
+   return;
+ }
+ if(!currentTask){
+   faces.innerHTML='';
+   edgesGroup.innerHTML='';
+   dimensions.innerHTML='';
+   studentExtensions.innerHTML='';
+ manualDashedEdges.innerHTML='';
+   studentSegments.innerHTML='';
+   correctSection.innerHTML='';
+   pointsGroup.innerHTML='';
+   labels.innerHTML='';
+   pointCount.textContent='0 точек ученика';
+   return;
+ }
+
+ faces.innerHTML='';
+ edgesGroup.innerHTML='';
+ dimensions.innerHTML='';
+ studentExtensions.innerHTML='';
+ studentSegments.innerHTML='';
+ if(correctSection) correctSection.innerHTML='';
+ pointsGroup.innerHTML='';
+ labels.innerHTML='';
+
+ // Нижнее основание ABCD.
+ const bottom=el('polygon');
+ bottom.setAttribute('points',['A','B','C','D'].map(function(n){
+   const p=project(V[n]);return p.x+','+p.y;
+ }).join(' '));
+ bottom.setAttribute('fill','#f4f5f8');
+ bottom.setAttribute('opacity','.55');
+ faces.appendChild(bottom);
+
+ // Верхнее основание A1B1C1D1.
+ const top=el('polygon');
+ top.setAttribute('points',['A1','B1','C1','D1'].map(function(n){
+   const p=project(V[n]);return p.x+','+p.y;
+ }).join(' '));
+ top.setAttribute('fill','#eef0f8');
+ top.setAttribute('opacity','.55');
+ faces.appendChild(top);
+
+ // Пока все рёбра сплошные.
+ allEdges.forEach(drawLine);
+
+ Object.keys(V).forEach(function(name){
+   /*
+     Если вершина является ТОЧКОЙ СЕЧЕНИЯ, заданной уже
+     в условии задачи, чёрную подпись не рисуем.
+     Цветная подпись этой точки создаётся через drawPoint().
+
+     Задача 1: D₁ — заданная точка сечения.
+     Задача 2: B и D — заданные точки сечения.
+
+     То же правило действует, если ученик позже сам
+     выбирает эту вершину: чёрная подпись всё равно
+     не возвращается.
+   */
+   const givenSectionVertex =
+     (currentTask==='task10' && (name==='A' || name==='B1')) ||
+     (currentTask==='task2' && (name==='B' || name==='D')) ||
+     (currentTask==='task3' && name==='D') ||
+     (currentTask==='task4' && (name==='A1' || name==='P' || name==='Q'));
+
+   const studentSectionVertex=student.some(function(s){
+     return s.vertex===name;
+   });
+
+   if(givenSectionVertex || studentSectionVertex)return;
+
+   const p=project(V[name]);
+   const t=el('text');
+   t.setAttribute('x',p.x+7);t.setAttribute('y',p.y-8);
+   t.setAttribute('font-size','16');
+   t.setAttribute('fill','#20232a');
+   t.textContent=name;
+   labels.appendChild(t);
+ });
+
+ // Диагонали нижней грани ABCD — тонкие вспомогательные линии,
+ // чтобы было явно видно, что O является их точкой пересечения.
+ const diag1a=project(V.A), diag1b=project(V.C);
+ const diag2a=project(V.B), diag2b=project(V.D);
+
+ [ [diag1a,diag1b], [diag2a,diag2b] ].forEach(function(pair){
+   const l=el('line');
+   l.setAttribute('x1',pair[0].x); l.setAttribute('y1',pair[0].y);
+   l.setAttribute('x2',pair[1].x); l.setAttribute('y2',pair[1].y);
+   l.setAttribute('stroke','#9aa0aa');
+   l.setAttribute('stroke-width','1.5');
+   l.setAttribute('stroke-dasharray','4 4');
+   l.setAttribute('opacity','.75');
+   dimensions.appendChild(l);
+ });
+
+ // Заданные точки и обозначения зависят от задания.
+ if(currentTask==='task1'){
+   drawPoint(X1,'X','#2F6BFF');
+   drawPoint(Y1,'Y','#2F6BFF');
+   drawPoint(Z1,'Z','#2F6BFF');
+   drawDimension(V.A,V.B,'2',18);
+ }else if(currentTask==='task2'){
+   drawPoint(K2,'K','#2F6BFF');
+   drawPoint(V.B,'B','#2F6BFF');
+   drawPoint(V.D,'D','#2F6BFF');
+ }else if(currentTask==='task3'){
+   drawPoint(M3,'M','#2F6BFF');
+   drawPoint(N3,'N','#2F6BFF');
+   drawPoint(V.D,'D','#2F6BFF');
+ }else if(currentTask==='task4'){
+   drawPoint(V.A1,'A₁','#2F6BFF');
+   drawPoint(P4,'P','#2F6BFF');
+   drawPoint(Q4,'Q','#2F6BFF');
+ }else if(currentTask==='task5'){
+   drawPoint(P5,'P','#2F6BFF');
+   drawPoint(Q5,'Q','#2F6BFF');
+   drawPoint(R5,'R','#2F6BFF');
+ }else if(currentTask==='task6'){
+   drawPoint(P6,'P','#2F6BFF');
+   drawPoint(Q6,'Q','#2F6BFF');
+   drawPoint(R6,'R','#2F6BFF');
+ }else if(currentTask==='task7'){
+   drawPoint(M7,'M','#2F6BFF');
+   drawPoint(N7,'N','#2F6BFF');
+   drawPoint(P7,'P','#2F6BFF');
+  }else if(currentTask==='task8'){
+   drawPoint(M8t,'M','#2F6BFF');
+   drawPoint(N8t,'N','#2F6BFF');
+   drawPoint(P8t,'P','#2F6BFF');
+ }else if(currentTask==='task9'){
+   drawPoint(M8,'M','#2F6BFF');
+   drawPoint(N8,'N','#2F6BFF');
+   drawPoint(P8,'P','#2F6BFF');
+ }else if(currentTask==='task10'){
+   drawPoint(V.A,'A','#2F6BFF');
+   drawPoint(V.B1,'B₁','#2F6BFF');
+   drawPoint(Dmid10,'X','#2F6BFF');
+
+   // Две одинаковые засечки: DX = XD₁.
+   const d10a=project(V.D);
+   const d10m=project(Dmid10);
+   const d10b=project(V.D1);
+   function midpointTick10(pa,pb){
+     const dx=pb.x-pa.x, dy=pb.y-pa.y;
+     const len=Math.hypot(dx,dy)||1;
+     const nx=-dy/len, ny=dx/len;
+     const mx=(pa.x+pb.x)/2, my=(pa.y+pb.y)/2;
+     const tick=el('line');
+     tick.setAttribute('x1',mx-nx*7);
+     tick.setAttribute('y1',my-ny*7);
+     tick.setAttribute('x2',mx+nx*7);
+     tick.setAttribute('y2',my+ny*7);
+     tick.setAttribute('stroke','#20232a');
+     tick.setAttribute('stroke-width','2.5');
+     tick.setAttribute('stroke-linecap','round');
+     dimensions.appendChild(tick);
+   }
+   midpointTick10(d10a,d10m);
+   midpointTick10(d10m,d10b);
+
+   drawDimension(V.A,V.B,'a',18);
+ }
+
+ // Продолжения прямых через построенные отрезки.
+ drawStudentExtensions();
+ drawExtendedEdges();
+ drawManualDashedEdges();
+ drawAdditionalPoints();
+ drawSelectedStudentPoints();
+ drawPendingSectionPoint();
+ drawTaskAnnotations();
+
+ // Отрезки сечения. Порядок выбора точек теперь не важен:
+ // любой парой точек можно сразу построить отрезок.
+ getConstructionSegments().forEach(function(seg){
+   const a=project(seg.a.p);
+   const b=project(seg.b.p);
+
+   const line=el('line');
+   line.setAttribute('x1',a.x);
+   line.setAttribute('y1',a.y);
+   line.setAttribute('x2',b.x);
+   line.setAttribute('y2',b.y);
+
+   const selectedSolid = solidConstructionSegments.indexOf(seg.key)!==-1;
+   if(constructionSegmentIsDashed(seg.key) && !selectedSolid){
+     line.setAttribute('stroke','#555');
+     line.setAttribute('stroke-width','2.7');
+     line.setAttribute('stroke-dasharray','7 6');
+   }else{
+     line.setAttribute('stroke','#6754c7');
+     line.setAttribute('stroke-width','4');
+   }
+
+   line.setAttribute('stroke-linecap','round');
+   line.setAttribute('pointer-events','none');
+   studentSegments.appendChild(line);
+ });
+
+
+ // Точки ученика.
+ student.forEach(function(s){
+   // Заданные цветные точки уже нарисованы выше.
+   // Если ученик кликнул по такой точке, второй кружок не рисуем.
+   if(s.predefinedName)return;
+
+   const q=project(s.p);
+   const c=el('circle');
+   c.setAttribute('cx',q.x);c.setAttribute('cy',q.y);
+   c.setAttribute('r','7');
+   c.setAttribute('fill','#2F6BFF');
+   c.setAttribute('stroke','#20232a');
+   c.setAttribute('stroke-width','2');
+   pointsGroup.appendChild(c);
+ });
+
+ pointCount.textContent=student.length+' точек ученика';
+
+ drawCorrectSection();
+}
+
+scene.addEventListener('click',function(e){
+ if(figureSelect.value==='triangularPyramid'){
+   pyramidCommonClick(e);
+   return;
+ }
+
+ if(solidMode){
+   const r=scene.getBoundingClientRect();
+   const mx=(e.clientX-r.left)*760/r.width;
+   const my=(e.clientY-r.top)*560/r.height;
+   let best=null;
+   allEdges.forEach(function(edge){
+     const a=project(V[edge[0]]),b=project(V[edge[1]]);
+     const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);
+     if(dashedEdges.some(function(e){return sameEdge(e,edge);})&&(!best||d<best.d))best={type:'edge',edge:edge,d:d};
+   });
+   getConstructionSegments().forEach(function(seg){
+     if(!constructionSegmentIsDashed(seg.key))return;
+     const a=project(seg.a.p),b=project(seg.b.p),dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;if(!len2)return;
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;t=Math.max(0,Math.min(1,t));
+     const px=a.x+t*dx,py=a.y+t*dy,d=Math.hypot(mx-px,my-py);
+     if(!best||d<best.d)best={type:'construction',key:seg.key,d:d};
+   });
+   if(best&&best.d<=22){
+     if(best.type==='edge'){
+       const exists=solidEdges.some(function(e){return sameEdge(e,best.edge);});
+       if(exists)solidEdges=solidEdges.filter(function(e){return !sameEdge(e,best.edge);});
+       else solidEdges.push(best.edge.slice());
+     }else{
+       const exists=solidConstructionSegments.indexOf(best.key)!==-1;
+       if(exists)solidConstructionSegments=solidConstructionSegments.filter(function(k){return k!==best.key;});
+       else solidConstructionSegments.push(best.key);
+     }
+     solidHint.textContent='Выберите линии и нажмите «Подтвердить выбор»';
+     draw();
+   }
+   return;
+ }
+ if(extendMode){
+   const r=scene.getBoundingClientRect();
+   const mx=(e.clientX-r.left)*760/r.width;
+   const my=(e.clientY-r.top)*560/r.height;
+
+   let best=null;
+
+   allEdges.forEach(function(edge){
+     const a=project(V[edge[0]]);
+     const b=project(V[edge[1]]);
+     const dx=b.x-a.x;
+     const dy=b.y-a.y;
+     const len2=dx*dx+dy*dy;
+     if(!len2)return;
+
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;
+     t=Math.max(0,Math.min(1,t));
+
+     const px=a.x+t*dx;
+     const py=a.y+t*dy;
+     const d=Math.hypot(mx-px,my-py);
+
+     if(!best || d<best.d)best={edge:edge,d:d};
+   });
+
+   if(best && best.d<=22){
+     const exists=extendedEdges.some(function(edge){
+       return sameEdge(edge,best.edge);
+     });
+
+     if(exists){
+       extendedEdges=extendedEdges.filter(function(edge){
+         return !sameEdge(edge,best.edge);
+       });
+       info.style.display='block';
+       info.innerHTML='Продление ребра <b>'+best.edge[0]+best.edge[1]+'</b> убрано.';
+     }else{
+       extendedEdges.push(best.edge.slice());
+       info.style.display='block';
+       info.innerHTML='Выбрано ребро <b>'+best.edge[0]+best.edge[1]+'</b> для продления.';
+     }
+     draw();
+   }
+   return;
+ }
+
+ if(dashedMode){
+   const r=scene.getBoundingClientRect();
+   const mx=(e.clientX-r.left)*760/r.width;
+   const my=(e.clientY-r.top)*560/r.height;
+
+   let best=null;
+
+   // Сначала ищем среди обычных рёбер куба.
+   allEdges.forEach(function(edge){
+     const a=project(V[edge[0]]);
+     const b=project(V[edge[1]]);
+     const dx=b.x-a.x;
+     const dy=b.y-a.y;
+     const len2=dx*dx+dy*dy;
+     if(!len2)return;
+
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;
+     t=Math.max(0,Math.min(1,t));
+
+     const px=a.x+t*dx;
+     const py=a.y+t*dy;
+     const d=Math.hypot(mx-px,my-py);
+
+     if(!best || d<best.d){
+       best={type:'edge',edge:edge,d:d};
+     }
+   });
+
+   // Ищем среди всех построенных отрезков.
+   getConstructionSegments().forEach(function(seg){
+     const a=project(seg.a.p);
+     const b=project(seg.b.p);
+     const dx=b.x-a.x;
+     const dy=b.y-a.y;
+     const len2=dx*dx+dy*dy;
+     if(!len2)return;
+
+     let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;
+     t=Math.max(0,Math.min(1,t));
+
+     const px=a.x+t*dx;
+     const py=a.y+t*dy;
+     const d=Math.hypot(mx-px,my-py);
+
+     if(!best || d<best.d){
+       best={type:'construction',key:seg.key,d:d};
+     }
+   });
+
+   if(best && best.d<=22){
+     if(best.type==='edge'){
+       const exists=dashedEdges.some(function(edge){
+         return sameEdge(edge,best.edge);
+       });
+
+       if(exists){
+         dashedEdges=dashedEdges.filter(function(edge){
+           return !sameEdge(edge,best.edge);
+         });
+         info.style.display='block';
+         info.innerHTML='Ребро <b>'+best.edge[0]+best.edge[1]+'</b> убрано из выбора.';
+       }else{
+         dashedEdges.push(best.edge.slice());
+         info.style.display='block';
+         info.innerHTML='Выбрано ребро <b>'+best.edge[0]+best.edge[1]+'</b>.';
+       }
+     }else if(best.type==='construction'){
+       const exists=dashedConstructionSegments.indexOf(best.key)!==-1;
+
+       if(exists){
+         dashedConstructionSegments=dashedConstructionSegments.filter(function(k){
+           return k!==best.key;
+         });
+         info.style.display='block';
+         info.innerHTML='Отрезок убран из выбора.';
+       }else{
+         dashedConstructionSegments.push(best.key);
+         info.style.display='block';
+         info.innerHTML='Выбран отрезок.';
+       }
+     }
+
+     draw();
+   }
+   return;
+ }
+ const r=scene.getBoundingClientRect();
+ const mx=(e.clientX-r.left)*760/r.width;
+ const my=(e.clientY-r.top)*560/r.height;
+
+ // Дополнительные точки тоже можно выбирать как точки построения.
+ let additionalHit=null;
+ additionalPoints.forEach(function(item){
+   const p=project(item.p);
+   const d=Math.hypot(mx-p.x,my-p.y);
+   if(d<=18 && (!additionalHit || d<additionalHit.d)){
+     additionalHit={item:item,d:d};
+   }
+ });
+
+ const predefinedPoints =
+   currentTask==='task1'
+   ? [
+       {name:'X', p:X1},
+       {name:'Y', p:Y1},
+       {name:'Z', p:Z1}
+     ]
+   : currentTask==='task2'
+   ? [
+       {name:'B', p:V.B},
+       {name:'K', p:K2},
+       {name:'D', p:V.D}
+     ]
+   : currentTask==='task3'
+   ? [
+       {name:'M', p:M3},
+       {name:'N', p:N3},
+       {name:'D', p:V.D}
+     ]
+   : currentTask==='task4'
+   ? [
+       {name:'A₁', p:V.A1},
+       {name:'P', p:P4},
+       {name:'Q', p:Q4}
+     ]
+   : currentTask==='task5'
+   ? [
+       {name:'P', p:P5},
+       {name:'Q', p:Q5},
+       {name:'R', p:R5}
+     ]
+   : currentTask==='task6'
+   ? [
+       {name:'P', p:P6},
+       {name:'Q', p:Q6},
+       {name:'R', p:R6}
+     ]
+   : currentTask==='task7'
+   ? [
+       {name:'M', p:M7},
+       {name:'N', p:N7},
+       {name:'P', p:P7}
+     ]
+   : currentTask==='task8'
+   ? [
+       {name:'M', p:M8t},
+       {name:'N', p:N8t},
+       {name:'P', p:P8t}
+     ]
+   : currentTask==='task9'
+   ? [
+       {name:'M', p:M8},
+       {name:'N', p:N8},
+       {name:'P', p:P8}
+     ]
+   : currentTask==='task10'
+   ? [
+       {name:'A', p:V.A},
+       {name:'B₁', p:V.B1},
+       {name:'Dmid10', p:Dmid10}
+     ]
+   : [];
+
+ let hitPoint=null;
+
+ // Сначала проверяем уже существующие точки ученика.
+ // Если клик приходится на такую точку, используем именно её,
+ // а не создаём новую точку рядом на том же ребре.
+ let existingStudentHit=null;
+ student.forEach(function(item){
+   const p=project(item.p);
+   const d=Math.hypot(mx-p.x,my-p.y);
+   if(d<=20 && (!existingStudentHit || d<existingStudentHit.d)){
+     existingStudentHit={item:item,d:d};
+   }
+ });
+
+ if(existingStudentHit){
+   const item=existingStudentHit.item;
+   hitPoint={
+     p:[item.p[0],item.p[1],item.p[2]],
+     predefinedName:item.predefinedName||null,
+     vertex:item.vertex||null,
+     edge:item.edge||null,
+     t:item.t==null?null:item.t,
+     additional:false,
+     existingStudent:true
+   };
+ }else if(additionalHit){
+   hitPoint={
+     p:additionalHit.item.p,
+     predefinedName:null,
+     vertex:null,
+     edge:null,
+     t:null,
+     additional:true,
+     key:additionalHit.item.key
+   };
+ }else{
+   let predefinedHit=null;
+
+   predefinedPoints.forEach(function(item){
+     const p=project(item.p);
+     const d=Math.hypot(mx-p.x,my-p.y);
+     if(d<=18 && (!predefinedHit || d<predefinedHit.d)){
+       predefinedHit={name:item.name,p:item.p,d:d};
+     }
+   });
+
+   if(predefinedHit){
+     hitPoint={
+       p:predefinedHit.p,
+       predefinedName:predefinedHit.name,
+       vertex:null,
+       edge:null,
+       t:null,
+       additional:false
+     };
+   }else{
+     let nearestVertex=null;
+
+     Object.keys(V).forEach(function(name){
+       const p=project(V[name]);
+       const d=Math.hypot(mx-p.x,my-p.y);
+       if(!nearestVertex || d<nearestVertex.d){
+         nearestVertex={
+           name:name,
+           p:[V[name][0],V[name][1],V[name][2]],
+           d:d
+         };
+       }
+     });
+
+     if(nearestVertex && nearestVertex.d<=16){
+       hitPoint={
+         p:nearestVertex.p,
+         predefinedName:null,
+         vertex:nearestVertex.name,
+         edge:null,
+         t:null,
+         additional:false
+       };
+     }else{
+       let best=null;
+
+       allEdges.forEach(function(edge){
+         const a=project(V[edge[0]]);
+         const b=project(V[edge[1]]);
+         const dx=b.x-a.x;
+         const dy=b.y-a.y;
+         const len2=dx*dx+dy*dy;
+         if(!len2)return;
+
+         let t=((mx-a.x)*dx+(my-a.y)*dy)/len2;
+         t=Math.max(.03,Math.min(.97,t));
+
+         const px=a.x+t*dx;
+         const py=a.y+t*dy;
+         const d=Math.hypot(mx-px,my-py);
+
+         if(!best || d<best.d){
+           best={edge:edge,t:t,d:d};
+         }
+       });
+
+       if(best && best.d<=25){
+         hitPoint={
+           p:edgePoint(best.edge,best.t),
+           predefinedName:null,
+           vertex:null,
+           edge:best.edge,
+           t:best.t,
+           additional:false
+         };
+       }
+     }
+   }
+ }
+
+ if(!hitPoint)return;
+
+ // Повторный клик по той же первой точке ничего не меняет.
+ if(pendingSectionPoint && pointSame3D(pendingSectionPoint.p,hitPoint.p)){
+   info.style.display='block';
+   info.innerHTML='Точка уже выбрана.';
+   return;
+ }
+
+ // Второй клик сразу строит отрезок. Никакого порядка вершин
+ // и отдельного замыкания сечения больше нет.
+ if(pendingSectionPoint){
+   const a=pendingSectionPoint;
+   const b=hitPoint;
+
+   if(a.additional || b.additional){
+     if(addAdditionalConnection(a,b)){
+       info.style.display='block';
+       info.innerHTML='Отрезок построен.';
+     }else{
+       info.style.display='block';
+       info.innerHTML='Этот отрезок уже построен.';
+     }
+   }else{
+     function addStudentPointIfNeeded(item){
+       const existing=student.find(function(s){
+         return pointSame3D(s.p,item.p);
+       });
+       if(existing)return existing;
+
+       const s={
+         vertex:item.vertex||null,
+         edge:item.edge||null,
+         t:item.t==null?null:item.t,
+         predefinedName:item.predefinedName||null,
+         p:[item.p[0],item.p[1],item.p[2]]
+       };
+       student.push(s);
+       return s;
+     }
+
+     const sa=addStudentPointIfNeeded(a);
+     const sb=addStudentPointIfNeeded(b);
+
+     if(addSectionSegment(sa,sb)){
+       info.style.display='block';
+       info.innerHTML='Отрезок построен.';
+     }else{
+       info.style.display='block';
+       info.innerHTML='Этот отрезок уже построен.';
+     }
+   }
+
+   pendingSectionPoint=null;
+   pendingAdditionalConnectionPoint=null;
+   draw();
+   return;
+ }
+
+ // Первый клик только выбирает одну из двух точек.
+ pendingSectionPoint=hitPoint;
+ pendingAdditionalConnectionPoint=hitPoint.additional ? hitPoint : null;
+
+ info.style.display='block';
+ if(hitPoint.additional){
+   info.innerHTML='Выбрана дополнительная точка. Выберите вторую точку.';
+ }else if(hitPoint.predefinedName){
+   info.innerHTML='Выбрана точка <b>'+hitPoint.predefinedName+'</b>. Выберите вторую точку.';
+ }else if(hitPoint.vertex){
+   info.innerHTML='Выбрана вершина <b>'+hitPoint.vertex+'</b>. Выберите вторую точку.';
+ }else{
+   info.innerHTML='Выбрана точка на ребре <b>'+hitPoint.edge[0]+hitPoint.edge[1]+'</b>. Выберите вторую точку.';
+ }
+
+ draw();
+
+});
+
+yawInput.addEventListener('input',function(){
+ yaw=Number(yawInput.value)*Math.PI/180;
+ draw();
+});
+
+pitchInput.addEventListener('input',function(){
+ pitch=Number(pitchInput.value)*Math.PI/180;
+ draw();
+});
+
+resetView.addEventListener('click',function(){
+ yaw=-45*Math.PI/180;
+ pitch=35.2643897*Math.PI/180;
+ yawInput.value='-45';
+ pitchInput.value='35.264';
+ draw();
+});
+
+clearPoints.addEventListener('click',function(){
+ pendingSectionPoint=null;
+ pendingAdditionalConnectionPoint=null;
+ sectionSegments=[];
+ additionalConnections=[];
+ student=[];
+ sectionClosed=false;
+ pendingSectionPoint=null;
+ sectionSegments=[];
+ additionalConnections=[];
+ pendingAdditionalConnectionPoint=null;
+ answerShown=false;
+ dashedMode=false;
+ solidMode=false;
+ solidEdges=[];
+ solidConstructionSegments=[];
+ dashedEdges=[];
+ dashedStudentSegments=[];
+ extendedEdges=[];
+ additionalPoints=[];
+ shownAdditionalKeys=[];
+ extendMode=false;
+ extendModeBox.style.display='none';
+ dashedModeBox.style.display='none';
+ document.getElementById('ratioAnswer').value='';
+
+ info.style.display='none';
+ draw();
+});
+
+function normalizeRatio(value){
+ return value
+   .trim()
+   .replace(/\s+/g,'')
+   .replace('：',':')
+   .replace('/',':');
+}
+
+function pointDistance3D(a,b){
+ return Math.hypot(
+   a[0]-b[0],
+   a[1]-b[1],
+   a[2]-b[2]
+ );
+}
+
+function isNearCorrectPoint(p,correctPoint){
+ // На рёбрах куба длина = 4 в нашей модели.
+ // 15% = 0.6 единицы по ребру.
+ return pointDistance3D(p,correctPoint)<=4*CORRECT_TOLERANCE;
+}
+
+function getStudentNewPoints(){
+ return student.filter(function(s){
+   return !s.predefinedName;
+ });
+}
+
+function hasCorrectStudentPoint(points,target){
+ return points.some(function(s){
+   return isNearCorrectPoint(s.p,target);
+ });
+}
+
+checkAnswer.addEventListener('click',function(){
+ if(figureSelect.value==='triangularPyramid'){
+   if(constructionTypeSelect.value!=='threePoints'){
+     info.style.display='block';
+     info.innerHTML='<b style="color:#555">Для этой задачи доступно построение через три точки.</b>';
+     return;
+   }
+
+   const names=student.filter(function(s){return s.predefinedName;}).map(function(s){return s.predefinedName;}).sort().join(',');
+   const required='D,E,L';
+   const selectedCorrect=(names===required && student.filter(function(s){return s.predefinedName;}).length===3);
+   const requiredSegments=['D|E','D|L','E|L'];
+   const segmentKeys=sectionSegments.map(function(seg){
+     const a=seg.a.predefinedName||seg.a.vertex||'';
+     const b=seg.b.predefinedName||seg.b.vertex||'';
+     return a<b?a+'|'+b:b+'|'+a;
+   });
+   const allSegments=requiredSegments.every(function(k){return segmentKeys.indexOf(k)!==-1;});
+   const sectionCorrect=selectedCorrect && allSegments;
+
+   if(!sectionCorrect){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     drawPyramid();
+     return;
+   }
+
+   const value=areaAnswer.value.trim()
+     .replace(/\s+/g,'')
+     .replace(/,/g,'.')
+     .replace(/√/g,'sqrt')
+     .replace(/²/g,'^2');
+
+   const areaCorrect=(
+     value==='6' ||
+     value==='4*sqrt(33)' ||
+     value==='4sqrt33' ||
+     value==='4*sqrt33'
+   );
+
+   if(!areaCorrect){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     drawPyramid();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   drawPyramid();
+   return;
+ }
+
+
+ if(constructionType!=='threePoints'){
+   info.style.display='block';
+   info.innerHTML='<b style="color:#555">Задания этого типа добавим после того, как ты задашь условия и ответы.</b>';
+   return;
+ }
+
+  if(currentTask==='task10'){
+   const areaValue=document.getElementById('areaAnswer').value
+     .trim()
+     .replace(/\s+/g,'')
+     .replace(/,/g,'.');
+
+   const newPoints=getStudentNewPoints();
+
+   const hasCmid=hasCorrectStudentPoint(newPoints,Cmid10);
+
+   if(!(hasCmid && newPoints.length===1)){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(areaValue!=='1.125'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+   return;
+ }
+
+if(currentTask==='task1'){
+   const areaValue=document.getElementById('areaAnswer').value
+     .trim()
+     .replace(/\s+/g,'')
+     .replace(/,/g,'.');
+
+   const newPoints=getStudentNewPoints();
+
+   const hasPoint=function(a,b,target){
+     return newPoints.some(function(s){
+       return s.edge &&
+       (((s.edge[0]===a)&&(s.edge[1]===b)) ||
+        ((s.edge[0]===b)&&(s.edge[1]===a))) &&
+       isNearCorrectPoint(s.p,target);
+     });
+   };
+
+   const hasBB1=hasCorrectStudentPoint(newPoints,BB1mid1);
+   const hasD1C1=hasCorrectStudentPoint(newPoints,D1C1mid1);
+   const hasDD1=hasCorrectStudentPoint(newPoints,DD1mid1);
+
+   const sectionCorrect=(hasBB1 && hasD1C1 && hasDD1 && newPoints.length===3);
+
+   if(!sectionCorrect){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   // По условию пользователя правильный ответ: 5.2.
+   if(areaValue!=='5.2'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+   return;
+ }
+
+ if(currentTask==='task2'){
+   const shape=document.getElementById('shapeAnswer').value
+     .trim()
+     .toLowerCase()
+     .replace(/ё/g,'е');
+
+   const newPoints=getStudentNewPoints();
+
+   const hasM2=hasCorrectStudentPoint(newPoints,M2);
+
+   const sectionCorrect=(hasM2 && newPoints.length===1);
+
+   if(!sectionCorrect){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   const shapeCorrect=(
+     shape==='трапеция' ||
+     shape==='равнобедренная трапеция'
+   );
+
+   if(!shapeCorrect){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+   return;
+ }
+
+ if(currentTask==='task3'){
+   const ratio=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasP=hasCorrectStudentPoint(newPoints,P3);
+
+   const sectionCorrect=(hasP && newPoints.length===1);
+
+   if(!sectionCorrect){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratio!=='1:2'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+ }
+
+ if(currentTask==='task4'){
+   const ratio=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasCmid=hasCorrectStudentPoint(newPoints,Cmid4);
+
+   if(!hasCmid){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratio!=='1:1'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+ }
+
+ if(currentTask==='task5'){
+   const ratio=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasPoint=function(a,b,target){
+     return newPoints.some(function(s){
+       return s.edge &&
+       (((s.edge[0]===a)&&(s.edge[1]===b)) ||
+        ((s.edge[0]===b)&&(s.edge[1]===a))) &&
+        isNearCorrectPoint(s.p,target);
+     });
+   };
+
+   // P, Q, R — заданные точки условия.
+   // Их не надо искать среди новых точек ученика.
+   // Проверяем только две дополнительные точки сечения.
+   const hasD1C1=hasCorrectStudentPoint(newPoints,D1C1mid5);
+   const hasDD1=hasCorrectStudentPoint(newPoints,D1D5);
+
+   if(!(hasD1C1 && hasDD1)){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratio!=='3:1'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+ } if(currentTask==='task9'){
+   const ratioAA=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const ratioBC=normalizeRatio(document.getElementById('ratioAnswer2').value);
+   const ratioCC=normalizeRatio(document.getElementById('ratioAnswer3').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasAA=hasCorrectStudentPoint(newPoints,T8);
+
+   const hasBC=hasCorrectStudentPoint(newPoints,U8);
+
+   const hasCC=hasCorrectStudentPoint(newPoints,S8);
+
+   const sectionCorrect=hasAA && hasBC && hasCC && newPoints.length===3;
+
+   if(!sectionCorrect){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratioAA!=='9:8' || ratioBC!=='3:13' || ratioCC!=='4:13'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+   return;
+ }
+
+
+ if(currentTask==='task8'){
+   const ratioAA=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const ratioCC=normalizeRatio(document.getElementById('ratioAnswer2').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasCC=hasCorrectStudentPoint(newPoints,S8t);
+   const hasAA=hasCorrectStudentPoint(newPoints,T8t);
+
+   if(!(hasCC && hasAA && newPoints.length===2)){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratioAA!=='1:9' || ratioCC!=='1:4'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+   return;
+ }
+
+if(currentTask==='task7'){
+   const ratioAA=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const ratioCC=normalizeRatio(document.getElementById('ratioAnswer2').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasCC=hasCorrectStudentPoint(newPoints,S7);
+
+   const hasAA=hasCorrectStudentPoint(newPoints,T7);
+
+   const sectionCorrect=hasCC && hasAA && newPoints.length===2;
+
+   if(!sectionCorrect){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratioAA!=='1:9' || ratioCC!=='1:4'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+   return;
+ }
+
+
+ if(currentTask==='task6'){
+   const ratio=normalizeRatio(document.getElementById('ratioAnswer').value);
+   const newPoints=getStudentNewPoints();
+
+   const hasS=hasCorrectStudentPoint(newPoints,S6);
+
+   if(!hasS){
+     answerShown=false;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверное сечение.</b>';
+     draw();
+     return;
+   }
+
+   if(ratio!=='1:11'){
+     answerShown=true;
+     info.style.display='block';
+     info.innerHTML='<b style="color:#c0392b">Неверный ответ на вопрос, сечение верно.</b>';
+     draw();
+     return;
+   }
+
+   answerShown=true;
+   info.style.display='block';
+   info.innerHTML='<b style="color:#20a05a">Верно!</b>';
+   draw();
+ }
+
+});
+figureSelect.addEventListener('change',function(){
+ answerShown=false;
+ student=[];
+ sectionClosed=false;
+ pendingSectionPoint=null;
+ pendingAdditionalConnectionPoint=null;
+ sectionSegments=[];
+ additionalConnections=[];
+ extendedEdges=[];
+ dashedEdges=[];
+ additionalPoints=[];
+ shownAdditionalKeys=[];
+ areaAnswer.value='';
+ document.getElementById('ratioAnswer').value='';
+ document.getElementById('shapeAnswer').value='';
+ info.style.display='none';
+
+ if(figureSelect.value==='cube'){
+   taskSelect.innerHTML=
+     '<option value="" selected disabled>Выберите задание</option>'+
+     '<option value="task1">Задача 1</option>'+
+     '<option value="task2">Задача 2</option>'+
+     '<option value="task3">Задача 3</option>'+
+     '<option value="task4">Задача 4</option><option value="task5">Задача 5</option><option value="task6">Задача 6</option><option value="task7">Задача 7</option><option value="task8">Задача 8</option><option value="task9">Задача 9</option><option value="task10">Задача 10</option>';
+   taskSelect.value='';
+   currentTask=null;
+   emptyTaskMessage.style.display='block';
+   emptyTaskMessage.textContent='Выберите задание';
+   taskControls.style.display='none';
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+   areaQuestion.style.display='none';
+ }else if(figureSelect.value==='triangularPyramid'){
+   taskSelect.innerHTML=
+     '<option value="" selected disabled>Выберите задание</option>'+
+     '<option value="pyramidTask1">Задание №1</option>';
+   taskSelect.value='';
+   currentTask=null;
+   emptyTaskMessage.style.display='block';
+   emptyTaskMessage.textContent='Выберите задание';
+   taskControls.style.display='none';
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+   areaQuestion.style.display='none';
+ }else{
+   taskSelect.innerHTML=
+     '<option value="" selected disabled>Задания будут позже</option>';
+   taskSelect.value='';
+   currentTask=null;
+   emptyTaskMessage.style.display='block';
+   emptyTaskMessage.textContent='Задания будут позже';
+   taskControls.style.display='none';
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+   areaQuestion.style.display='none';
+   info.textContent='Эта фигура пока только в списке. Реальные задания для неё добавим позже.';
+ }
+
+ draw();
+});
+
+constructionTypeSelect.addEventListener('change',function(){
+ constructionType=constructionTypeSelect.value;
+ dashedMode=false;
+ solidMode=false;
+ dashedEdges=[];
+ dashedStudentSegments=[];
+ extendedEdges=[];
+ additionalPoints=[];
+ shownAdditionalKeys=[];
+ extendMode=false;
+ extendModeBox.style.display='none';
+ dashedModeBox.style.display='none';
+ const taskSelectEl=document.getElementById('taskSelect');
+
+ if(constructionType!=='threePoints'){
+   taskSelectEl.innerHTML=
+     '<option value="" selected disabled>Задания будут позже</option>';
+   taskSelectEl.value='';
+   currentTask=null;
+   emptyTaskMessage.style.display='block';
+   emptyTaskMessage.textContent='Задания будут позже';
+   taskControls.style.display='none';
+   info.style.display='none';
+   draw();
+   return;
+ }
+
+ if(figureSelect.value==='triangularPyramid'){
+   taskSelectEl.innerHTML=
+     '<option value="" selected disabled>Выберите задание</option>'+
+     '<option value="pyramidTask1">Задание №1</option>';
+ }else{
+   taskSelectEl.innerHTML=
+     '<option value="" selected disabled>Выберите задание</option>'+
+     '<option value="task1">Задача 1</option>'+
+     '<option value="task2">Задача 2</option>'+
+     '<option value="task3">Задача 3</option>'+
+     '<option value="task4">Задача 4</option><option value="task5">Задача 5</option><option value="task6">Задача 6</option><option value="task7">Задача 7</option>';
+ }
+ taskSelectEl.value='';
+ currentTask=null;
+ emptyTaskMessage.style.display='block';
+ emptyTaskMessage.textContent='Выберите задание';
+ taskControls.style.display='none';
+ info.style.display='none';
+
+ student=[];
+ sectionClosed=false;
+ answerShown=false;
+ document.getElementById('ratioAnswer').value='';
+ document.getElementById('shapeAnswer').value='';
+
+ const ratioQuestion=document.getElementById('ratioQuestion');
+ const shapeQuestion=document.getElementById('shapeQuestion');
+ const notice=document.getElementById('constructionNotice');
+
+ if(constructionType==='threePoints'){
+   notice.textContent='Построение по трём точкам.';
+   if(figureSelect.value==='triangularPyramid'){
+     ratioQuestion.style.display='none';
+     ratioQuestion2.style.display='none';
+     shapeQuestion.style.display='none';
+     areaQuestion.style.display='none';
+   }else if(currentTask==='task1'){
+     ratioQuestion.style.display='block';
+     shapeQuestion.style.display='none';
+     areaQuestion.style.display='none';
+   }else{
+     ratioQuestion.style.display='none';
+     shapeQuestion.style.display='block';
+     areaQuestion.style.display='none';
+   }
+ }else if(constructionType==='parallel'){
+   notice.textContent='Построение сечения параллельно заданной прямой.';
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+ }else{
+   notice.textContent='Построение сечения перпендикулярно заданной прямой.';
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+ }
+
+ info.style.display='none';
+ draw();
+});
+
+showAdditionalPoints.addEventListener('click',function(){
+ const found=findAdditionalPoints();
+
+ found.forEach(function(item){
+   if(!shownAdditionalKeys.includes(item.key)){
+     shownAdditionalKeys.push(item.key);
+     additionalPoints.push(item);
+   }
+ });
+
+ info.style.display='block';
+
+ if(found.length){
+   info.innerHTML='Дополнительные точки показаны.';
+ }else{
+   info.innerHTML='Дополнительных точек не найдено.';
+ }
+
+ draw();
+});
+
+extendEdge.addEventListener('click',function(){
+ extendMode=true;
+ // Старые продления сохраняются. Здесь начинается только новый выбор.
+ extendModeBox.style.display='block';
+ extendHint.textContent='Выберите ребро';
+ info.style.display='block';
+ info.innerHTML='Выберите ребро для продления.';
+ draw();
+});
+
+confirmExtend.addEventListener('click',function(){
+ extendMode=false;
+ extendModeBox.style.display='none';
+ info.style.display='block';
+ info.innerHTML='Выбор продления подтвержден. Можно продолжать построение сечения.';
+ draw();
+});
+
+makeSolid.addEventListener('click',function(){
+ solidMode=true;
+ dashedMode=false;
+ solidEdges=[];
+ solidConstructionSegments=[];
+ dashedModeBox.style.display='none';
+ solidModeBox.style.display='block';
+ solidHint.textContent='Выберите линии и нажмите «Подтвердить выбор»';
+ info.style.display='block';
+ info.innerHTML='Выберите ребра.';
+ draw();
+});
+
+makeDashed.addEventListener('click',function(){
+ makeDashed.style.display='block';
+ dashedMode=true;
+ dashedEdges=[];
+ dashedModeBox.style.display='block';
+ dashedHint.textContent='Выберите ребра';
+ info.style.display='block';
+ info.innerHTML='Выберите ребра.';
+ draw();
+});
+
+confirmSolid.addEventListener('click',function(){
+ solidEdges.forEach(function(edge){
+   dashedEdges=dashedEdges.filter(function(e){return !sameEdge(e,edge);});
+ });
+ dashedConstructionSegments=dashedConstructionSegments.filter(function(k){
+   return solidConstructionSegments.indexOf(k)===-1;
+ });
+ solidEdges=[];
+ solidConstructionSegments=[];
+ solidMode=false;
+ solidModeBox.style.display='none';
+ info.style.display='block';
+ info.innerHTML='Выбор рёбер подтвержден.';
+ draw();
+});
+
+confirmDashed.addEventListener('click',function(){
+ makeDashed.style.display='block';
+ dashedMode=false;
+ dashedModeBox.style.display='none';
+ info.style.display='block';
+ info.innerHTML='Выбор ребер подтвержден.';
+ draw();
+});
+
+taskSelect.addEventListener('change',function(){
+ currentTask=taskSelect.value;
+ const ratioQuestion=document.getElementById('ratioQuestion');
+ const shapeQuestion=document.getElementById('shapeQuestion');
+ const areaQuestion=document.getElementById('areaQuestion');
+
+ if(currentTask==='pyramidTask1'){
+   constructionType='threePoints';
+   constructionTypeSelect.value='threePoints';
+   student=[];
+   sectionClosed=false;
+   answerShown=false;
+   pendingSectionPoint=null;
+   pendingAdditionalConnectionPoint=null;
+   sectionSegments=[];
+   additionalConnections=[];
+   emptyTaskMessage.style.display='none';
+   taskControls.style.display='block';
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+   areaQuestion.style.display='block';
+   document.querySelector('#selectedTask .badge').textContent='Задание №1';
+   document.querySelector('.stageHead strong').textContent='Задание №1';
+   info.style.display='none';
+   draw();
+   return;
+ }
+ areaQuestion.style.display=(currentTask==='task1' || currentTask==='task10') ? 'block' : 'none';
+ ratioQuestion.style.display='none';
+ ratioQuestion2.style.display='none';
+ ratioQuestion3.style.display='none';
+ shapeQuestion.style.display='none';
+ student=[];
+ sectionClosed=false;
+ answerShown=false;
+ dashedMode=false;
+ solidMode=false;
+ solidEdges=[];
+ solidConstructionSegments=[];
+ dashedEdges=[];
+ dashedStudentSegments=[];
+ extendedEdges=[];
+ additionalPoints=[];
+ shownAdditionalKeys=[];
+ extendMode=false;
+ extendModeBox.style.display='none';
+ dashedModeBox.style.display='none';
+ solidModeBox.style.display='none';
+ emptyTaskMessage.style.display='none';
+ taskControls.style.display='block';
+ makeDashed.style.display='block';
+
+ const ratioAnswer=document.getElementById('ratioAnswer');
+ const shapeAnswer=document.getElementById('shapeAnswer');
+
+ ratioAnswer.value='';
+ ratioAnswer2.value='';
+ ratioAnswer3.value='';
+ shapeAnswer.value='';
+
+ if(constructionType==='threePoints'){
+   if(currentTask==='task1'){
+     ratioQuestion.style.display='none';
+     ratioQuestion2.style.display='none';
+     ratioQuestion3.style.display='none';
+     shapeQuestion.style.display='none';
+     areaQuestion.style.display='block';
+     areaQuestion.querySelector('div').textContent='Чему равна площадь сечения? Значение √3 считайте равным 1,7.';
+   }else if(currentTask==='task2'){
+     ratioQuestion.style.display='none';
+     shapeQuestion.style.display='block';
+   }else if(currentTask==='task3'){
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении сечение делит ребро BB₁?';
+     shapeQuestion.style.display='none';
+   }else if(currentTask==='task5'){
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро DD₁ (считая от вершины D)?';
+     shapeQuestion.style.display='none';
+   }else if(currentTask==='task6'){
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро BC (считая от вершины B)?';
+     ratioQuestion2.style.display='none';
+     shapeQuestion.style.display='none';
+   }else if(currentTask==='task7'){
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро AA₁ (считая от вершины A)?';
+     ratioQuestion2.style.display='block';
+     ratioQuestion2.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро CC₁ (считая от вершины C)?';
+     ratioQuestion3.style.display='none';
+     shapeQuestion.style.display='none';
+    }else if(currentTask==='task8'){
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро AA₁ (считая от вершины A)?';
+     ratioQuestion2.style.display='block';
+     ratioQuestion2.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро CC₁ (считая от вершины C)?';
+     ratioQuestion3.style.display='none';
+     shapeQuestion.style.display='none';
+   }else if(currentTask==='task9'){
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро AA₁ (считая от вершины A)?';
+     ratioQuestion2.style.display='block';
+     ratioQuestion2.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро BC (считая от вершины B)?';
+     ratioQuestion3.style.display='block';
+     ratioQuestion3.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро CC₁ (считая от вершины C₁)?';
+     shapeQuestion.style.display='none';
+   }else if(currentTask==='task10'){
+     ratioQuestion.style.display='none';
+     ratioQuestion2.style.display='none';
+     ratioQuestion3.style.display='none';
+     shapeQuestion.style.display='none';
+     areaQuestion.style.display='block';
+     areaQuestion.querySelector('div').textContent='Пусть ребро куба равно 1. Найдите площадь сечения.';
+   }else{
+     ratioQuestion.style.display='block';
+     ratioQuestion.querySelector('div').textContent='В каком отношении плоскость сечения делит ребро CC₁?';
+     shapeQuestion.style.display='none';
+   }
+ }else{
+   ratioQuestion.style.display='none';
+   shapeQuestion.style.display='none';
+ }
+
+ document.querySelector('#selectedTask .badge').textContent=
+   currentTask==='task1' ? 'Задача 1' :
+   currentTask==='task2' ? 'Задача 2' :
+   currentTask==='task3' ? 'Задача 3' :
+     currentTask==='task4' ? 'Задача 4' :
+     currentTask==='task5' ? 'Задача 5' :
+     currentTask==='task6' ? 'Задача 6' :
+     currentTask==='task7' ? 'Задача 7' :
+     currentTask==='task8' ? 'Задача 8' :
+     currentTask==='task9' ? 'Задача 9' :
+     currentTask==='task10' ? 'Задача 10' : '';
+
+ document.querySelector('.stageHead strong').textContent=
+   currentTask==='task1' ? 'Задание №1' :
+   currentTask==='task2' ? 'Задание №2' :
+   currentTask==='task3' ? 'Задание №3' :
+   currentTask==='task4' ? 'Задание №4' :
+   currentTask==='task5' ? 'Задание №5' :
+   currentTask==='task6' ? 'Задание №6' :
+   currentTask==='task7' ? 'Задание №7' :
+   currentTask==='task8' ? 'Задание №8' :
+   currentTask==='task9' ? 'Задание №9' :
+   currentTask==='task10' ? 'Задание №10' : '';
+
+ draw();
+});
+
+draw();
+
+})();
+</script>
+</body>
+</html>
