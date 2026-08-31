@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Библиотека уроков</title>
   <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .search-box{margin:24px 0 20px}.search-box input{width:100%;padding:16px 18px;border:1px solid #cfd8cf;border-radius:14px;font:inherit;font-size:17px;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.05);outline:none}.search-box input:focus{border-color:#6f8f76;box-shadow:0 0 0 3px rgba(111,143,118,.14)}.search-status{margin-top:8px;color:#66736a;font-size:13px}.search-results{display:none;margin:14px 0 28px;padding:14px;background:#fff;border:1px solid #d9dfd9;border-radius:14px}.search-results.show{display:block}.search-results h2{margin:0 0 10px;font-size:18px}.search-result{display:block;padding:11px 12px;border-radius:10px;text-decoration:none;color:inherit;border:1px solid transparent}.search-result:hover,.search-result:focus{background:#f4f7f3;border-color:#d8e1d7}.search-result strong{display:block}.search-result small{display:block;margin-top:3px;color:#6d776f}.no-results{padding:10px;color:#6d776f}
+  </style>
 </head>
 <body>
   <main class="shell">
@@ -13,6 +16,13 @@
       <h1>Библиотека уроков</h1>
       <p>Выберите класс, предмет или направление подготовки к экзамену.</p>
     </section>
+
+    <section class="search-box" aria-label="Поиск по библиотеке">
+      <input id="siteSearch" type="search" placeholder="Найти занятие, тему или раздел…" autocomplete="off" aria-label="Поиск по библиотеке" />
+      <div id="searchStatus" class="search-status">Введите название темы, например: «сечения», «ОГЭ», «Word».</div>
+      <div id="searchResults" class="search-results" aria-live="polite"></div>
+    </section>
+
     <section class="class-grid" aria-label="Выбор класса, предмета или экзамена">
       <a class="class-card" href="classes/5.html"><span>5</span><strong>класс</strong></a>
       <a class="class-card" href="classes/6.html"><span>6</span><strong>класс</strong></a>
@@ -27,5 +37,56 @@
       <a class="class-card" href="exams/ege-profile.html"><span>ЕГЭ</span><strong>ЕГЭ профиль</strong></a>
     </section>
   </main>
+
+  <script>
+  (()=>{
+    const input=document.getElementById('siteSearch');
+    const results=document.getElementById('searchResults');
+    const status=document.getElementById('searchStatus');
+    const pages=[
+      ['5 класс','classes/5.html'],['6 класс','classes/6.html'],['7 класс','classes/7.html'],
+      ['8 класс','classes/8-v2.html'],['9 класс','classes/9-v2.html'],['10 класс','classes/10.html'],['11 класс','classes/11.html'],
+      ['Информатика','informatics/index.html'],['ОГЭ','exams/oge-v2.html'],['ЕГЭ база','exams/ege-base.html'],['ЕГЭ профиль','exams/ege-profile.html']
+    ];
+    let index=[...document.querySelectorAll('.class-grid a')].map(a=>({title:a.textContent.trim(),href:a.getAttribute('href'),source:'Раздел'}));
+    const normalize=s=>s.toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ').trim();
+
+    Promise.all(pages.map(async ([source,url])=>{
+      try{
+        const r=await fetch(url,{cache:'no-store'});
+        if(!r.ok) return;
+        const html=await r.text();
+        const doc=new DOMParser().parseFromString(html,'text/html');
+        [...doc.querySelectorAll('a[href]')].forEach(a=>{
+          const href=a.getAttribute('href');
+          const title=a.textContent.replace(/→/g,'').trim();
+          if(!title||!href||title.startsWith('←')) return;
+          if(href.includes('/lessons/')||href.startsWith('lessons/')) index.push({title,href,source});
+        });
+      }catch(e){}
+    })).then(()=>{
+      const seen=new Set();
+      index=index.filter(x=>{const k=x.href+'|'+x.title;if(seen.has(k))return false;seen.add(k);return true});
+      status.textContent='Поиск готов. Можно искать по названию занятия, теме, классу или экзамену.';
+      if(input.value.trim()) runSearch();
+    });
+
+    function runSearch(){
+      const q=normalize(input.value);
+      if(!q){results.classList.remove('show');results.innerHTML='';return;}
+      const words=q.split(' ').filter(Boolean);
+      const found=index.filter(item=>{
+        const hay=normalize(item.title+' '+item.source);
+        return words.every(w=>hay.includes(w));
+      }).slice(0,30);
+      results.classList.add('show');
+      if(!found.length){results.innerHTML='<div class="no-results">Ничего не найдено. Попробуйте более короткий запрос.</div>';return;}
+      results.innerHTML='<h2>Найдено: '+found.length+'</h2>'+found.map(item=>'<a class="search-result" href="'+item.href+'" '+(item.href.includes('/lessons/')?'target="_blank" rel="noopener"':'')+'><strong>'+escapeHtml(item.title)+'</strong><small>'+escapeHtml(item.source)+'</small></a>').join('');
+    }
+    function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    input.addEventListener('input',runSearch);
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){const first=results.querySelector('a');if(first)first.click();}});
+  })();
+  </script>
 </body>
 </html>
