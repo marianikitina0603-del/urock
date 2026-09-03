@@ -1,0 +1,53 @@
+from pathlib import Path
+
+p = Path('lessons/grade11/ege/interactive_math_lesson.html')
+s = p.read_text(encoding='utf-8')
+if 'drawingStorePrefix' in s:
+    print('Handwriting tools already present')
+    raise SystemExit(0)
+
+css = r'''
+/* Рисование мышью / стилусом */
+.draw-toolbar{position:fixed;right:18px;bottom:18px;z-index:80;display:flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:min(620px,calc(100vw - 36px));padding:10px 12px;background:rgba(255,253,248,.97);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,.14);backdrop-filter:blur(8px)}
+.draw-toolbar .draw-state{font-size:13px;font-weight:800;color:var(--accent);padding:0 4px;white-space:nowrap}.draw-toolbar button{padding:8px 11px}.draw-toolbar button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.draw-toolbar input[type="color"]{width:36px;height:34px;border:1px solid var(--line);border-radius:8px;padding:2px;background:#fff;cursor:pointer}.draw-toolbar input[type="range"]{width:92px}
+.task{position:relative}.draw-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none;border-radius:16px}body.draw-enabled .draw-canvas{pointer-events:auto;touch-action:none;cursor:crosshair}body.draw-enabled.draw-eraser .draw-canvas{cursor:cell}body.draw-enabled .task{user-select:none}
+@media(max-width:700px){.draw-toolbar{left:10px;right:10px;bottom:10px;justify-content:center}.draw-toolbar .draw-state{width:100%;text-align:center}}
+'''
+s = s.replace('@media(max-width:850px)', css + '\n@media(max-width:850px)', 1)
+s = s.replace('.topbar,.tabs,.actions,.print-settings,footer,.overall,.task-tools,.feedback,.solution{display:none!important}', '.topbar,.tabs,.actions,.print-settings,footer,.overall,.task-tools,.feedback,.solution,.draw-toolbar{display:none!important}')
+
+toolbar = r'''
+<div class="draw-toolbar" id="drawToolbar" aria-label="Инструменты для рукописных заметок">
+  <span class="draw-state" id="drawState">Рисование выключено</span>
+  <button class="secondary" id="drawToggle" type="button" onclick="toggleDrawing()">✍ Рисовать</button>
+  <button class="secondary" id="penBtn" type="button" onclick="setDrawTool('pen')">Перо</button>
+  <button class="secondary" id="eraserBtn" type="button" onclick="setDrawTool('eraser')">Ластик</button>
+  <input id="drawColor" type="color" value="#243238" title="Цвет пера" aria-label="Цвет пера">
+  <label class="note" style="display:flex;align-items:center;gap:5px">Толщина <input id="drawSize" type="range" min="1" max="12" step="1" value="3"></label>
+  <button class="secondary" type="button" onclick="clearActiveDrawings()">Очистить вкладку</button>
+</div>
+'''
+s = s.replace('<footer>', toolbar + '\n<footer>', 1)
+
+js = r'''
+
+// ===== Рукописные заметки: мышь / стилус / сенсор =====
+let drawingEnabled=false, drawTool='pen';
+const drawingStorePrefix='math-practice-drawing-v1-';
+function updateDrawToolbar(){document.body.classList.toggle('draw-enabled',drawingEnabled);document.body.classList.toggle('draw-eraser',drawTool==='eraser');const t=document.getElementById('drawToggle'),p=document.getElementById('penBtn'),e=document.getElementById('eraserBtn'),st=document.getElementById('drawState');if(t)t.classList.toggle('active',drawingEnabled);if(p)p.classList.toggle('active',drawingEnabled&&drawTool==='pen');if(e)e.classList.toggle('active',drawingEnabled&&drawTool==='eraser');if(st)st.textContent=drawingEnabled?(drawTool==='eraser'?'Рисование: ластик':'Рисование: перо'):'Рисование выключено'}
+function toggleDrawing(){drawingEnabled=!drawingEnabled;updateDrawToolbar()}
+function setDrawTool(tool){drawTool=tool;drawingEnabled=true;updateDrawToolbar()}
+function drawingKey(n){return drawingStorePrefix+n}
+function saveTaskDrawing(n,c){try{localStorage.setItem(drawingKey(n),c.toDataURL('image/png'))}catch(e){}}
+function restoreTaskDrawing(n,c){const d=localStorage.getItem(drawingKey(n));if(!d)return;const im=new Image();im.onload=()=>{const x=c.getContext('2d');x.save();x.globalCompositeOperation='source-over';x.drawImage(im,0,0,c.width,c.height);x.restore()};im.src=d}
+function fitDrawingCanvas(c){const t=c.parentElement,w=Math.max(1,Math.round(t.clientWidth)),h=Math.max(1,Math.round(t.offsetHeight));if(c.width===w&&c.height===h)return;const o=document.createElement('canvas');o.width=c.width||w;o.height=c.height||h;if(c.width&&c.height)o.getContext('2d').drawImage(c,0,0);c.width=w;c.height=h;if(o.width&&o.height)c.getContext('2d').drawImage(o,0,0,o.width,o.height,0,0,Math.min(o.width,w),Math.min(o.height,h))}
+function attachDrawingCanvas(task){const n=task.dataset.task;if(!n||task.querySelector('.draw-canvas'))return;const c=document.createElement('canvas');c.className='draw-canvas';c.setAttribute('aria-label','Поле для рукописных заметок к заданию '+n);task.appendChild(c);fitDrawingCanvas(c);restoreTaskDrawing(n,c);let on=false,lx=0,ly=0;const point=ev=>{const r=c.getBoundingClientRect();return{x:(ev.clientX-r.left)*(c.width/r.width),y:(ev.clientY-r.top)*(c.height/r.height)}};c.addEventListener('pointerdown',ev=>{if(!drawingEnabled)return;ev.preventDefault();c.setPointerCapture(ev.pointerId);const p=point(ev);lx=p.x;ly=p.y;on=true});c.addEventListener('pointermove',ev=>{if(!drawingEnabled||!on)return;ev.preventDefault();const p=point(ev),x=c.getContext('2d');x.save();x.lineCap='round';x.lineJoin='round';if(drawTool==='eraser'){x.globalCompositeOperation='destination-out';x.lineWidth=Math.max(14,Number(document.getElementById('drawSize')?.value||3)*4)}else{x.globalCompositeOperation='source-over';x.strokeStyle=document.getElementById('drawColor')?.value||'#243238';const b=Number(document.getElementById('drawSize')?.value||3),pr=(ev.pointerType==='pen'&&ev.pressure>0)?(.55+ev.pressure*.9):1;x.lineWidth=b*pr}x.beginPath();x.moveTo(lx,ly);x.lineTo(p.x,p.y);x.stroke();x.restore();lx=p.x;ly=p.y});const finish=ev=>{if(!on)return;on=false;try{if(c.hasPointerCapture(ev.pointerId))c.releasePointerCapture(ev.pointerId)}catch(e){}saveTaskDrawing(n,c)};c.addEventListener('pointerup',finish);c.addEventListener('pointercancel',finish);if('ResizeObserver'in window)new ResizeObserver(()=>fitDrawingCanvas(c)).observe(task)}
+function initDrawingCanvases(){document.querySelectorAll('.task').forEach(attachDrawingCanvas);updateDrawToolbar()}
+function clearActiveDrawings(){const a=document.querySelector('.panel.active');if(!a||!confirm('Очистить все рукописные записи на текущей вкладке?'))return;a.querySelectorAll('.task').forEach(t=>{const n=String(t.dataset.task||''),c=t.querySelector('.draw-canvas');if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);if(n)localStorage.removeItem(drawingKey(n))})}
+window.addEventListener('load',()=>setTimeout(initDrawingCanvases,0));
+'''
+pos = s.rfind('</script>')
+s = s[:pos] + js + s[pos:]
+p.write_text(s, encoding='utf-8')
+print('Patched', p)
