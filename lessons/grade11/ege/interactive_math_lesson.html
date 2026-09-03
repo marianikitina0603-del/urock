@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Практикум по математике</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)'],['$','$']], displayMath: [['\\[','\\]'],['$$','$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f5f3ec; --paper:#fffdf8; --ink:#263238; --muted:#6f766f;
+  --accent:#456b5c; --accent2:#d6b56b; --line:#d9d4c8; --soft:#edf3ef;
+  --danger:#b85c5c; --ok:#3b7a57;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:20;background:rgba(245,243,236,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar{max-width:1250px;margin:auto;padding:16px 22px;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand h1{font-size:24px;margin:0 0 4px}.brand p{margin:0;color:var(--muted);font-size:14px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;transition:.2s}
+button.primary{background:var(--accent);color:white}button.secondary{background:white;color:var(--ink);border:1px solid var(--line)}button:hover{transform:translateY(-1px)}
+.layout{max-width:1250px;margin:20px auto;padding:0 22px 30px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}
+.tabs{position:sticky;top:100px;align-self:start;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 8px 26px rgba(0,0,0,.04)}
+.tab{width:100%;text-align:left;background:transparent;color:var(--ink);padding:12px;border-radius:10px;margin:3px 0;font-size:14px}
+.tab.active{background:var(--soft);color:var(--accent);outline:1px solid #c8dbd0}
+.content{min-width:0}.panel{display:none}.panel.active{display:block}
+.section-head{background:linear-gradient(135deg,var(--accent),#6a8d80);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:16px}.section-head h2{margin:0 0 7px;font-size:24px}.section-head p{margin:0;opacity:.9}
+.task{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:14px 0;box-shadow:0 8px 20px rgba(0,0,0,.035);break-inside:avoid}
+.task-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.num{font-size:18px;font-weight:800;color:var(--accent)}
+.prompt{margin:10px 0 12px;line-height:1.55}.math{font-size:20px;overflow-x:auto;padding:7px 0}
+.answer-row{display:grid;grid-template-columns:minmax(140px,260px) auto;gap:10px;align-items:center;margin-top:14px}.answer-row input{width:100%;font-size:17px;padding:10px 12px;border:1px solid #bfc7c0;border-radius:9px;background:#fff}
+.scratch{margin-top:12px}.scratch summary{cursor:pointer;color:var(--accent);font-weight:700}.scratchpad{width:100%;min-height:110px;margin-top:8px;border:1px dashed #b8b3a8;border-radius:10px;padding:10px;resize:vertical;background:repeating-linear-gradient(0deg,#fff 0 24px,#e9ece8 25px),repeating-linear-gradient(90deg,transparent 0 24px,#e9ece8 25px)}
+.note{font-size:13px;color:var(--muted)}
+.check-btn{background:var(--soft);color:var(--accent);border:1px solid #c8dbd0}.solution-btn{background:#fff8e8;color:#7d6124;border:1px solid #e7d39e}.feedback{font-size:14px;font-weight:700;min-height:20px;margin-top:8px}.feedback.ok{color:var(--ok)}.feedback.bad{color:var(--danger)}.solution{display:none;margin-top:12px;padding:14px 16px;border-radius:12px;background:#f7f4ea;border:1px solid #e5dcc4;line-height:1.55}.solution.show{display:block}.task-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.score-card{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.25)}.score-pill{background:rgba(255,255,255,.16);padding:7px 10px;border-radius:999px;font-size:14px;font-weight:700}.overall{max-width:1250px;margin:14px auto 0;padding:0 22px}.overall-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.overall-main{font-weight:800;color:var(--accent)}
+.print-settings{display:none;background:var(--paper);border:1px solid var(--line);padding:14px;border-radius:12px;margin-bottom:12px}
+.print-settings.show{display:block}.print-settings label{margin-right:14px;font-size:14px}
+footer{max-width:1250px;margin:0 auto 30px;padding:0 22px;color:var(--muted);font-size:13px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.tabs{position:static;display:flex;overflow:auto;gap:6px}.tab{min-width:max-content}.answer-row{grid-template-columns:1fr}}
+@media print{
+  @page{size:A4;margin:11mm}
+  body{background:#fff;font-size:11pt}.topbar,.tabs,.actions,.print-settings,footer,.overall,.task-tools,.feedback,.solution{display:none!important}.layout{display:block;max-width:none;margin:0;padding:0}.panel{display:block!important}.section-head{background:none!important;color:#000;border:0;border-bottom:2px solid #555;border-radius:0;padding:0 0 6px;margin:0 0 8px;break-before:page}.panel:first-child .section-head{break-before:auto}.section-head p{color:#444}.task{box-shadow:none;border:1px solid #aaa;border-radius:8px;padding:10px 12px;margin:7px 0;break-inside:avoid}.math{font-size:14pt}.answer-row{grid-template-columns:160px 1fr;margin-top:8px}.answer-row button{display:none}.answer-row input{border:0;border-bottom:1px solid #555;border-radius:0;padding:4px;background:transparent}.scratch{display:block}.scratch summary{display:none}.scratchpad{display:block!important;min-height:55px;border:1px solid #bbb;background:repeating-linear-gradient(0deg,#fff 0 19px,#ddd 20px),repeating-linear-gradient(90deg,transparent 0 19px,#ddd 20px)}
+  body.print-active-only .panel{display:none!important} body.print-active-only .panel.active{display:block!important} body.print-active-only .panel.active .section-head{break-before:auto}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand"><h1>Практикум: вычисления, преобразования, вероятность и кредит</h1><p>26 заданий • тематические вкладки • поля ответов • печать / PDF</p></div>
+    <div class="actions"><button class="secondary" onclick="checkActive()">Проверить вкладку</button><button class="secondary" onclick="checkAll()">Проверить всё</button><button class="secondary" onclick="togglePrintSettings()">Настройки печати</button><button class="primary" onclick="printDoc()">Печать / PDF</button></div>
+  </div>
+</header>
+<div class="overall"><div class="overall-card"><div><div class="overall-main" id="overallScore">Результат: 0 / 26</div><div class="note" id="overallNote">Проверено: 0 из 26 заданий</div></div><button class="secondary" onclick="resetProgress()">Сбросить ответы и статистику</button></div></div>
+
+<div class="layout">
+  <nav class="tabs" id="tabs"></nav>
+  <main class="content">
+    <div class="print-settings" id="printSettings">
+      <strong>Что печатать:</strong>
+      <label><input type="radio" name="printMode" value="all" checked> Все темы</label>
+      <label><input type="radio" name="printMode" value="active"> Только текущую вкладку</label>
+      <span class="note">В окне печати выберите «Сохранить как PDF», если нужен PDF-файл.</span>
+    </div>
+    <div id="panels"></div>
+  </main>
+</div>
+<footer>Ответы сохраняются только в текущем браузере автоматически. Для ученика можно открыть этот HTML локально или разместить на GitHub Pages.</footer>
+
+<script>
+const sections = [
+ {id:'arith', title:'1. Числа и вычисления', desc:'Дроби, десятичные числа, рациональные вычисления', tasks:[
+  [1,'Найдите значение выражения',String.raw`7\frac{9}{13}\cdot\frac{5}{13}`],
+  [2,'Найдите значение выражения',String.raw`(252^2-23^2):275`],
+  [3,'Найдите значение выражения',String.raw`\frac{30{,}9\cdot0{,}356}{3{,}09\cdot35{,}6}`],
+  [4,'Найдите значение выражения',String.raw`\left(3\frac{2}{5}-2{,}7\right)\cdot6\frac{3}{7}`],
+  [5,'Найдите значение выражения',String.raw`\left(7\frac{3}{5}-3{,}5\right):\frac{1}{20}`],
+  [6,'Найдите значение выражения',String.raw`\left(\frac{3}{4}+2\frac{3}{8}\right)\cdot25{,}8`]
+ ]},
+ {id:'alg', title:'2. Алгебраические преобразования', desc:'Формулы сокращённого умножения, сокращение дробей, преобразование выражений', tasks:[
+  [7,'Найдите значение выражения',String.raw`(2axy-(-2xya)):4yax`],
+  [8,'Найдите значение выражения',String.raw`(2x-5)(2x+5)-4x^2`],
+  [9,'Найдите значение выражения',String.raw`\frac{9x^2-4}{3x+2}-3x`],
+  [10,'Найдите значение выражения',String.raw`\big((3x+2y)^2-9x^2-4y^2\big):6xy`],
+  [11,'Найдите значение выражения при '+String.raw`\(x=80\)`,String.raw`(7x-3)(7x+3)-49x^2+6x+22`],
+  [12,'Найдите значение выражения',String.raw`\big((x-5y)^2-(x+5y)^2\big):xy`],
+  [13,'Найдите значение выражения',String.raw`\big(16x^2+9y^2-(4x-3y)^2\big):(-6xy)`],
+  [14,'Найдите значение выражения',String.raw`\frac{(11a)^2-11a}{11a^2-a}`],
+  [15,'Найдите значение выражения',String.raw`(25a^2-16)\left(\frac1{5a+4}-\frac1{5a-4}\right)`],
+  [16,'Найдите значение выражения при '+String.raw`\(b=65\)`,String.raw`(49b^2-36)\left(\frac1{7b-6}-\frac1{7b+6}\right)-2b+15`],
+  [17,'Найдите значение выражения при '+String.raw`\(a=22{,}8\)`,String.raw`a(81a^2-64)\left(\frac1{9a+8}-\frac1{9a-8}\right)`]
+ ]},
+ {id:'relations', title:'3. Выражения по условию', desc:'Отношения переменных и линейные связи', tasks:[
+  [18,'Найдите '+String.raw`\(\frac{a}{b}\)`+', если',String.raw`\frac{2a+5b}{5a+2b}=1`],
+  [19,'Найдите выражение, если '+String.raw`\(\frac{a}{b}=3\)`,String.raw`\frac{a+9b+16}{a+3b+8}`],
+  [20,'Найдите '+String.raw`\(21a-14b-20\)`+', если',String.raw`\frac{3a-4b+2}{4a-3b+2}=6`],
+  [21,'Найдите значение '+String.raw`\(2x+y+6z\)`+', если',String.raw`4x+y=5,\qquad 12z+y=7`]
+ ]},
+ {id:'prob', title:'4. Вероятность', desc:'Условная вероятность и отбор после контроля качества', tasks:[
+  [22,'В городе 48% взрослого населения — мужчины. Пенсионеры составляют 12,6% взрослого населения, причём доля пенсионеров среди женщин равна 15%. Для социологического опроса выбран случайным образом мужчина, проживающий в этом городе. Найдите вероятность события «выбранный мужчина является пенсионером».',null],
+  [23,'В городе 46% взрослого населения — мужчины. Пенсионеры составляют 7,7% взрослого населения, причём доля пенсионеров среди женщин равна 10%. Для социологического опроса выбран случайным образом мужчина, проживающий в этом городе. Найдите вероятность события «выбранный мужчина является пенсионером».',null],
+  [24,'На фабрике керамической посуды 10% произведённых тарелок имеют дефект. При контроле качества продукции выявляется 65% дефектных тарелок. Остальные тарелки поступают в продажу. Найдите вероятность того, что случайно выбранная при покупке тарелка не имеет дефектов. Ответ округлите до сотых.',null],
+  [25,'На фабрике керамической посуды 30% произведённых тарелок имеют дефект. При контроле качества продукции выявляется 90% дефектных тарелок. Остальные тарелки поступают в продажу. Найдите вероятность того, что случайно выбранная при покупке тарелка не имеет дефектов. Ответ округлите до сотых.',null]
+ ]},
+ {id:'credit', title:'5. Кредит', desc:'Равные ежегодные платежи', tasks:[
+  [26,'Взяли кредит 177 120 рублей в банке на четыре года под 25% годовых и выплатили четырьмя равными платежами. Чему будет равна общая сумма выплат после полного погашения кредита?',null]
+ ]}
+];
+
+const tabs=document.getElementById('tabs'), panels=document.getElementById('panels');
+const answers={1:'500/169',2:'229',3:'0.1',4:'4.5',5:'82',6:'80.625',7:'1',8:'-25',9:'-2',10:'2',11:'493',12:'-20',13:'-4',14:'11',15:'-8',16:'-103',17:'-364.8',18:'1',19:'2',20:'-30',21:'6',22:'0.1',23:'0.05',24:'0.96',25:'0.96',26:'300000'};
+const solutions={
+1:String.raw`\(7\frac{9}{13}=\frac{100}{13}\). Тогда \(\frac{100}{13}\cdot\frac{5}{13}=\frac{500}{169}\).`,
+2:String.raw`Используем разность квадратов: \(252^2-23^2=(252-23)(252+23)=229\cdot275\). После деления на 275 получаем \(229\).`,
+3:String.raw`\(30{,}9=10\cdot3{,}09\), а \(35{,}6=100\cdot0{,}356\). Поэтому значение равно \(\frac{10}{100}=0{,}1\).`,
+4:String.raw`\(3\frac25-2{,}7=0{,}7=\frac{7}{10}\), а \(6\frac37=\frac{45}{7}\). Тогда \(\frac{7}{10}\cdot\frac{45}{7}=\frac{9}{2}=4{,}5\).`,
+5:String.raw`\(7\frac35-3{,}5=4{,}1\). Делим на \(\frac1{20}\): \(4{,}1\cdot20=82\).`,
+6:String.raw`\(\frac{3}{4}+2\frac{3}{8}=\frac{25}{8}\). Тогда \(\frac{25}{8}\cdot25{,}8=80{,}625\).`,
+7:String.raw`\(2axy-(-2xya)=4axy\). Делим на \(4yax\) и получаем \(1\).`,
+8:String.raw`\((2x-5)(2x+5)=4x^2-25\). После вычитания \(4x^2\) остаётся \(-25\).`,
+9:String.raw`\(9x^2-4=(3x-2)(3x+2)\). Сокращаем: \(3x-2-3x=-2\).`,
+10:String.raw`\((3x+2y)^2=9x^2+12xy+4y^2\). В числителе остаётся \(12xy\), поэтому результат равен \(2\).`,
+11:String.raw`Выражение упрощается до \(6x+13\). При \(x=80\): \(6\cdot80+13=493\).`,
+12:String.raw`Разность квадратов даёт \(-20xy\). После деления на \(xy\) получаем \(-20\).`,
+13:String.raw`После раскрытия квадрата в числителе остаётся \(24xy\). \(24xy:(-6xy)=-4\).`,
+14:String.raw`\(121a^2-11a=11a(11a-1)\), \(11a^2-a=a(11a-1)\). После сокращения получаем \(11\).`,
+15:String.raw`\((5a-4)(5a+4)(\frac1{5a+4}-\frac1{5a-4})=(5a-4)-(5a+4)=-8\).`,
+16:String.raw`Произведение первых трёх множителей равно \(12\). Получаем \(27-2b\). При \(b=65\): \(-103\).`,
+17:String.raw`После сокращения выражение равно \(-16a\). При \(a=22{,}8\): \(-364{,}8\).`,
+18:String.raw`\(2a+5b=5a+2b\Rightarrow a=b\). Следовательно, \(\frac{a}{b}=1\).`,
+19:String.raw`\(a=3b\). Тогда \(\frac{12b+16}{6b+8}=2\).`,
+20:String.raw`Из условия получаем \(21a-14b=-10\). Тогда \(21a-14b-20=-30\).`,
+21:String.raw`Складываем равенства: \(4x+12z+2y=12\). Делим на 2 и получаем \(2x+y+6z=6\).`,
+22:String.raw`Женщины составляют \(0{,}52\). Пенсионерок \(0{,}52\cdot0{,}15=0{,}078\). Мужчин-пенсионеров \(0{,}126-0{,}078=0{,}048\). Поэтому \(0{,}048:0{,}48=0{,}1\).`,
+23:String.raw`Женщины — \(0{,}54\), пенсионерок \(0{,}054\). Мужчин-пенсионеров \(0{,}077-0{,}054=0{,}023\). \(0{,}023:0{,}46=0{,}05\).`,
+24:String.raw`В продажу попадают все качественные тарелки \(0{,}90\) и невыявленные дефектные \(0{,}10\cdot0{,}35=0{,}035\). Поэтому \(P=0{,}90:0{,}935\approx0{,}96\).`,
+25:String.raw`В продажу попадают \(0{,}70+0{,}30\cdot0{,}10=0{,}73\). Тогда \(P=0{,}70:0{,}73\approx0{,}96\).`,
+26:String.raw`Пусть ежегодный платёж равен \(x\). Тогда \(177120\cdot1{,}25^4=x(1+1{,}25+1{,}25^2+1{,}25^3)\), откуда \(x=75000\) рублей. За четыре года выплачено \(4\cdot75000=300000\) рублей.`
+};
+function parseNumeric(v){v=(v||'').trim().replace(/\s+/g,'').replace(',','.');if(!v)return NaN;if(/^[-+]?\d+(?:\.\d+)?\/[-+]?\d+(?:\.\d+)?$/.test(v)){const q=v.split('/').map(Number);return q[1]?q[0]/q[1]:NaN}return /^[-+]?\d+(?:\.\d+)?$/.test(v)?Number(v):NaN}
+function isCorrect(n,v){const a=parseNumeric(v),b=parseNumeric(answers[n]);return Number.isFinite(a)&&Math.abs(a-b)<=Math.max(1e-8,Math.abs(b)*1e-8)}
+function formatAnswer(v){return v.replace('.',',')}
+function taskHTML([n,prompt,math]){
+ return `<article class="task" id="task${n}"><div class="task-title"><div class="num">№${n}</div><span class="note">1 балл</span></div><div class="prompt">${prompt}</div>${math?`<div class="math">\\[${math}\\]</div>`:''}<div class="answer-row"><input id="ans${n}" placeholder="Ответ" oninput="answerChanged(${n},this.value)"><span class="note">Можно вводить дробь, десятичную дробь через точку или запятую</span></div><div class="task-tools"><button class="check-btn" onclick="checkTask(${n})">Проверить ответ</button><button class="solution-btn" onclick="toggleSolution(${n})">Показать решение</button></div><div class="feedback" id="feedback${n}"></div><div class="solution" id="solution${n}"><strong>Решение.</strong> ${solutions[n]}<div><strong>Ответ:</strong> ${formatAnswer(answers[n])}</div></div><details class="scratch"><summary>Черновик / решение ученика</summary><textarea class="scratchpad" id="scratch${n}" oninput="saveScratch(${n},this.value)" placeholder="Записывайте ход решения здесь..."></textarea></details></article>`;
+}
+sections.forEach((s,i)=>{
+ const b=document.createElement('button'); b.className='tab'+(i===0?' active':''); b.textContent=s.title; b.onclick=()=>activate(s.id,b); tabs.appendChild(b);
+ const p=document.createElement('section'); p.id=s.id; p.className='panel'+(i===0?' active':''); p.innerHTML=`<div class="section-head"><h2>${s.title}</h2><p>${s.desc}</p><div class="score-card"><span class="score-pill" id="score_${s.id}">Баллы: 0 / ${s.tasks.length}</span><span class="score-pill" id="checked_${s.id}">Проверено: 0 / ${s.tasks.length}</span></div></div>`+s.tasks.map(taskHTML).join(''); panels.appendChild(p);
+});
+function activate(id,btn){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');btn.classList.add('active'); if(window.MathJax?.typesetPromise) MathJax.typesetPromise();}
+function answerChanged(n,v){localStorage.setItem('math_ans_'+n,v);localStorage.removeItem('math_checked_'+n);const f=document.getElementById('feedback'+n);f.textContent='';f.className='feedback';updateStats()}
+function saveScratch(n,v){localStorage.setItem('math_scratch_'+n,v)}
+function checkTask(n){const input=document.getElementById('ans'+n),f=document.getElementById('feedback'+n);if(!input.value.trim()){f.textContent='Сначала введите ответ.';f.className='feedback bad';return false}const ok=isCorrect(n,input.value);localStorage.setItem('math_checked_'+n,ok?'1':'0');f.textContent=ok?'✓ Верно. 1 балл':'✗ Ответ пока неверный. Попробуйте ещё раз.';f.className='feedback '+(ok?'ok':'bad');updateStats();return ok}
+function checkActive(){const panel=document.querySelector('.panel.active');const sec=sections.find(s=>s.id===panel.id);sec.tasks.forEach(t=>checkTask(t[0]))}
+function checkAll(){sections.forEach(sec=>sec.tasks.forEach(t=>checkTask(t[0])))}
+function toggleSolution(n){const box=document.getElementById('solution'+n);box.classList.toggle('show');const buttons=document.querySelectorAll(`#task${n} .solution-btn`);buttons.forEach(b=>b.textContent=box.classList.contains('show')?'Скрыть решение':'Показать решение');if(window.MathJax?.typesetPromise) MathJax.typesetPromise([box])}
+function updateStats(){let totalCorrect=0,totalChecked=0;sections.forEach(sec=>{let c=0,ch=0;sec.tasks.forEach(t=>{const st=localStorage.getItem('math_checked_'+t[0]);if(st!==null){ch++;totalChecked++;if(st==='1'){c++;totalCorrect++}}});document.getElementById('score_'+sec.id).textContent=`Баллы: ${c} / ${sec.tasks.length}`;document.getElementById('checked_'+sec.id).textContent=`Проверено: ${ch} / ${sec.tasks.length}`});document.getElementById('overallScore').textContent=`Результат: ${totalCorrect} / 26`;document.getElementById('overallNote').textContent=`Проверено: ${totalChecked} из 26 заданий`}
+function resetProgress(){if(!confirm('Удалить все ответы, черновики и статистику?'))return;for(let n=1;n<=26;n++){localStorage.removeItem('math_ans_'+n);localStorage.removeItem('math_scratch_'+n);localStorage.removeItem('math_checked_'+n)}document.querySelectorAll('input[id^=ans]').forEach(x=>x.value='');document.querySelectorAll('.scratchpad').forEach(x=>x.value='');document.querySelectorAll('.feedback').forEach(x=>{x.textContent='';x.className='feedback'});document.querySelectorAll('.solution').forEach(x=>x.classList.remove('show'));updateStats()}
+function restore(){for(let n=1;n<=26;n++){const a=document.getElementById('ans'+n),sc=document.getElementById('scratch'+n),f=document.getElementById('feedback'+n);if(a)a.value=localStorage.getItem('math_ans_'+n)||'';if(sc)sc.value=localStorage.getItem('math_scratch_'+n)||'';const st=localStorage.getItem('math_checked_'+n);if(st!==null&&a.value){const ok=st==='1';f.textContent=ok?'✓ Верно. 1 балл':'✗ Ответ пока неверный. Попробуйте ещё раз.';f.className='feedback '+(ok?'ok':'bad')}}updateStats()}
+function togglePrintSettings(){document.getElementById('printSettings').classList.toggle('show')}
+function printDoc(){const mode=document.querySelector('input[name="printMode"]:checked').value;document.body.classList.toggle('print-active-only',mode==='active');window.print();setTimeout(()=>document.body.classList.remove('print-active-only'),300)}
+restore();
+</script>
+</body>
+</html>
