@@ -16,6 +16,58 @@ const frame=document.getElementById('trainerFrame');
 frame.addEventListener('load',()=>{
   const doc=frame.contentDocument;
   if(!doc)return;
+
+  const printStyle=doc.createElement('style');
+  printStyle.textContent=`
+    .print-grid-line{display:none;position:absolute;pointer-events:none;z-index:1}
+    @media print{
+      .formula{font-size:18px!important;line-height:1.1!important;margin:7px 0!important}
+      .formula .frac{font-size:.92em!important}
+      .hwt{font-size:11pt!important;line-height:1.3!important}
+      .hwt p{margin:5px 0!important}
+      .box{
+        position:relative!important;
+        height:42mm!important;
+        background-image:none!important;
+        overflow:hidden!important;
+        -webkit-print-color-adjust:exact!important;
+        print-color-adjust:exact!important;
+      }
+      .box .print-grid-line{display:block!important}
+      .box .print-grid-v{
+        top:0;bottom:0;width:0;
+        border-left:.18mm solid #cfd8d0;
+      }
+      .box .print-grid-h{
+        left:0;right:0;height:0;
+        border-top:.18mm solid #cfd8d0;
+      }
+      .box:after{z-index:3!important}
+    }
+  `;
+  doc.head.appendChild(printStyle);
+
+  const addPrintableGrid=(box)=>{
+    if(box.dataset.printGridReady==='1')return;
+    box.dataset.printGridReady='1';
+    for(let i=1;i<=40;i++){
+      const line=doc.createElement('i');
+      line.className='print-grid-line print-grid-v';
+      line.style.left=(i*5)+'mm';
+      box.appendChild(line);
+    }
+    for(let i=1;i<=9;i++){
+      const line=doc.createElement('i');
+      line.className='print-grid-line print-grid-h';
+      line.style.top=(i*5)+'mm';
+      box.appendChild(line);
+    }
+  };
+
+  const enhancePrintBoxes=()=>doc.querySelectorAll('.box').forEach(addPrintableGrid);
+  enhancePrintBoxes();
+  new MutationObserver(enhancePrintBoxes).observe(doc.body,{childList:true,subtree:true});
+
   const syncHeight=()=>{frame.style.height=Math.max(900,doc.documentElement.scrollHeight+20)+'px'};
   syncHeight();
   new ResizeObserver(syncHeight).observe(doc.documentElement);
