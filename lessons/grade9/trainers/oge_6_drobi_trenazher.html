@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ОГЭ №6 — Дроби</title>
+<style>
+html,body{margin:0;padding:0;background:#f5f2e9}
+#trainerFrame{display:block;width:100%;border:0;min-height:900px;background:#f5f2e9}
+</style>
+</head>
+<body>
+<iframe id="trainerFrame" src="oge_6_drobi_trenazher_core.html" title="ОГЭ №6 — Дроби"></iframe>
+<script>
+const frame=document.getElementById('trainerFrame');
+frame.addEventListener('load',()=>{
+  const doc=frame.contentDocument;
+  if(!doc)return;
+  const syncHeight=()=>{frame.style.height=Math.max(900,doc.documentElement.scrollHeight+20)+'px'};
+  syncHeight();
+  new ResizeObserver(syncHeight).observe(doc.documentElement);
+});
+</script>
+</body>
+</html>
