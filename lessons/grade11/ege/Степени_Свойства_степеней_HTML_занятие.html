@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Степени. Свойства степеней — интерактивное занятие</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f7f4ea;
+    --surface:#fffdf7;
+    --surface-2:#f1f5e7;
+    --text:#263125;
+    --muted:#697468;
+    --primary:#6c8a52;
+    --primary-2:#89a46d;
+    --primary-soft:#e7eedc;
+    --border:#cbd6bc;
+    --danger:#b55d54;
+    --success:#4e7f53;
+    --shadow:0 8px 24px rgba(45,60,35,.08);
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--bg),#ffffff 68%);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  button,input,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 3px 16px rgba(0,0,0,.04);
+  }
+
+  .topbar-row{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+    padding:10px 14px 0;
+    overflow-x:auto;
+  }
+
+  .topic-tab{
+    min-width:170px;
+    border:1px solid var(--border);
+    border-bottom:3px solid transparent;
+    border-radius:14px 14px 0 0;
+    background:var(--surface);
+    color:var(--text);
+    padding:12px 16px;
+    font-weight:800;
+    text-align:center;
+    transition:.2s ease;
+  }
+  .topic-tab small{
+    display:block;
+    margin-top:5px;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .topic-tab:hover{background:var(--primary-soft)}
+  .topic-tab.active{
+    color:var(--primary);
+    border-color:var(--primary);
+    border-bottom-color:var(--primary);
+    background:var(--primary-soft);
+  }
+
+  .themebar{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    padding:8px 14px 10px;
+    border-top:1px solid color-mix(in srgb,var(--border) 55%, transparent);
+  }
+  .theme-label{
+    align-self:center;
+    font-size:.9rem;
+    color:var(--muted);
+    margin-right:2px;
+  }
+  .theme-btn{
+    width:31px;height:31px;border-radius:50%;
+    border:2px solid #fff;
+    outline:1px solid var(--border);
+    transition:.2s;
+  }
+  .theme-btn:hover{transform:scale(1.1)}
+  .theme-btn.active{outline:3px solid var(--primary)}
+
+  .theme-sage{background:linear-gradient(135deg,#d7cfae 0 50%,#78915c 50%)}
+  .theme-blue{background:linear-gradient(135deg,#dce9f7 0 50%,#376fae 50%)}
+  .theme-rose{background:linear-gradient(135deg,#f4e0df 0 50%,#a95f71 50%)}
+  .theme-night{background:linear-gradient(135deg,#303845 0 50%,#d4aa55 50%)}
+
+  .layout{
+    display:grid;
+    grid-template-columns:280px minmax(0,1fr);
+    gap:18px;
+    padding:18px;
+    width:min(1600px,100%);
+    margin:0 auto;
+    flex:1;
+  }
+
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  .sidebar-card{
+    overflow:hidden;
+  }
+  .sidebar-title{
+    padding:14px 16px;
+    font-weight:900;
+    color:var(--primary);
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,var(--surface),var(--primary-soft));
+  }
+
+  .task-nav{
+    padding:8px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+  }
+  .task-btn{
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:var(--text);
+    padding:12px 12px;
+    text-align:left;
+    font-weight:700;
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .task-btn:hover{background:var(--primary-soft)}
+  .task-btn.active{
+    background:var(--primary);
+    color:white;
+  }
+  .task-num{
+    width:28px;height:28px;border-radius:8px;
+    display:grid;place-items:center;
+    background:color-mix(in srgb,var(--primary) 13%, white);
+    color:var(--primary);
+    font-size:.86rem;
+  }
+  .task-btn.active .task-num{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+  }
+
+  .info{
+    padding:15px 16px;
+    line-height:1.55;
+    font-size:.92rem;
+  }
+  .info strong{color:var(--primary)}
+  .info p{margin:.35rem 0}
+
+  .workspace{
+    padding:20px;
+    min-height:700px;
+  }
+
+  .task-header{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+    margin-bottom:14px;
+  }
+  .task-header h1{
+    margin:0;
+    color:var(--primary);
+    font-size:clamp(1.35rem,2vw,2rem);
+  }
+  .task-kicker{
+    margin:5px 0 0;
+    color:var(--muted);
+  }
+
+  .task-content{
+    border-top:1px solid var(--border);
+    padding-top:18px;
+  }
+
+  .example-box{
+    background:var(--primary-soft);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px;
+    margin:14px 0;
+  }
+
+  .question{
+    font-size:1.13rem;
+    line-height:1.6;
+    margin:12px 0 16px;
+  }
+
+  .answer-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin:18px 0;
+  }
+  .answer-row label{font-weight:800}
+  .answer-input{
+    min-width:220px;
+    flex:1;
+    border:2px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    background:var(--surface);
+    color:var(--text);
+    outline:none;
+  }
+  .answer-input::placeholder{color:var(--muted);opacity:.9}
+  .answer-input:focus{border-color:var(--primary)}
+
+  .choice-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+    margin:16px 0;
+  }
+  .choice{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    background:var(--surface-2);
+    color:var(--text);
+  }
+  .choice span{color:inherit}
+  .choice input{accent-color:var(--primary)}
+
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    padding-top:18px;
+    margin-top:24px;
+    border-top:1px solid var(--border);
+  }
+  .btn{
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 16px;
+    font-weight:800;
+    background:var(--surface);
+    color:var(--text);
+    transition:.2s;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{
+    margin-left:auto;
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btn-soft{
+    background:var(--primary-soft);
+    color:var(--primary);
+  }
+  .btn-danger{
+    color:var(--danger);
+    background:color-mix(in srgb,var(--danger) 8%, white);
+  }
+
+  .feedback{
+    margin-top:14px;
+    border-radius:12px;
+    padding:12px 14px;
+    display:none;
+    font-weight:800;
+  }
+  .feedback.show{display:block}
+  .feedback.ok{
+    color:var(--success);
+    background:color-mix(in srgb,var(--success) 11%, white);
+    border:1px solid color-mix(in srgb,var(--success) 30%, white);
+  }
+  .feedback.bad{
+    color:var(--danger);
+    background:color-mix(in srgb,var(--danger) 10%, white);
+    border:1px solid color-mix(in srgb,var(--danger) 28%, white);
+  }
+
+  .progress-line{
+    height:7px;
+    border-radius:999px;
+    background:color-mix(in srgb,var(--border) 50%, white);
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    background:var(--primary);
+    transition:.25s;
+  }
+
+  /* Черновик */
+  .modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.34);
+    display:none;
+    place-items:center;
+    z-index:100;
+    padding:18px;
+  }
+  .modal.open{display:grid}
+  .scratchpad{
+    width:min(900px,96vw);
+    height:min(650px,90vh);
+    background:var(--surface);
+    border-radius:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .scratch-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 14px;
+    background:var(--primary-soft);
+    border-bottom:1px solid var(--border);
+  }
+  .scratch-head strong{color:var(--primary)}
+  .scratch-head .spacer{flex:1}
+  .tool-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:9px;
+    padding:8px 10px;
+    font-weight:700;
+  }
+  #scratchCanvas{
+    flex:1;
+    width:100%;
+    min-height:0;
+    touch-action:none;
+    cursor:crosshair;
+    background-color:#fffef8;
+    background-image:
+      linear-gradient(rgba(100,120,100,.12) 1px, transparent 1px),
+      linear-gradient(90deg,rgba(100,120,100,.12) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+
+  .mobile-task-select{
+    display:none;
+    margin-bottom:12px;
+    width:100%;
+    padding:11px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--surface);
+  }
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;padding:10px}
+    .sidebar{display:none}
+    .workspace{padding:15px;min-height:600px}
+    .mobile-task-select{display:block}
+    .btn-primary{margin-left:0}
+    .topic-tab{min-width:145px}
+  }
+
+  /* Печать и PDF */
+  .export-actions{
+    display:flex;
+    gap:8px;
+    margin-right:auto;
+  }
+  .export-btn{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px 12px;
+    background:var(--surface);
+    color:var(--text);
+    font-weight:800;
+    cursor:pointer;
+  }
+  .export-btn:hover{background:var(--primary-soft);color:var(--primary)}
+
+  #printSheet{display:none;}
+  /* Для html2canvas/PDF печатный лист должен реально участвовать в раскладке.
+     На экран он не попадает: во время экспорта располагаем его далеко за пределами окна. */
+  #printSheet.export-render{
+    display:block!important;
+    position:fixed;
+    left:-12000px;
+    top:0;
+    width:210mm;
+    padding:10mm;
+    background:#fff;
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  /* Печатная версия: максимально близко к образцу — без интерфейса,
+     без заголовков подтем, сквозная нумерация, место для решения в клетку. */
+  .print-sheet{
+    width:190mm;
+    margin:0 auto;
+    background:#fff;
+    color:#111;
+    font-family:"Times New Roman",Times,serif;
+    font-size:11.5pt;
+    line-height:1.28;
+  }
+  .print-page{
+    width:190mm;
+    min-height:277mm;
+    background:#fff;
+    break-after:page;
+    page-break-after:always;
+  }
+  .print-page:last-child{
+    break-after:auto;
+    page-break-after:auto;
+  }
+  .print-task{
+    margin:0 0 3.8mm;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .print-question-row{
+    display:grid;
+    grid-template-columns:6.5mm 1fr;
+    column-gap:1.2mm;
+    align-items:start;
+  }
+  .print-num{
+    font-weight:400;
+    text-align:right;
+    padding-right:.5mm;
+  }
+  .print-prompt .question{
+    font-size:11.5pt;
+    line-height:1.28;
+    margin:0;
+  }
+  .print-prompt .example-box{
+    border:0;
+    background:transparent;
+    padding:0;
+    margin:0 0 1.5mm;
+  }
+  .print-prompt p{margin:0 0 1.2mm;}
+  .print-prompt mjx-container[display="true"]{margin:.8mm 0!important;}
+  .print-options{
+    margin:1.5mm 0 0 0;
+    font-size:11pt;
+    line-height:1.25;
+  }
+  .print-options span{
+    display:inline-block;
+    margin:0 5mm 1mm 0;
+  }
+  .print-prompt .choice-grid,.print-prompt .answer-row{display:none!important;}
+  .solution-grid{
+    margin:2.2mm 0 0 6.5mm;
+    border:0.22mm solid #d6d6d6;
+    background:#fff;
+    position:relative;
+    overflow:hidden;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  /* Клетка построена реальными линиями, а не фоновым градиентом.
+     Поэтому она сохраняется и при window.print(), и при html2canvas/html2pdf. */
+  .solution-grid .grid-v,
+  .solution-grid .grid-h{
+    position:absolute;
+    display:block;
+    pointer-events:none;
+    z-index:1;
+  }
+  .solution-grid .grid-v{
+    top:0;
+    bottom:0;
+    width:0;
+    border-left:0.18mm solid #dddddd;
+  }
+  .solution-grid .grid-h{
+    left:0;
+    right:0;
+    height:0;
+    border-top:0.18mm solid #dddddd;
+  }
+  .solution-grid.grid-small{height:25mm;}
+  .solution-grid.grid-medium{height:30mm;}
+  .solution-grid.grid-large{height:35mm;}
+  .solution-grid.grid-xlarge{height:40mm;}
+
+  .pdf-mode{padding:0;}
+
+  .preview-page-wrap{position:relative;margin:0 auto 12mm;}
+  .preview-page-actions{
+    display:flex;justify-content:flex-end;gap:7px;
+    width:190mm;margin:0 auto 5px;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+  }
+  .preview-page-actions .export-btn{font-size:12px;padding:6px 9px;}
+
+
+
+  /* Предпросмотр печати / PDF */
+  .print-preview-modal{
+    position:fixed;
+    inset:0;
+    z-index:250;
+    display:none;
+    grid-template-rows:auto 1fr;
+    background:rgba(20,25,20,.58);
+    backdrop-filter:blur(4px);
+  }
+  .print-preview-modal.open{display:grid;}
+  .print-preview-toolbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 4px 18px rgba(0,0,0,.12);
+  }
+  .print-preview-toolbar strong{color:var(--primary);margin-right:auto;}
+  .print-preview-toolbar .preview-hint{
+    color:var(--muted);
+    font-size:.9rem;
+  }
+  .print-preview-body{
+    overflow:auto;
+    padding:22px;
+  }
+  .print-preview-paper{
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 24px;
+    padding:10mm;
+    background:#fff;
+    box-shadow:0 10px 35px rgba(0,0,0,.24);
+  }
+  .preview-sheet .print-page{
+    width:190mm;
+    min-height:277mm;
+    margin:0 auto;
+    box-shadow:0 0 0 1px #e7e7e7;
+  }
+  .preview-sheet .preview-page-wrap:last-child{margin-bottom:0;}
+  .print-size-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin:1.4mm 0 0 6.5mm;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    font-size:10px;
+    color:#666;
+  }
+  .print-size-row span{margin-right:2px;}
+  .print-size-btn{
+    border:1px solid #cfcfcf;
+    border-radius:6px;
+    background:#fff;
+    color:#444;
+    padding:3px 7px;
+    cursor:pointer;
+    font-size:10px;
+    line-height:1.2;
+  }
+  .print-size-btn.active{
+    background:#e7eedc;
+    border-color:#89a46d;
+    color:#38502d;
+    font-weight:700;
+  }
+  @media (max-width:900px){
+    .print-preview-toolbar{flex-wrap:wrap;}
+    .print-preview-toolbar strong{width:100%;}
+    .print-preview-toolbar .preview-hint{display:none;}
+    .print-preview-body{padding:10px;}
+    .print-preview-paper{transform-origin:top left;}
+  }
+
+  @page{size:A4 portrait;margin:10mm;}
+  @media print{
+    html,body{background:#fff!important;}
+    body *{visibility:hidden!important;}
+    #printSheet,#printSheet *{visibility:visible!important;}
+    #printSheet{
+      display:block!important;
+      position:absolute;
+      left:0;top:0;
+      width:100%;
+    }
+    .print-sheet,.print-page{width:auto;margin:0;}
+    .print-page{min-height:auto;}
+  }
+
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-row" id="topicTabs"></div>
+    <div class="themebar">
+      <div class="export-actions">
+        <button class="export-btn" id="previewBtn" type="button">👁 Предпросмотр</button>
+        <button class="export-btn" id="printBtn" type="button">🖨 Печать</button>
+        <button class="export-btn" id="pdfBtn" type="button">⬇ PDF</button>
+      </div>
+      <span class="theme-label">Тема:</span>
+      <button class="theme-btn theme-sage active" data-theme="sage" title="Бежево-зелёная"></button>
+      <button class="theme-btn theme-blue" data-theme="blue" title="Голубая"></button>
+      <button class="theme-btn theme-rose" data-theme="rose" title="Розово-пудровая"></button>
+      <button class="theme-btn theme-night" data-theme="night" title="Тёмная золотая"></button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card sidebar-card">
+        <div class="sidebar-title">Задания по теме</div>
+        <nav class="task-nav" id="taskNav"></nav>
+      </section>
+
+      <section class="card">
+        <div class="sidebar-title">Подсказка по теме</div>
+        <div class="info" id="topicInfo"></div>
+      </section>
+
+      <section class="card">
+        <div class="sidebar-title">Прогресс</div>
+        <div class="info">
+          <p><strong id="progressText">0 из 0</strong> заданий выполнено</p>
+          <div class="progress-line"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="card workspace">
+      <select class="mobile-task-select" id="mobileTaskSelect"></select>
+
+      <div class="task-header">
+        <div>
+          <h1 id="taskTitle"></h1>
+          <p class="task-kicker" id="taskInstruction"></p>
+        </div>
+      </div>
+
+      <div class="task-content" id="taskContent"></div>
+
+      <div class="actions">
+        <button class="btn btn-danger" id="resetBtn">↻ Сбросить</button>
+        <button class="btn btn-soft" id="scratchBtn">✎ Черновик</button>
+        <button class="btn" id="nextBtn">Следующая задача →</button>
+        <button class="btn btn-primary" id="checkBtn">✓ Проверить</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+  </main>
+</div>
+
+<div class="print-preview-modal" id="printPreviewModal" aria-hidden="true">
+  <div class="print-preview-toolbar">
+    <strong>Предпросмотр рабочего листа</strong>
+    <span class="preview-hint">Для каждого задания выберите высоту поля в клетку.</span>
+    <button class="export-btn" id="previewPrintBtn" type="button">🖨 Печать</button>
+    <button class="export-btn" id="previewPdfBtn" type="button">⬇ PDF</button>
+    <button class="export-btn" id="closePreviewBtn" type="button">✕ Закрыть</button>
+  </div>
+  <div class="print-preview-body">
+    <div class="print-preview-paper">
+      <div id="printPreview"></div>
+    </div>
+  </div>
+</div>
+
+<div id="printSheet" aria-hidden="true"></div>
+
+<div class="modal" id="scratchModal" aria-hidden="true">
+  <div class="scratchpad">
+    <div class="scratch-head">
+      <strong>Черновик</strong>
+      <button class="tool-btn" id="penBtn">✎ Ручка</button>
+      <button class="tool-btn" id="eraserBtn">⌫ Ластик</button>
+      <button class="tool-btn" id="clearCanvasBtn">Очистить</button>
+      <span class="spacer"></span>
+      <button class="tool-btn" id="closeScratchBtn">✕ Закрыть</button>
+    </div>
+    <canvas id="scratchCanvas"></canvas>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. ДАННЫЕ РАБОЧЕГО ЛИСТА
+   Меняйте названия подтем, задания, ответы и подсказки здесь.
+   Типы заданий в шаблоне:
+   - input  : краткий ответ
+   - choice : один правильный ответ
+   - multi  : несколько правильных ответов
+   ========================================================= */
+
+const workbook = [
+  {
+    "id": "t1",
+    "code": "1",
+    "title": "Основные свойства",
+    "info": "<p><strong>Правило:</strong> при умножении степеней с одинаковым основанием показатели складывают, при делении — вычитают.</p><p>$$a^m\\cdot a^n=a^{m+n},\\qquad \\frac{a^m}{a^n}=a^{m-n},\\qquad (a^m)^n=a^{mn}.$$</p><p><strong>Пример:</strong> $2^7:2^3=2^4=16$.</p><p><strong>Типичная ошибка:</strong> нельзя складывать показатели у степеней с разными основаниями, пока основания не приведены к одному виду.</p>",
+    "tasks": [
+      {
+        "title": "1. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (5^4)^6:5^{22} $$ </div>",
+        "answer": [
+          "25"
+        ]
+      },
+      {
+        "title": "2. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (2^{16})^5:2^{74} $$ </div>",
+        "answer": [
+          "64"
+        ]
+      },
+      {
+        "title": "3. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 4^{\\frac15}\\cdot16^{\\frac9{10}} $$ </div>",
+        "answer": [
+          "16"
+        ]
+      },
+      {
+        "title": "4. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 5^{0,06}\\cdot25^{0,97} $$ </div>",
+        "answer": [
+          "25"
+        ]
+      },
+      {
+        "title": "5. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{81^{2,6}}{9^{3,7}} $$ </div>",
+        "answer": [
+          "27"
+        ]
+      },
+      {
+        "title": "6. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{4^{8,7}}{16^{2,6}} $$ </div>",
+        "answer": [
+          "128"
+        ]
+      },
+      {
+        "title": "7. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (64^9)^3:(16^5)^8 $$ </div>",
+        "answer": [
+          "4"
+        ]
+      },
+      {
+        "title": "8. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (125^8)^2:(25^6)^4 $$ </div>",
+        "answer": [
+          "1"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "t2",
+    "code": "2",
+    "title": "Иррациональные показатели",
+    "info": "<p><strong>Правило:</strong> сначала приводите основания к одинаковым, затем работайте с показателями.</p><p>$$a^u\\cdot a^v=a^{u+v},\\qquad a^u:a^v=a^{u-v}.$$</p><p><strong>Пример:</strong> $9^{\\sqrt{2}}\\cdot3^{-2\\sqrt{2}}=1$.</p><p><strong>Типичная ошибка:</strong> не теряйте знак «минус» в показателе при делении.</p>",
+    "tasks": [
+      {
+        "title": "9. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 3^{\\sqrt5+10}\\cdot3^{-5-\\sqrt5} $$ </div>",
+        "answer": [
+          "243"
+        ]
+      },
+      {
+        "title": "10. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 9^{\\sqrt{11}+6}\\cdot9^{-1-\\sqrt{11}} $$ </div>",
+        "answer": [
+          "59049"
+        ]
+      },
+      {
+        "title": "11. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 7^{2\\sqrt5-2}\\cdot7^{2-3\\sqrt5}:7^{-\\sqrt5-1} $$ </div>",
+        "answer": [
+          "7"
+        ]
+      },
+      {
+        "title": "12. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 4^{4\\sqrt{10}-2}\\cdot4^{4-3\\sqrt{10}}:4^{\\sqrt{10}+1} $$ </div>",
+        "answer": [
+          "4"
+        ]
+      },
+      {
+        "title": "13. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 3^{2\\sqrt2+1}\\cdot9^{2-\\sqrt2} $$ </div>",
+        "answer": [
+          "243"
+        ]
+      },
+      {
+        "title": "14. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 4^{2\\sqrt8-3}\\cdot16^{3-\\sqrt8} $$ </div>",
+        "answer": [
+          "64"
+        ]
+      },
+      {
+        "title": "15. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{2^{\\sqrt{11}+1}}{0,5^{-\\sqrt{11}}} $$ </div>",
+        "answer": [
+          "2"
+        ]
+      },
+      {
+        "title": "16. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{2,5^{\\sqrt5-3}}{0,4^{-\\sqrt5}} $$ </div>",
+        "answer": [
+          "8/125",
+          "0,064",
+          "0.064"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "t3",
+    "code": "3",
+    "title": "Дробные показатели",
+    "info": "<p><strong>Правило:</strong> $a^{\\frac{m}{n}}=\\sqrt[n]{a^m}$; удобно раскладывать составные основания на простые множители.</p><p><strong>Пример:</strong> $16^{3/4}=8$.</p><p><strong>Типичная ошибка:</strong> при возведении степени в степень показатели умножаются, а не складываются.</p>",
+    "tasks": [
+      {
+        "title": "17. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\left(\\dfrac{2^{\\frac13}\\cdot2^{\\frac14}}{\\sqrt[12]{2}}\\right)^2 $$ </div>",
+        "answer": [
+          "2"
+        ]
+      },
+      {
+        "title": "18. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\left(\\dfrac{3^{\\frac13}\\cdot3^{\\frac14}}{\\sqrt[12]{3}}\\right)^2 $$ </div>",
+        "answer": [
+          "3"
+        ]
+      },
+      {
+        "title": "19. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{\\left(5^{\\frac35}\\cdot7^{\\frac23}\\right)^{15}}{35^9} $$ </div>",
+        "answer": [
+          "7"
+        ]
+      },
+      {
+        "title": "20. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{\\left(4^{\\frac47}\\cdot11^{\\frac27}\\right)^{21}}{44^{12}} $$ </div>",
+        "answer": [
+          "1/1771561"
+        ]
+      },
+      {
+        "title": "21. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{2^{3,2}\\cdot6^{6,2}}{12^{5,2}} $$ </div>",
+        "answer": [
+          "3/2",
+          "1,5",
+          "1.5"
+        ]
+      },
+      {
+        "title": "22. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{2^{1,6}\\cdot7^{4,6}}{14^{2,6}} $$ </div>",
+        "answer": [
+          "49/2",
+          "24,5",
+          "24.5"
+        ]
+      },
+      {
+        "title": "23. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{5^{\\sqrt6}\\cdot2^{\\sqrt6}}{10^{\\sqrt6-2}} $$ </div>",
+        "answer": [
+          "100"
+        ]
+      },
+      {
+        "title": "24. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{7^{\\sqrt8}\\cdot5^{\\sqrt8}}{35^{\\sqrt8-1}} $$ </div>",
+        "answer": [
+          "35"
+        ]
+      },
+      {
+        "title": "25. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 4^8\\cdot11^{10}:44^8 $$ </div>",
+        "answer": [
+          "121"
+        ]
+      },
+      {
+        "title": "26. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 4^7\\cdot49^7:196^6 $$ </div>",
+        "answer": [
+          "196"
+        ]
+      },
+      {
+        "title": "27. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 20^{-3,9}\\cdot5^{2,9}:4^{-4,9} $$ </div>",
+        "answer": [
+          "4/5",
+          "0,8",
+          "0.8"
+        ]
+      },
+      {
+        "title": "28. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 12^{4,2}\\cdot4^{-5,2}:3^{3,2} $$ </div>",
+        "answer": [
+          "3/4",
+          "0,75",
+          "0.75"
+        ]
+      },
+      {
+        "title": "29. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 0,75^{\\frac18}\\cdot4^{\\frac14}\\cdot12^{\\frac78} $$ </div>",
+        "answer": [
+          "12"
+        ]
+      },
+      {
+        "title": "30. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 0,8^{\\frac17}\\cdot5^{\\frac27}\\cdot20^{\\frac67} $$ </div>",
+        "answer": [
+          "20"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "t4",
+    "code": "4",
+    "title": "Буквенные выражения",
+    "info": "<p><strong>Правило:</strong> свойства степеней применяются к буквенным выражениям так же, как к числовым.</p><p>$$x^m\\cdot x^n=x^{m+n},\\qquad \\frac{x^m}{x^n}=x^{m-n}.$$</p><p><strong>Пример:</strong> $(3x^2)^2=9x^4$.</p><p><strong>Типичная ошибка:</strong> показатель степени должен применяться и к коэффициенту, и к буквенной части в скобках.</p>",
+    "tasks": [
+      {
+        "title": "31. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ a^{1,72}\\cdot a^{0,04}\\cdot a^{0,24} $$ <p>при $a=14$</p></div>",
+        "answer": [
+          "196"
+        ]
+      },
+      {
+        "title": "32. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ a^{0,67}\\cdot a^{0,56}\\cdot a^{0,77} $$ <p>при $a=23$</p></div>",
+        "answer": [
+          "529"
+        ]
+      },
+      {
+        "title": "33. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{(b^{\\sqrt2})^{3\\sqrt2}}{b^4} $$ <p>при $b=0,5$</p></div>",
+        "answer": [
+          "1/4",
+          "0,25",
+          "0.25"
+        ]
+      },
+      {
+        "title": "34. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{(b^{\\sqrt2})^{6\\sqrt2}}{b^{11}} $$ <p>при $b=3$</p></div>",
+        "answer": [
+          "3"
+        ]
+      },
+      {
+        "title": "35. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{b^{6\\sqrt2+1}}{(b^{\\sqrt2})^6} $$ <p>при $b=0,5$</p></div>",
+        "answer": [
+          "1/2",
+          "0,5",
+          "0.5"
+        ]
+      },
+      {
+        "title": "36. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{b^{5\\sqrt2+4}}{(b^{\\sqrt2})^5} $$ <p>при $b=4$</p></div>",
+        "answer": [
+          "256"
+        ]
+      },
+      {
+        "title": "37. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (7x^3)^2:7x^6 $$ </div>",
+        "answer": [
+          "7"
+        ]
+      },
+      {
+        "title": "38. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (4x^5)^3:4x^{15} $$ </div>",
+        "answer": [
+          "16"
+        ]
+      },
+      {
+        "title": "39. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{(3x)^2\\cdot x^5}{x^3\\cdot10x^4} $$ </div>",
+        "answer": [
+          "9/10",
+          "0,9",
+          "0.9"
+        ]
+      },
+      {
+        "title": "40. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{(5x)^2\\cdot x^6}{x^3\\cdot5x^5} $$ </div>",
+        "answer": [
+          "5"
+        ]
+      },
+      {
+        "title": "41. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ ((2x^3)^4-(x^2)^6):3x^{12} $$ </div>",
+        "answer": [
+          "5"
+        ]
+      },
+      {
+        "title": "42. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ ((5x^8)^3-(x^{12})^2):31x^{24} $$ </div>",
+        "answer": [
+          "4"
+        ]
+      },
+      {
+        "title": "43. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (4b)^2:b^5\\cdot b^3 $$ <p>при $b=128$</p></div>",
+        "answer": [
+          "16"
+        ]
+      },
+      {
+        "title": "44. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (4b)^2:b^6\\cdot b^4 $$ <p>при $b=64$</p></div>",
+        "answer": [
+          "16"
+        ]
+      },
+      {
+        "title": "45. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ b^5:b^4\\cdot b^5 $$ <p>при $b=4$</p></div>",
+        "answer": [
+          "4096"
+        ]
+      },
+      {
+        "title": "46. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ b^8:b^5\\cdot b^7 $$ <p>при $b=2$</p></div>",
+        "answer": [
+          "1024"
+        ]
+      },
+      {
+        "title": "47. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{x^9\\cdot x^5}{x^{10}} $$ <p>при $x=3$</p></div>",
+        "answer": [
+          "81"
+        ]
+      },
+      {
+        "title": "48. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ \\dfrac{x^{-15}\\cdot x^5}{x^{-10}} $$ <p>при $x=8$</p></div>",
+        "answer": [
+          "1"
+        ]
+      },
+      {
+        "title": "49. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 32x^6\\cdot x^{14}:(2x^4)^5 $$ </div>",
+        "answer": [
+          "1"
+        ]
+      },
+      {
+        "title": "50. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 64x^4\\cdot x^5:(4x^3)^3 $$ </div>",
+        "answer": [
+          "1"
+        ]
+      },
+      {
+        "title": "51. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (6a)^2:a^7\\cdot a^5 $$ </div>",
+        "answer": [
+          "36"
+        ]
+      },
+      {
+        "title": "52. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ (5a)^3:a^{12}\\cdot a^9 $$ </div>",
+        "answer": [
+          "125"
+        ]
+      },
+      {
+        "title": "53. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 6x\\cdot(8x^6)^2:(8x^4)^3 $$ <p>при $x=60$</p></div>",
+        "answer": [
+          "15/2",
+          "7,5",
+          "7.5"
+        ]
+      },
+      {
+        "title": "54. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ 4x\\cdot(6x^{15})^4:(6x^{10})^6 $$ <p>при $x=45$</p></div>",
+        "answer": [
+          "5/4",
+          "1,25",
+          "1.25"
+        ]
+      },
+      {
+        "title": "55. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ x\\cdot5^{4x-1}\\cdot25^{-2x} $$ <p>при $x=0,1$</p></div>",
+        "answer": [
+          "1/50",
+          "0,02",
+          "0.02"
+        ]
+      },
+      {
+        "title": "56. Задание",
+        "instruction": "Найдите значение выражения и введите ответ.",
+        "type": "input",
+        "prompt": "<div class=\"question\">Найдите значение выражения $$ x\\cdot2^{-4x-2}\\cdot4^{2x} $$ <p>при $x=2$</p></div>",
+        "answer": [
+          "1/2",
+          "0,5",
+          "0.5"
+        ]
+      }
+    ]
+  }
+];
+
+const themes = {
+  sage:{
+    "--bg":"#f7f4ea","--surface":"#fffdf7","--surface-2":"#f1f5e7","--text":"#263125",
+    "--muted":"#697468","--primary":"#6c8a52","--primary-2":"#89a46d","--primary-soft":"#e7eedc",
+    "--border":"#cbd6bc","--danger":"#b55d54","--success":"#4e7f53","--shadow":"0 8px 24px rgba(45,60,35,.08)"
+  },
+  blue:{
+    "--bg":"#edf4fb","--surface":"#ffffff","--surface-2":"#eff6fd","--text":"#1d2c3d",
+    "--muted":"#66788a","--primary":"#3f78b8","--primary-2":"#6b9bd0","--primary-soft":"#e3eef9",
+    "--border":"#c9d9e9","--danger":"#bb5b5b","--success":"#477d65","--shadow":"0 8px 24px rgba(40,70,100,.08)"
+  },
+  rose:{
+    "--bg":"#f8efec","--surface":"#fffafa","--surface-2":"#f7e9e9","--text":"#3b2b30",
+    "--muted":"#806c72","--primary":"#a96270","--primary-2":"#c78692","--primary-soft":"#f1dde1",
+    "--border":"#e2c9cf","--danger":"#a94e4e","--success":"#5d7c5e","--shadow":"0 8px 24px rgba(90,45,60,.08)"
+  },
+  night:{
+    "--bg":"#252b34","--surface":"#323a46","--surface-2":"#3a4350","--text":"#f4efe4",
+    "--muted":"#c6c2b8","--primary":"#d5ac57","--primary-2":"#e4c47e","--primary-soft":"#4a4438",
+    "--border":"#59616d","--danger":"#e18b82","--success":"#9ac18f","--shadow":"0 8px 24px rgba(0,0,0,.22)"
+  }
+};
+
+let state = {
+  topic:0,
+  task:0,
+  completed:JSON.parse(localStorage.getItem("powersCompleted")||"{}"),
+  wrongAttempts:Number(localStorage.getItem("powersWrongAttempts")||0),
+  theme:localStorage.getItem("mathTheme") || "sage"
+};
+
+const el = id => document.getElementById(id);
+
+function applyTheme(name){
+  const t = themes[name] || themes.sage;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  state.theme = name;
+  localStorage.setItem("mathTheme",name);
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active",b.dataset.theme===name));
+}
+
+function renderTabs(){
+  el("topicTabs").innerHTML = workbook.map((t,i)=>`
+    <button class="topic-tab ${i===state.topic?'active':''}" data-topic="${i}">
+      ${t.code}<small>${t.title}</small>
+    </button>`).join("");
+  document.querySelectorAll(".topic-tab").forEach(btn=>{
+    btn.onclick=()=>{
+      state.topic=Number(btn.dataset.topic);
+      state.task=0;
+      renderAll();
+    };
+  });
+}
+
+function renderTaskNav(){
+  const topic = workbook[state.topic];
+  el("taskNav").innerHTML = topic.tasks.map((t,i)=>`
+    <button class="task-btn ${i===state.task?'active':''}" data-task="${i}">
+      <span class="task-num">${i+1}</span><span>${t.title.replace(/^\d+\.\s*/,'')}</span>
+    </button>`).join("");
+
+  document.querySelectorAll(".task-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      state.task=Number(btn.dataset.task);
+      renderTask();
+      renderTaskNav();
+      renderMobileSelect();
+    };
+  });
+}
+
+function renderMobileSelect(){
+  const topic=workbook[state.topic];
+  el("mobileTaskSelect").innerHTML=topic.tasks.map((t,i)=>`<option value="${i}" ${i===state.task?'selected':''}>${t.title}</option>`).join("");
+}
+
+function renderTask(){
+  const topic=workbook[state.topic];
+  const task=topic.tasks[state.task];
+
+  el("topicInfo").innerHTML = `<p>${topic.info}</p>`;
+  el("taskTitle").textContent = task.title;
+  el("taskInstruction").textContent = task.instruction;
+  el("feedback").className="feedback";
+  el("feedback").textContent="";
+
+  let html = task.prompt;
+
+  if(task.type==="input"){
+    html += `<div class="answer-row">
+      <label for="studentAnswer">Ответ:</label>
+      <input id="studentAnswer" class="answer-input" autocomplete="off" placeholder="Введите ответ">
+    </div>`;
+  }
+
+  if(task.type==="choice"){
+    html += `<div class="choice-grid">` + task.options.map((o,i)=>`
+      <label class="choice"><input type="radio" name="choice" value="${i}"> <span>${o}</span></label>
+    `).join("") + `</div>`;
+  }
+
+  if(task.type==="multi"){
+    html += `<div class="choice-grid">` + task.options.map((o,i)=>`
+      <label class="choice"><input type="checkbox" name="choice" value="${i}"> <span>${o}</span></label>
+    `).join("") + `</div>`;
+  }
+
+  el("taskContent").innerHTML = html;
+  el("nextBtn").disabled = state.task >= topic.tasks.length-1;
+
+  if(window.MathJax?.typesetPromise){
+    MathJax.typesetPromise([el("taskContent"), el("topicInfo")]).catch(()=>{});
+  }
+}
+
+function normalize(s){
+  return String(s).trim().toLowerCase().replace(/\s+/g," ").replace(",",".");
+}
+function parseSimpleNumber(s){
+  const v=normalize(s).replace(/\s/g,"");
+  if(/^[-+]?\d+(?:\.\d+)?$/.test(v)) return Number(v);
+  const m=v.match(/^([-+]?\d+)\/([-+]?\d+)$/);
+  if(m && Number(m[2])!==0) return Number(m[1])/Number(m[2]);
+  return null;
+}
+function inputMatches(value,answers){
+  const raw=normalize(value);
+  if(answers.some(a=>normalize(a)===raw)) return true;
+  const x=parseSimpleNumber(raw);
+  if(x===null) return false;
+  return answers.some(a=>{
+    const y=parseSimpleNumber(a);
+    return y!==null && Math.abs(x-y)<=1e-10*Math.max(1,Math.abs(y));
+  });
+}
+
+function checkCurrent(){
+  const topic=workbook[state.topic];
+  const task=topic.tasks[state.task];
+  let correct=false;
+
+  if(task.type==="input"){
+    const val=normalize(el("studentAnswer")?.value||"");
+    correct=inputMatches(val,task.answer);
+  }
+
+  if(task.type==="choice"){
+    const selected=document.querySelector('input[name="choice"]:checked');
+    correct=selected && Number(selected.value)===task.answer;
+  }
+
+  if(task.type==="multi"){
+    const selected=[...document.querySelectorAll('input[name="choice"]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+    correct=JSON.stringify(selected)===JSON.stringify([...task.answer].sort((a,b)=>a-b));
+  }
+
+  const fb=el("feedback");
+  fb.className="feedback show " + (correct?"ok":"bad");
+  fb.textContent=correct ? "Верно ✓" : "Пока неверно. Проверь вычисления.";
+
+  if(correct){
+    state.completed[topic.id+"_"+state.task]=true;
+    localStorage.setItem("powersCompleted",JSON.stringify(state.completed));
+  }else{
+    state.wrongAttempts++;
+    localStorage.setItem("powersWrongAttempts",String(state.wrongAttempts));
+  }
+  updateProgress();
+}
+
+function resetCurrent(){
+  const task=workbook[state.topic].tasks[state.task];
+  if(task.type==="input" && el("studentAnswer")) el("studentAnswer").value="";
+  document.querySelectorAll('input[name="choice"]').forEach(x=>x.checked=false);
+  el("feedback").className="feedback";
+  el("feedback").textContent="";
+}
+
+function nextTask(){
+  const max=workbook[state.topic].tasks.length-1;
+  if(state.task<max){
+    state.task++;
+    renderTaskNav();
+    renderTask();
+    renderMobileSelect();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+}
+
+function updateProgress(){
+  let total=0, done=0;
+  workbook.forEach(t=>t.tasks.forEach((_,i)=>{
+    total++;
+    if(state.completed[t.id+"_"+i]) done++;
+  }));
+  const pct=total?Math.round(done/total*100):0;
+  el("progressText").textContent=`${done} из ${total} (${pct}%), ошибок: ${state.wrongAttempts}`;
+  el("progressBar").style.width=pct+"%";
+}
+
+function renderAll(){
+  renderTabs();
+  renderTaskNav();
+  renderMobileSelect();
+  renderTask();
+  updateProgress();
+}
+
+/* Черновик на canvas */
+const modal=el("scratchModal");
+const canvas=el("scratchCanvas");
+const ctx=canvas.getContext("2d");
+let drawing=false,lastX=0,lastY=0,mode="pen";
+
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const old=ctx.getImageData(0,0,canvas.width||1,canvas.height||1);
+  canvas.width=Math.max(1,Math.floor(rect.width*dpr));
+  canvas.height=Math.max(1,Math.floor(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+}
+
+function point(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener("pointerdown",e=>{
+  drawing=true;
+  canvas.setPointerCapture(e.pointerId);
+  const p=point(e); lastX=p.x; lastY=p.y;
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!drawing)return;
+  const p=point(e);
+  ctx.save();
+  if(mode==="eraser"){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.lineWidth=18;
+  } else {
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle="#283126";
+    ctx.lineWidth=2.5;
+  }
+  ctx.beginPath();
+  ctx.moveTo(lastX,lastY);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+  ctx.restore();
+  lastX=p.x;lastY=p.y;
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>canvas.addEventListener(ev,()=>drawing=false));
+
+el("scratchBtn").onclick=()=>{
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  setTimeout(resizeCanvas,50);
+};
+el("closeScratchBtn").onclick=()=>{
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+};
+modal.addEventListener("click",e=>{if(e.target===modal) el("closeScratchBtn").click()});
+el("penBtn").onclick=()=>mode="pen";
+el("eraserBtn").onclick=()=>mode="eraser";
+el("clearCanvasBtn").onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+window.addEventListener("resize",()=>{ if(modal.classList.contains("open")) resizeCanvas(); });
+
+/* Печать и PDF: печатная версия в стиле образца */
+const solutionSizeLabels={
+  "grid-small":"Маленькое",
+  "grid-medium":"Среднее",
+  "grid-large":"Большое",
+  "grid-xlarge":"Очень большое"
+};
+const solutionSizeOrder=["grid-small","grid-medium","grid-large","grid-xlarge"];
+const printGridOverrides={};
+
+function printableOptions(task){
+  if(!Array.isArray(task.options) || !task.options.length) return "";
+  return `<div class="print-options">${task.options.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+}
+
+/* Высота поля решения подбирается автоматически.
+   При необходимости пользователь меняет её в предпросмотре. */
+function solutionGridClass(task){
+  const plain=(task.prompt||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const displayMath=((task.prompt||"").match(/\$\$/g)||[]).length/2;
+  const title=(task.title||"").toLowerCase();
+  const instruction=(task.instruction||"").toLowerCase();
+
+  let score=0;
+  if(plain.length>170) score++;
+  if(plain.length>300) score++;
+  if(displayMath>=2) score++;
+  if(/решите|доказ|восстанов|найдите ошиб|самостоятель/.test(title+" "+instruction)) score++;
+
+  if(score>=4) return "grid-xlarge";
+  if(score>=2) return "grid-large";
+  if(score===1) return "grid-medium";
+  return "grid-small";
+}
+
+function allPrintableTasks(){
+  const tasks=[];
+  workbook.forEach((topic,topicIndex)=>topic.tasks.forEach((task,taskIndex)=>{
+    tasks.push({task, key:`${topic.id}_${taskIndex}`, topicIndex, taskIndex});
+  }));
+  return tasks;
+}
+
+function sizeControls(key,current){
+  return `<div class="print-size-row" data-size-key="${key}">
+    <span>Поле:</span>
+    ${solutionSizeOrder.map(size=>`<button type="button" class="print-size-btn ${size===current?'active':''}" data-size="${size}">${solutionSizeLabels[size]}</button>`).join("")}
+  </div>`;
+}
+
+/* Реальные линии клетки с шагом 5 мм.
+   Фоновые CSS-градиенты браузеры часто не печатают, если отключена
+   «Печать фоновой графики». Эти линии являются обычными DOM-элементами. */
+function solutionGridLines(){
+  const vertical=Array.from({length:40},(_,i)=>`<i class="grid-v" style="left:${(i+1)*5}mm"></i>`).join("");
+  const horizontal=Array.from({length:10},(_,i)=>`<i class="grid-h" style="top:${(i+1)*5}mm"></i>`).join("");
+  return vertical+horizontal;
+}
+
+function printTaskMarkup(item,globalNumber,{preview=false}={}){
+  const {task,key}=item;
+  const gridClass=printGridOverrides[key] || solutionGridClass(task);
+  return `<section class="print-task" data-task-key="${key}">
+    <div class="print-question-row">
+      <div class="print-num">${globalNumber}.</div>
+      <div class="print-prompt">${task.prompt}${printableOptions(task)}</div>
+    </div>
+    ${preview?sizeControls(key,gridClass):''}
+    <div class="solution-grid ${gridClass}" data-grid-key="${key}" aria-label="Место для решения">${solutionGridLines()}</div>
+  </section>`;
+}
+
+function mmPixels(mm){
+  const probe=document.createElement("div");
+  probe.style.cssText=`position:absolute;visibility:hidden;width:1mm;height:${mm}mm;`;
+  document.body.appendChild(probe);
+  const px=probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+/* Раскладка больше не привязана к фиксированным 5 заданиям.
+   Сначала браузер измеряет реальную высоту каждого задания вместе с выбранным
+   полем решения и отрендеренными формулами MathJax, затем на A4 помещается
+   максимально возможное число ЦЕЛЫХ заданий. */
+async function buildPaginatedMarkup({preview=false,onlyPage=null}={}){
+  const tasks=allPrintableTasks();
+  const measure=document.createElement("div");
+  measure.className="print-sheet";
+  measure.style.cssText="position:fixed;left:-12000px;top:0;visibility:hidden;width:190mm;background:#fff;";
+  measure.innerHTML=tasks.map((item,i)=>printTaskMarkup(item,i+1,{preview})).join("");
+  document.body.appendChild(measure);
+  await typesetPrintNode(measure);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const pageHeight=mmPixels(277);
+  const pages=[];
+  let current=[];
+  let used=0;
+  [...measure.querySelectorAll(".print-task")].forEach((node,i)=>{
+    const cs=getComputedStyle(node);
+    const h=node.getBoundingClientRect().height + parseFloat(cs.marginTop||0) + parseFloat(cs.marginBottom||0);
+    if(current.length && used+h>pageHeight){
+      pages.push(current);
+      current=[];
+      used=0;
+    }
+    current.push(i);
+    used+=h;
+  });
+  if(current.length) pages.push(current);
+  measure.remove();
+
+  const selected=onlyPage==null ? pages : (pages[onlyPage] ? [pages[onlyPage]] : []);
+  let html=`<div class="print-sheet ${preview?'preview-sheet':''}">`;
+  selected.forEach((indexes,localPageIndex)=>{
+    const sourcePageIndex=onlyPage==null ? localPageIndex : onlyPage;
+    if(preview){
+      html += `<div class="preview-page-wrap" data-preview-page="${sourcePageIndex}">
+        <div class="preview-page-actions">
+          <button type="button" class="export-btn print-one-page" data-page="${sourcePageIndex}">🖨 Печать страницы ${sourcePageIndex+1}</button>
+          <button type="button" class="export-btn pdf-one-page" data-page="${sourcePageIndex}">⬇ PDF страницы ${sourcePageIndex+1}</button>
+        </div>`;
+    }
+    html += `<div class="print-page" data-page-index="${sourcePageIndex}">`;
+    indexes.forEach(taskIndex=>{ html += printTaskMarkup(tasks[taskIndex],taskIndex+1,{preview}); });
+    html += `</div>`;
+    if(preview) html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+async function buildPrintableSheet(onlyPage=null){
+  const root=el("printSheet");
+  root.innerHTML=await buildPaginatedMarkup({preview:false,onlyPage});
+  return root.querySelector(".print-sheet");
+}
+
+async function typesetPrintNode(node){
+  if(window.MathJax?.startup?.promise){
+    try{ await MathJax.startup.promise; }catch(e){}
+  }
+  if(window.MathJax?.typesetPromise && node){
+    try{
+      if(MathJax.typesetClear) MathJax.typesetClear([node]);
+      await MathJax.typesetPromise([node]);
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }catch(e){ console.warn("MathJax print render:",e); }
+  }
+}
+
+async function preparePrintableMath(onlyPage=null){
+  const sheet=await buildPrintableSheet(onlyPage);
+  await typesetPrintNode(sheet);
+  return sheet;
+}
+
+async function openPrintPreview(){
+  const previewRoot=el("printPreview");
+  previewRoot.innerHTML=await buildPaginatedMarkup({preview:true});
+  await typesetPrintNode(previewRoot);
+
+  previewRoot.querySelectorAll(".print-size-row").forEach(row=>{
+    row.addEventListener("click",e=>{
+      const btn=e.target.closest(".print-size-btn");
+      if(!btn) return;
+      const key=row.dataset.sizeKey;
+      const size=btn.dataset.size;
+      printGridOverrides[key]=size;
+      row.querySelectorAll(".print-size-btn").forEach(b=>b.classList.toggle("active",b===btn));
+      const grid=previewRoot.querySelector(`.solution-grid[data-grid-key="${key}"]`);
+      if(grid){
+        solutionSizeOrder.forEach(c=>grid.classList.remove(c));
+        grid.classList.add(size);
+      }
+    });
+  });
+
+  previewRoot.querySelectorAll(".print-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await printWorkbook(page);
+    };
+  });
+  previewRoot.querySelectorAll(".pdf-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await exportWorkbookPdf(page);
+    };
+  });
+
+  const modal=el("printPreviewModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+
+function closePrintPreview(){
+  const modal=el("printPreviewModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+async function printWorkbook(onlyPage=null){
+  await preparePrintableMath(onlyPage);
+  window.print();
+}
+
+async function exportWorkbookPdf(onlyPage=null){
+  const root=el("printSheet");
+  root.classList.add("export-render");
+  try{
+    const sheet=await preparePrintableMath(onlyPage);
+    if(typeof html2pdf==="undefined"){
+      alert("Модуль PDF ещё загружается. Повторите попытку через пару секунд.");
+      return;
+    }
+
+    /* MathJax 3 здесь уже превратил TeX в обычные inline-SVG.
+       Держим узел видимым для html2canvas до завершения снимка и ждём шрифты. */
+    if(document.fonts?.ready) await document.fonts.ready;
+    await typesetPrintNode(sheet);
+    await new Promise(resolve=>setTimeout(resolve,60));
+
+    sheet.classList.add("pdf-mode");
+    const base=(document.title || "Рабочий лист").replace(/[\\/:*?"<>|]+/g,"_");
+    const filename=onlyPage==null ? `${base}.pdf` : `${base}_страница_${onlyPage+1}.pdf`;
+    const options={
+      margin:[10,10,10,10],
+      filename,
+      image:{type:"png",quality:1},
+      html2canvas:{
+        scale:2.2,
+        useCORS:true,
+        allowTaint:false,
+        backgroundColor:"#ffffff",
+        scrollX:0,scrollY:0,
+        logging:false
+      },
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["css","legacy"],after:[".print-page:not(:last-child)"],avoid:[".print-task","mjx-container"]}
+    };
+    try{
+      await html2pdf().set(options).from(sheet).save();
+    }finally{
+      sheet.classList.remove("pdf-mode");
+    }
+  }finally{
+    root.classList.remove("export-render");
+  }
+}
+
+el("previewBtn").onclick=openPrintPreview;
+el("printBtn").onclick=openPrintPreview;
+el("pdfBtn").onclick=openPrintPreview;
+el("closePreviewBtn").onclick=closePrintPreview;
+el("previewPrintBtn").onclick=async()=>{ closePrintPreview(); await printWorkbook(); };
+el("previewPdfBtn").onclick=async()=>{ closePrintPreview(); await exportWorkbookPdf(); };
+el("printPreviewModal").addEventListener("click",e=>{ if(e.target===el("printPreviewModal")) closePrintPreview(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && el("printPreviewModal").classList.contains("open")) closePrintPreview(); });
+
+/* Кнопки */
+el("checkBtn").onclick=checkCurrent;
+el("resetBtn").onclick=resetCurrent;
+el("nextBtn").onclick=nextTask;
+el("mobileTaskSelect").onchange=e=>{
+  state.task=Number(e.target.value);
+  renderTaskNav();
+  renderTask();
+};
+
+document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));
+
+applyTheme(state.theme);
+renderAll();
+</script>
+</body>
+</html>
