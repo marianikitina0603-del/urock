@@ -110,6 +110,7 @@ body.mouse-draw .answer-input,body.mouse-draw .editor{pointer-events:none}
     </div>
     <input class="pen-size" id="penSize" type="range" min="1" max="12" value="3" title="Толщина пера">
     <button class="tool-btn" id="clearInkBtn" type="button"><span class="ico">🗑</span> Очистить текущий лист</button>
+    <button class="tool-btn" id="resetAllBtn" type="button"><span class="ico">↺</span> Сбросить всё</button>
     <div class="tool-help">Стилус пишет сразу на листе. Для мыши включите «Рисовать мышью». Все рукописные записи сохраняются автоматически.</div>
   </div>
 </aside>
@@ -1028,6 +1029,41 @@ updateDone = function(){
     if(arr.length) document.querySelector('.nav-btn[data-target="'+n+'"]').classList.add('done');
   }
 };
+
+
+document.getElementById('resetAllBtn').addEventListener('click',()=>{
+  if(!confirm('Сбросить все ответы и полностью удалить рукописные записи во всех заданиях? Это действие нельзя отменить.')) return;
+
+  // Удаляем только сохранения этой демоверсии, не затрагивая другие страницы сайта.
+  Object.keys(localStorage)
+    .filter(k=>k.startsWith('ege2027:'))
+    .forEach(k=>localStorage.removeItem(k));
+
+  // Очищаем печатные ответы и поля развёрнутых решений.
+  fields.forEach(el=>{
+    if(el.matches('input')) el.value='';
+    else el.innerHTML='';
+  });
+
+  // Полностью очищаем рукопись на всех листах.
+  document.querySelectorAll('.task').forEach(task=>{
+    inkData.set(task.id,[]);
+    redrawInk(task);
+  });
+
+  // Сбрасываем результаты проверки и показанные правильные ответы.
+  document.querySelectorAll('.answer-input').forEach(el=>el.classList.remove('correct','wrong'));
+  document.querySelectorAll('.check-result').forEach(el=>{
+    el.textContent='';
+    el.classList.remove('ok','bad','empty');
+  });
+  document.querySelectorAll('.official-answer').forEach(el=>el.classList.remove('visible'));
+
+  inkState.activeTask=null;
+  inkState.activePointer=null;
+  inkState.currentStroke=null;
+  updateDone();
+});
 
 let inkResizeTimer;
 window.addEventListener('resize',()=>{
