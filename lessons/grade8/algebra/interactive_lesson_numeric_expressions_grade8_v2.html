@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Числовые выражения — 8 класс</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)'], ['$', '$']], displayMath: [['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --ink:#18212f; --muted:#667085;
+  --line:#d9e0ea; --accent:#3559e0; --ok:#18794e; --bad:#b42318;
+  --warn:#9a6700; --soft:#eef3ff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+header{background:linear-gradient(135deg,#1f3fbf,#657ee8);color:white;padding:34px 20px}
+.wrap{max-width:1120px;margin:auto}
+h1{margin:0 0 8px;font-size:clamp(28px,4vw,44px)}
+.subtitle{opacity:.92;max-width:850px}
+.topbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+.stat{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font-size:22px}
+main{padding:22px 14px 60px}
+.section{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin:18px auto;box-shadow:0 6px 24px rgba(16,24,40,.05)}
+.section h2{margin-top:0;font-size:25px}
+.badge{display:inline-block;background:var(--soft);color:#2540a8;border-radius:999px;padding:5px 10px;font-weight:700;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff}
+.card h3{margin:0 0 8px;font-size:18px}
+.theory{background:#f8faff;border-left:4px solid var(--accent);padding:14px 16px;border-radius:10px;margin:10px 0}
+.memo{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.memo div{background:#f7f8fb;border:1px solid var(--line);padding:12px;text-align:center;border-radius:12px;font-weight:700}
+.task{border-top:1px dashed var(--line);padding-top:14px;margin-top:14px}
+.task:first-child{border-top:none;padding-top:0;margin-top:0}
+.expr{font-size:20px;margin:7px 0 12px;overflow-x:auto}
+.answer-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type="text"], select{font-size:16px;padding:10px 12px;border:1px solid #b8c1ce;border-radius:10px;min-width:160px}
+button{border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+.check{background:var(--accent);color:white}
+.hint{background:#edf1f7;color:#263143}
+.reset{background:#fff;color:#20306d;border:1px solid #b9c4ef}
+.feedback{margin-top:8px;font-weight:700;min-height:24px}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+.hintbox{display:none;margin-top:8px;background:#fff8e6;border:1px solid #f1d596;padding:10px 12px;border-radius:10px}
+.order-zone{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pool,.sortable{min-height:115px;padding:10px;border:2px dashed #c7d0df;border-radius:12px;background:#fafbfe}
+.op{background:white;border:1px solid #cfd7e6;border-radius:10px;padding:8px 10px;margin:6px 0;cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.sortable .op{background:#eef3ff}
+.small{font-size:13px;color:var(--muted)}
+.progress{height:10px;background:#e9edf4;border-radius:999px;overflow:hidden}
+.progress > div{height:100%;width:0;background:#3559e0;transition:.2s}
+.sign-stats{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:14px}
+.sign-stats strong{font-size:22px;color:#b45309}
+.timer{font-variant-numeric:tabular-nums}
+.practical textarea{width:100%;min-height:70px;padding:10px;border:1px solid #b8c1ce;border-radius:10px;font:inherit}
+footer{text-align:center;color:var(--muted);padding:16px}
+@media(max-width:800px){.grid,.topbar,.memo,.order-zone{grid-template-columns:1fr}.section{padding:16px}}
+@media print{
+  header{background:white!important;color:black;padding:12px 0}
+  .topbar,button,.hintbox{display:none!important}
+  body{background:white}.section{box-shadow:none;break-inside:avoid}
+}
+
+.training-box{animation:fadeIn .2s ease}.training-box .expr{margin:8px 0}.training-count{margin-top:3px}.training-feedback{margin-top:7px}@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="badge" style="background:rgba(255,255,255,.18);color:#fff">8 класс • повторение • 60 минут</div>
+<h1>Числовые выражения, порядок действий, скобки</h1>
+<div class="subtitle">Тренировка вычислений с положительными и отрицательными числами, степенями, дробями и вложенными скобками.</div>
+<div class="topbar">
+<div class="stat"><span>Время</span><b class="timer" id="timer">60:00</b></div>
+<div class="stat"><span>Попытки</span><b id="attempts">0</b></div>
+<div class="stat"><span>Верно</span><b id="correct">0</b></div>
+<div class="stat"><span>Ошибки знаков</span><b id="signErrors">0</b></div>
+</div>
+</div>
+</header>
+<main class="wrap">
+<section class="section">
+<h2>1. Стартовая разминка <span class="badge">5 минут</span></h2>
+<p>Выполни устно или запиши только ответ.</p>
+<div class="grid">
+<div class="card q" data-answer="5" data-sign="-5" data-variant-index="0" data-variants='[{"expr": "\\(-9+14\\)", "answer": "5"}, {"expr": "\\(-12+7\\)", "answer": "-5"}, {"expr": "\\(-15+22\\)", "answer": "7"}]'>
+<div class="expr">\( -7+12 \)</div>
+<div class="answer-row"><input placeholder="Ответ" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Числа разных знаков: вычти меньший модуль из большего и возьми знак числа с большим модулем.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="-24" data-sign="24" data-variant-index="0" data-variants='[{"expr": "\\((-7)\\cdot5\\)", "answer": "-35"}, {"expr": "\\((-8)\\cdot3\\)", "answer": "-24"}, {"expr": "\\((-9)\\cdot6\\)", "answer": "-54"}]'>
+<div class="expr">\( (-6)\cdot 4 \)</div>
+<div class="answer-row"><input placeholder="Ответ" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Разные знаки при умножении дают минус.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="13" data-sign="-3,3" data-variant-index="0" data-variants='[{"expr": "\\(6-(-9)\\)", "answer": "15"}, {"expr": "\\(-4-(-11)\\)", "answer": "7"}, {"expr": "\\(12-(-5)\\)", "answer": "17"}]'>
+<div class="expr">\( 5-(-8) \)</div>
+<div class="answer-row"><input placeholder="Ответ" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Вычитание отрицательного числа заменяется сложением: \(a-(-b)=a+b\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="9" data-sign="-9" data-variant-index="0" data-variants='[{"expr": "\\((-4)^2\\)", "answer": "16"}, {"expr": "\\((-5)^2\\)", "answer": "25"}, {"expr": "\\((-6)^2\\)", "answer": "36"}]'>
+<div class="expr">\( (-3)^2 \)</div>
+<div class="answer-row"><input placeholder="Ответ" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">В квадрат возводится всё число вместе со знаком, потому что минус находится внутри скобок.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+</div>
+</section>
+<section class="section">
+<h2>2. Теория и шпаргалки <span class="badge">10 минут</span></h2>
+<div class="theory">
+<b>Числовое выражение</b> — запись из чисел, знаков действий, скобок и степеней. Значение выражения получают, выполняя действия в установленном порядке.
+  </div>
+<div class="memo">
+<div>1. Скобки</div><div>2. Степени</div><div>3. × и ÷</div><div>4. + и −</div>
+</div>
+<p><b>Если действия равноправны</b> (умножение и деление; сложение и вычитание), выполняй их <b>слева направо</b>.</p>
+<div class="grid">
+<div class="card"><h3>Знаки при умножении и делении</h3>
+<p>\(+\cdot +=+\), \(-\cdot -=+\), \(+\cdot -=-\), \(-\cdot +=-\).</p>
+<p><b>Одинаковые знаки → плюс. Разные → минус.</b></p>
+</div>
+<div class="card"><h3>Вычитание отрицательного</h3>
+<p>\(a-(-b)=a+b\)</p>
+<p>Например: \(7-(-4)=11\).</p>
+</div>
+<div class="card"><h3>Степени</h3>
+<p>\((-3)^2=9\), но \(-3^2=-9\).</p>
+<p>Скобки определяют, входит ли знак минус в основание степени.</p>
+</div>
+<div class="card"><h3>Вложенные скобки</h3>
+<p>Начинай с самых внутренних: \(20-(8-(3-7))\).</p>
+</div>
+</div>
+</section>
+<section class="section">
+<h2>3. Расставь порядок действий <span class="badge">8 минут</span></h2>
+<p>Перетащи действия в правую область в том порядке, в котором их нужно выполнять.</p>
+<div class="card order-task" data-order="Умножение|Вычитание в скобках|Вычитание">
+<div class="expr">\(18-(7-3\cdot(-4))\)</div>
+<div class="order-zone">
+<div><div class="small">Доступные действия</div><div class="pool">
+<div class="op" draggable="true">Вычитание</div>
+<div class="op" draggable="true">Умножение</div>
+<div class="op" draggable="true">Вычитание в скобках</div>
+</div></div>
+<div><div class="small">Твой порядок</div><div class="sortable"></div></div>
+</div>
+<div class="answer-row" style="margin-top:10px"><button class="check-order check">Проверить порядок</button><button class="hint order-hint">Подсказка</button></div>
+<div class="hintbox">Сначала действие внутри скобок с более высоким приоритетом.</div><div class="feedback"></div>
+</div>
+<div class="card order-task" data-order="Степень|Умножение|Сложение и вычитание">
+<div class="expr">\((-4)^2-3\cdot(-5)+7\)</div>
+<div class="order-zone">
+<div><div class="small">Доступные действия</div><div class="pool">
+<div class="op" draggable="true">Сложение и вычитание</div>
+<div class="op" draggable="true">Степень</div>
+<div class="op" draggable="true">Умножение</div>
+</div></div>
+<div><div class="small">Твой порядок</div><div class="sortable"></div></div>
+</div>
+<div class="answer-row" style="margin-top:10px"><button class="check-order check">Проверить порядок</button><button class="hint order-hint">Подсказка</button></div>
+<div class="hintbox">Степень выполняется раньше умножения.</div><div class="feedback"></div>
+</div>
+</section>
+<section class="section">
+<h2>4. Вычисления. Уровень 8 класса <span class="badge">15 минут</span></h2>
+<div class="grid">
+<div class="card q" data-answer="7" data-sign="-7" data-variant-index="0" data-variants='[{"expr": "\\(-20+6\\cdot(-3)-(-45)\\)", "answer": "7"}, {"expr": "\\(-16+8\\cdot(-2)-(-40)\\)", "answer": "8"}, {"expr": "\\(-25+5\\cdot(-6)-(-60)\\)", "answer": "5"}]'>
+<div class="expr">\(-18+7\cdot(-4)-(-53)\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Сначала умножение, затем двигайся слева направо. Следи за \( -(-53)\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="10" data-sign="-10" data-variant-index="0" data-variants='[{"expr": "\\(42:(-7)-4\\cdot(-5)+2\\)", "answer": "16"}, {"expr": "\\(48:(-8)-6\\cdot(-2)+3\\)", "answer": "9"}, {"expr": "\\(63:(-9)-5\\cdot(-4)+1\\)", "answer": "14"}]'>
+<div class="expr">\(36:(-6)-5\cdot(-3)+1\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Сначала деление и умножение: оба результата будут со своими знаками.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="37" data-sign="-37,13" data-variant-index="0" data-variants='[{"expr": "\\(20-(8-2\\cdot(-5))\\)", "answer": "2"}, {"expr": "\\(30-(9-4\\cdot(-3))\\)", "answer": "9"}, {"expr": "\\(25-(6-5\\cdot(-2))\\)", "answer": "9"}]'>
+<div class="expr">\(18-(7-3\cdot(-4))\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">\(3\cdot(-4)=-12\), значит в скобках появится \(7-(-12)\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="31" data-sign="-31,1" data-variant-index="0" data-variants='[{"expr": "\\((-5)^2-(17-3\\cdot(-2))\\)", "answer": "2"}, {"expr": "\\((-6)^2-(20-4\\cdot(-3))\\)", "answer": "4"}, {"expr": "\\((-7)^2-(25-2\\cdot(-6))\\)", "answer": "12"}]'>
+<div class="expr">\((-4)^2-(15-2\cdot(-3))\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Сначала степень и умножение. Затем вычисли круглые скобки.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="-17.2" data-sign="17.2,-2.8" data-variant-index="0" data-variants='[{"expr": "\\(-3{,}2-(2{,}1-0{,}7\\cdot(-4))-9{,}5\\)", "answer": "-17.6"}, {"expr": "\\(-1{,}8-(2{,}4-0{,}6\\cdot(-5))-7{,}2\\)", "answer": "-14.4"}, {"expr": "\\(-4{,}5-(1{,}2-0{,}9\\cdot(-2))-8{,}1\\)", "answer": "-15.6"}]'>
+<div class="expr">\(-2{,}4-(1{,}6-0{,}8\cdot(-3))-11{,}2\)</div>
+<div class="answer-row"><input placeholder="Можно 17,2" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">\(0{,}8\cdot(-3)=-2{,}4\), затем \(1{,}6-(-2{,}4)\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="4.5" data-sign="-4.5,2.5" data-variant-index="0" data-variants='[{"expr": "\\(\\frac12-\\frac23\\cdot(-3)+\\frac32\\)", "answer": "4"}, {"expr": "\\(\\frac23-\\frac34\\cdot(-4)+\\frac13\\)", "answer": "4"}, {"expr": "\\(\\frac14-\\frac34\\cdot(-2)+\\frac54\\)", "answer": "3"}]'>
+<div class="expr">\(\frac34-\frac56\cdot(-3)+\frac54\)</div>
+<div class="answer-row"><input placeholder="Десятичная дробь" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">\(\frac56\cdot(-3)=-\frac52\). После этого получится вычитание отрицательного числа.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="0.5" data-sign="-0.5" data-variant-index="0" data-variants='[{"expr": "\\(\\left(-\\frac12\\right)^2-\\frac34\\cdot(-2)-\\frac54\\)", "answer": "0.5"}, {"expr": "\\(\\left(-\\frac34\\right)^2-\\frac23\\cdot\\left(-\\frac32\\right)-\\frac{17}{16}\\)", "answer": "0.5"}, {"expr": "\\(\\left(-\\frac25\\right)^2-\\frac56\\cdot\\left(-\\frac35\\right)-\\frac4{25}\\)", "answer": "0.5"}]'>
+<div class="expr">\(\left(-\frac23\right)^2-\frac56\cdot\left(-\frac32\right)-\frac{43}{36}\)</div>
+<div class="answer-row"><input placeholder="Например: 0,5" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Сначала степень и умножение. Приведи дроби к общему знаменателю.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="25" data-sign="-25,7" data-variant-index="0" data-variants='[{"expr": "\\(30-(16-(7-4\\cdot(-2)))+3\\)", "answer": "32"}, {"expr": "\\(40-(18-(5-3\\cdot(-4)))+2\\)", "answer": "41"}, {"expr": "\\(35-(20-(8-2\\cdot(-5)))+4\\)", "answer": "37"}]'>
+<div class="expr">\(25-(14-(6-3\cdot(-2)))+2\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Двигайся изнутри наружу: умножение → круглые скобки → внешние круглые скобки.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+</div>
+</section>
+<section class="section">
+<h2>5. Практические задачи <span class="badge">10 минут</span></h2>
+<div class="grid practical">
+<div class="card q" data-answer="-4.5" data-sign="4.5" data-variant-index="0" data-variants='[{"expr": "\\(-6{,}4+5{,}2-3{,}8+1{,}5\\)", "answer": "-3.5"}, {"expr": "\\(-12{,}3+7{,}8-2{,}6+0{,}9\\)", "answer": "-6.2"}, {"expr": "\\(-4{,}7+3{,}5-5{,}2+2{,}1\\)", "answer": "-4.3"}]'>
+<h3>Температура</h3>
+<p>Утром было \(-8{,}5^\circ C\). К полудню температура выросла на \(6{,}8^\circ C\), вечером снизилась на \(4{,}7^\circ C\), ночью повысилась на \(1{,}9^\circ C\).</p>
+<textarea placeholder="Составь выражение здесь"></textarea>
+<div class="answer-row"><input placeholder="Температура" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">\(-8{,}5+6{,}8-4{,}7+1{,}9\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="3470" data-sign="-3470" data-variant-index="0" data-variants='[{"expr": "\\(5000-2100+450-150+1800-900\\)", "answer": "4100"}, {"expr": "\\(6200-1750+320-180+2400-1200\\)", "answer": "5790"}, {"expr": "\\(3800-960+500-90+1400-750\\)", "answer": "3900"}]'>
+<h3>Банковский счёт</h3>
+<p>На счёте было 4250 ₽. Затем списали 1850 ₽, вернули 640 ₽, списали комиссию 120 ₽, поступило 2300 ₽ и списали ещё 1750 ₽.</p>
+<textarea placeholder="Запиши одно числовое выражение"></textarea>
+<div class="answer-row"><input placeholder="Остаток" type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Списание — отрицательное изменение, поступление — положительное.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="73" data-sign="-73" data-variant-index="0" data-variants='[{"expr": "\\(5\\cdot20+3\\cdot(-6)+2\\cdot3-10\\)", "answer": "78"}, {"expr": "\\(7\\cdot15+2\\cdot(-8)+5-12\\)", "answer": "82"}, {"expr": "\\(4\\cdot22+5\\cdot(-4)+3\\cdot2-9\\)", "answer": "65"}]'>
+<h3>Рейтинг в игре</h3>
+<p>За победу дают \(+18\), за поражение \(-7\), за ничью \(+4\). Игрок: 6 побед, 4 поражения, 2 ничьи и штраф \(-15\).</p>
+<textarea placeholder="Запиши выражение"></textarea>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">\(6\cdot18+4\cdot(-7)+2\cdot4-15\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="625" data-sign="-625" data-variant-index="0" data-variants='[{"expr": "\\(900+250-380+170-140\\)", "answer": "800"}, {"expr": "\\(1200+450-600+125-275\\)", "answer": "900"}, {"expr": "\\(650+300-225+190-315\\)", "answer": "600"}]'>
+<h3>Высота</h3>
+<p>Турист был на высоте 850 м. Поднялся на 320 м, спустился на 470 м, поднялся на 185 м и спустился на 260 м.</p>
+<textarea placeholder="Запиши выражение"></textarea>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Подъём записывай со знаком \(+\), спуск — со знаком \(-\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+</div>
+</section>
+<section class="section">
+<h2>6. Мини-самостоятельная <span class="badge">8 минут</span></h2>
+<div class="grid">
+<div class="card q" data-answer="24" data-sign="-24" data-variant-index="0" data-variants='[{"expr": "\\(14-2\\cdot(-5)\\)", "answer": "24"}, {"expr": "\\(9-4\\cdot(-3)\\)", "answer": "21"}, {"expr": "\\(20-6\\cdot(-2)\\)", "answer": "32"}]'>
+<div class="expr">\(12-3\cdot(-4)\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Сначала умножение.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="19" data-sign="-19,1" data-variant-index="0" data-variants='[{"expr": "\\((-4)^2-6\\cdot(-3)\\)", "answer": "34"}, {"expr": "\\((-5)^2-4\\cdot(-2)\\)", "answer": "33"}, {"expr": "\\((-2)^2-7\\cdot(-3)\\)", "answer": "25"}]'>
+<div class="expr">\((-3)^2-5\cdot(-2)\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Не перепутай \((-3)^2\) и \(-3^2\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="-4" data-sign="4" data-variant-index="0" data-variants='[{"expr": "\\(30:(8-(-2))-7\\)", "answer": "-4"}, {"expr": "\\(40:(6-(-4))-9\\)", "answer": "-5"}, {"expr": "\\(54:(7-(-2))-8\\)", "answer": "-2"}]'>
+<div class="expr">\(24:(7-(-5))-6\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Сначала скобки: \(7-(-5)=12\).</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+<div class="card q" data-answer="11" data-sign="-11,3" data-variant-index="0" data-variants='[{"expr": "\\(18-(9-(5-2\\cdot(-3)))+4\\)", "answer": "24"}, {"expr": "\\(20-(7-(3-4\\cdot(-2)))+5\\)", "answer": "29"}, {"expr": "\\(25-(10-(6-3\\cdot(-3)))+2\\)", "answer": "32"}]'>
+<div class="expr">\(15-(8-(4-3\cdot(-2)))+6\)</div>
+<div class="answer-row"><input type="text"/><button class="check">Проверить</button><button class="hint">Подсказка</button></div>
+<div class="hintbox">Работай изнутри наружу и отдельно выписывай каждый промежуточный результат.</div><div class="feedback"></div>
+<div class="training-box" style="display:none;margin-top:14px;background:#eef6ff;border:1px solid #b8d5ff;padding:14px;border-radius:12px"><b>Потренируйся на похожем примере</b><div class="small training-count"></div><div class="expr training-expr"></div><div class="answer-row"><input class="training-input" placeholder="Ответ" type="text"/><button class="training-check check">Проверить тренировочный</button></div><div class="feedback training-feedback"></div><div class="small">После него вернись к основному заданию и попробуй ещё раз.</div></div></div>
+</div>
+</section>
+<section class="section">
+<h2>7. Статистика урока</h2>
+<div class="grid">
+<div class="card">
+<h3>Общий прогресс</h3>
+<div class="progress"><div id="bar"></div></div>
+<p id="summary">Пока нет проверенных заданий.</p>
+</div>
+<div class="sign-stats">
+<h3 style="margin-top:0">Ошибки по знакам</h3>
+<strong id="signBig">0</strong>
+<p>Сюда попадают ответы, похожие на типичную ошибку со знаком: неверный знак при умножении/делении, потерянный минус или ошибка в \(a-(-b)\).</p>
+<p id="signAdvice"><b>Совет:</b> перед вычислением отдельно подпиши знак результата каждого умножения и деления.</p>
+</div>
+</div>
+<div class="answer-row" style="margin-top:14px">
+<button class="reset" id="resetAll">Сбросить результаты</button>
+</div>
+</section>
+</main>
+<footer>Интерактивный урок • 8 класс • числовые выражения и порядок действий</footer>
+<script>
+let attempts=0, correct=0, signErrors=0, checkedTasks=0;
+const totalTasks=document.querySelectorAll('.q').length + document.querySelectorAll('.order-task').length;
+
+function norm(v){
+  return String(v).trim().replace(/\s+/g,'').replace(',','.').replace('−','-');
+}
+function numEqual(a,b){
+  let x=Number(norm(a)), y=Number(norm(b));
+  return Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(x-y)<1e-9;
+}
+function updateStats(){
+  document.getElementById('attempts').textContent=attempts;
+  document.getElementById('correct').textContent=correct;
+  document.getElementById('signErrors').textContent=signErrors;
+  document.getElementById('signBig').textContent=signErrors;
+  const percent=totalTasks?Math.round(correct/totalTasks*100):0;
+  document.getElementById('bar').style.width=percent+'%';
+  document.getElementById('summary').innerHTML=`Верно выполнено <b>${correct}</b> из <b>${totalTasks}</b> заданий (${percent}%). Попыток: <b>${attempts}</b>.`;
+  document.getElementById('signAdvice').innerHTML = signErrors>=3
+    ? '<b>Рекомендация:</b> ошибок по знакам уже 3 или больше. Остановись и повтори: одинаковые знаки при × и ÷ дают плюс, разные — минус; \\(a-(-b)=a+b\\).'
+    : '<b>Совет:</b> перед вычислением отдельно подпиши знак результата каждого умножения и деления.';
+  if(window.MathJax) MathJax.typesetPromise?.();
+  localStorage.setItem('exprLessonStats',JSON.stringify({attempts,correct,signErrors}));
+}
+document.querySelectorAll('.q').forEach(card=>{
+  const input=card.querySelector(':scope > .answer-row input, :scope > input') || card.querySelector('input:not(.training-input)');
+  const feedback=[...card.querySelectorAll(':scope > .feedback')][0] || card.querySelector('.feedback:not(.training-feedback)');
+  const button=[...card.querySelectorAll(':scope > .answer-row .check')][0] || card.querySelector('.check:not(.training-check)');
+  const hint=card.querySelector(':scope > .answer-row .hint') || card.querySelector('.hint');
+  const training=card.querySelector('.training-box');
+  const trainingExpr=card.querySelector('.training-expr');
+  const trainingInput=card.querySelector('.training-input');
+  const trainingFeedback=card.querySelector('.training-feedback');
+  const trainingCount=card.querySelector('.training-count');
+  const trainingCheck=card.querySelector('.training-check');
+  const variants=JSON.parse(card.dataset.variants || '[]');
+
+  function showNextVariant(){
+    let idx=Number(card.dataset.variantIndex||0);
+    if(idx>=variants.length){
+      training.style.display='block';
+      trainingExpr.innerHTML='Все 3 запасных примера уже использованы.';
+      trainingCount.textContent='Вернись к основному заданию и ещё раз проверь порядок действий и знаки.';
+      trainingInput.style.display='none'; trainingCheck.style.display='none';
+      if(window.MathJax) MathJax.typesetPromise?.([training]);
+      return;
+    }
+    const v=variants[idx];
+    training.style.display='block';
+    trainingInput.style.display='inline-block'; trainingCheck.style.display='inline-block';
+    trainingExpr.innerHTML=v.expr;
+    trainingInput.value=''; trainingFeedback.textContent='';
+    trainingCount.textContent=`Запасной пример ${idx+1} из 3`;
+    training.dataset.current=String(idx);
+    card.dataset.variantIndex=String(idx+1);
+    if(window.MathJax) MathJax.typesetPromise?.([training]);
+  }
+
+  if(hint) hint.addEventListener('click',()=>{
+    const box=card.querySelector('.hintbox');
+    box.style.display=box.style.display==='block'?'none':'block';
+  });
+
+  button.addEventListener('click',()=>{
+    if(!input.value.trim()) return;
+    attempts++;
+    const expected=card.dataset.answer;
+    if(numEqual(input.value,expected)){
+      if(!card.dataset.solved){ correct++; card.dataset.solved='1'; }
+      feedback.className='feedback ok'; feedback.textContent='✓ Верно';
+      training.style.display='none';
+    }else{
+      const signList=(card.dataset.sign||'').split(',').filter(Boolean);
+      const signHit=signList.some(x=>numEqual(input.value,x));
+      if(signHit){
+        signErrors++;
+        feedback.className='feedback warn';
+        feedback.textContent='Похоже на ошибку со знаком. Сначала реши похожий пример ниже, затем вернись к этому.';
+      }else{
+        feedback.className='feedback bad';
+        feedback.textContent='Пока неверно. Реши похожий пример ниже, а затем попробуй основной ещё раз.';
+      }
+      showNextVariant();
+    }
+    updateStats();
+  });
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')button.click()});
+
+  trainingCheck.addEventListener('click',()=>{
+    if(!trainingInput.value.trim()) return;
+    attempts++;
+    const idx=Number(training.dataset.current||0);
+    const v=variants[idx];
+    if(v && numEqual(trainingInput.value,v.answer)){
+      trainingFeedback.className='feedback training-feedback ok';
+      trainingFeedback.textContent='✓ Верно. Теперь вернись к основному примеру — приём тот же.';
+    }else{
+      trainingFeedback.className='feedback training-feedback bad';
+      trainingFeedback.textContent='Неверно. Проверь порядок действий и знаки. Если снова ошибёшься в основном задании, появится следующий запасной пример.';
+    }
+    updateStats();
+  });
+  trainingInput.addEventListener('keydown',e=>{if(e.key==='Enter')trainingCheck.click()});
+});
+
+// drag & drop
+let dragged=null;
+document.querySelectorAll('.op').forEach(op=>{
+  op.addEventListener('dragstart',()=>{dragged=op});
+});
+document.querySelectorAll('.pool,.sortable').forEach(zone=>{
+  zone.addEventListener('dragover',e=>e.preventDefault());
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();
+    if(dragged) zone.appendChild(dragged);
+  });
+});
+document.querySelectorAll('.order-task').forEach(card=>{
+  const fb=card.querySelector('.feedback');
+  card.querySelector('.order-hint').addEventListener('click',()=>{
+    const box=card.querySelector('.hintbox');
+    box.style.display=box.style.display==='block'?'none':'block';
+  });
+  card.querySelector('.check-order').addEventListener('click',()=>{
+    attempts++;
+    const got=[...card.querySelectorAll('.sortable .op')].map(x=>x.textContent.trim()).join('|');
+    if(got===card.dataset.order){
+      if(!card.dataset.solved){correct++;card.dataset.solved='1'}
+      fb.className='feedback ok'; fb.textContent='✓ Порядок верный';
+    }else{
+      fb.className='feedback bad'; fb.textContent='Порядок пока неверный. Проверь приоритет действий.';
+    }
+    updateStats();
+  });
+});
+
+// timer 60 min
+let remaining=60*60;
+const timer=document.getElementById('timer');
+setInterval(()=>{
+  if(remaining<=0){timer.textContent='00:00';return}
+  remaining--;
+  const m=String(Math.floor(remaining/60)).padStart(2,'0');
+  const s=String(remaining%60).padStart(2,'0');
+  timer.textContent=`${m}:${s}`;
+},1000);
+
+document.getElementById('resetAll').addEventListener('click',()=>{
+  if(!confirm('Сбросить все ответы и статистику?')) return;
+  attempts=correct=signErrors=0;
+  document.querySelectorAll('.q,.order-task').forEach(c=>delete c.dataset.solved);
+  document.querySelectorAll('.q').forEach(c=>{c.dataset.variantIndex='0'; const t=c.querySelector('.training-box'); if(t){t.style.display='none'; const i=t.querySelector('.training-input'); if(i){i.style.display='inline-block';i.value='';} const b=t.querySelector('.training-check'); if(b)b.style.display='inline-block';}});
+  document.querySelectorAll('input').forEach(i=>i.value='');
+  document.querySelectorAll('textarea').forEach(t=>t.value='');
+  document.querySelectorAll('.feedback').forEach(f=>{f.textContent='';f.className='feedback'});
+  document.querySelectorAll('.order-task').forEach(card=>{
+    const pool=card.querySelector('.pool'), sort=card.querySelector('.sortable');
+    [...sort.children].forEach(el=>pool.appendChild(el));
+  });
+  updateStats();
+});
+updateStats();
+</script>
+</body>
+</html>
