@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Координатная прямая. Сравнение чисел — все прототипы ОГЭ №7</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f7f4ea;
+    --surface:#fffdf7;
+    --surface-2:#f1f5e7;
+    --text:#263125;
+    --muted:#697468;
+    --primary:#6c8a52;
+    --primary-2:#89a46d;
+    --primary-soft:#e7eedc;
+    --border:#cbd6bc;
+    --danger:#b55d54;
+    --success:#4e7f53;
+    --shadow:0 8px 24px rgba(45,60,35,.08);
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--bg),#ffffff 68%);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  button,input,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 3px 16px rgba(0,0,0,.04);
+  }
+
+  .topbar-row{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+    padding:10px 14px 0;
+    overflow-x:auto;
+  }
+
+  .topic-tab{
+    min-width:170px;
+    border:1px solid var(--border);
+    border-bottom:3px solid transparent;
+    border-radius:14px 14px 0 0;
+    background:var(--surface);
+    color:var(--text);
+    padding:12px 16px;
+    font-weight:800;
+    text-align:center;
+    transition:.2s ease;
+  }
+  .topic-tab small{
+    display:block;
+    margin-top:5px;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .topic-tab:hover{background:var(--primary-soft)}
+  .topic-tab.active{
+    color:var(--primary);
+    border-color:var(--primary);
+    border-bottom-color:var(--primary);
+    background:var(--primary-soft);
+  }
+
+  .themebar{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    padding:8px 14px 10px;
+    border-top:1px solid color-mix(in srgb,var(--border) 55%, transparent);
+  }
+  .theme-label{
+    align-self:center;
+    font-size:.9rem;
+    color:var(--muted);
+    margin-right:2px;
+  }
+  .theme-btn{
+    width:31px;height:31px;border-radius:50%;
+    border:2px solid #fff;
+    outline:1px solid var(--border);
+    transition:.2s;
+  }
+  .theme-btn:hover{transform:scale(1.1)}
+  .theme-btn.active{outline:3px solid var(--primary)}
+
+  .theme-sage{background:linear-gradient(135deg,#d7cfae 0 50%,#78915c 50%)}
+  .theme-blue{background:linear-gradient(135deg,#dce9f7 0 50%,#376fae 50%)}
+  .theme-rose{background:linear-gradient(135deg,#f4e0df 0 50%,#a95f71 50%)}
+  .theme-night{background:linear-gradient(135deg,#303845 0 50%,#d4aa55 50%)}
+
+  .layout{
+    display:grid;
+    grid-template-columns:280px minmax(0,1fr);
+    gap:18px;
+    padding:18px;
+    width:min(1600px,100%);
+    margin:0 auto;
+    flex:1;
+  }
+
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  .sidebar-card{
+    overflow:hidden;
+  }
+  .sidebar-title{
+    padding:14px 16px;
+    font-weight:900;
+    color:var(--primary);
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,var(--surface),var(--primary-soft));
+  }
+
+  .task-nav{
+    padding:8px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+  }
+  .task-btn{
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:var(--text);
+    padding:12px 12px;
+    text-align:left;
+    font-weight:700;
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .task-btn:hover{background:var(--primary-soft)}
+  .task-btn.active{
+    background:var(--primary);
+    color:white;
+  }
+  .task-num{
+    width:28px;height:28px;border-radius:8px;
+    display:grid;place-items:center;
+    background:color-mix(in srgb,var(--primary) 13%, white);
+    color:var(--primary);
+    font-size:.86rem;
+  }
+  .task-btn.active .task-num{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+  }
+
+  .info{
+    padding:15px 16px;
+    line-height:1.55;
+    font-size:.92rem;
+  }
+  .info strong{color:var(--primary)}
+  .info p{margin:.35rem 0}
+
+  .workspace{
+    padding:20px;
+    min-height:700px;
+  }
+
+  .task-header{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+    margin-bottom:14px;
+  }
+  .task-header h1{
+    margin:0;
+    color:var(--primary);
+    font-size:clamp(1.35rem,2vw,2rem);
+  }
+  .task-kicker{
+    margin:5px 0 0;
+    color:var(--muted);
+  }
+
+  .task-content{
+    border-top:1px solid var(--border);
+    padding-top:18px;
+  }
+
+  .example-box{
+    background:var(--primary-soft);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px;
+    margin:14px 0;
+  }
+
+  .question{
+    font-size:1.13rem;
+    line-height:1.6;
+    margin:12px 0 16px;
+  }
+  .number-line{
+    margin:14px 0 18px;
+    height:42px;
+    position:relative;
+    display:flex;
+    justify-content:space-around;
+    align-items:flex-start;
+    padding:0 14%;
+    font-weight:800;
+  }
+  .number-line::before{
+    content:"";position:absolute;left:8%;right:8%;top:26px;height:2px;background:var(--text);
+  }
+  .number-line::after{
+    content:"";position:absolute;right:7.5%;top:22px;border-left:8px solid var(--text);border-top:5px solid transparent;border-bottom:5px solid transparent;
+  }
+  .number-line span{position:relative;min-width:24px;text-align:center;z-index:1}
+  .number-line span::after{content:"";position:absolute;left:50%;top:23px;width:2px;height:9px;background:var(--text);transform:translateX(-50%)}
+
+  .answer-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin:18px 0;
+  }
+  .answer-row label{font-weight:800}
+  .answer-input{
+    min-width:220px;
+    flex:1;
+    border:2px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    background:var(--surface);
+    color:var(--text);
+    outline:none;
+  }
+  .answer-input::placeholder{color:var(--muted);opacity:.9}
+  .answer-input:focus{border-color:var(--primary)}
+
+  .choice-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+    margin:16px 0;
+  }
+  .choice{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    background:var(--surface-2);
+    color:var(--text);
+  }
+  .choice span{color:inherit}
+  .choice input{accent-color:var(--primary)}
+
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    padding-top:18px;
+    margin-top:24px;
+    border-top:1px solid var(--border);
+  }
+  .btn{
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 16px;
+    font-weight:800;
+    background:var(--surface);
+    color:var(--text);
+    transition:.2s;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{
+    margin-left:auto;
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btn-soft{
+    background:var(--primary-soft);
+    color:var(--primary);
+  }
+  .btn-danger{
+    color:var(--danger);
+    background:color-mix(in srgb,var(--danger) 8%, white);
+  }
+
+  .feedback{
+    margin-top:14px;
+    border-radius:12px;
+    padding:12px 14px;
+    display:none;
+    font-weight:800;
+  }
+  .feedback.show{display:block}
+  .feedback.ok{
+    color:var(--success);
+    background:color-mix(in srgb,var(--success) 11%, white);
+    border:1px solid color-mix(in srgb,var(--success) 30%, white);
+  }
+  .feedback.bad{
+    color:var(--danger);
+    background:color-mix(in srgb,var(--danger) 10%, white);
+    border:1px solid color-mix(in srgb,var(--danger) 28%, white);
+  }
+
+  .progress-line{
+    height:7px;
+    border-radius:999px;
+    background:color-mix(in srgb,var(--border) 50%, white);
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    background:var(--primary);
+    transition:.25s;
+  }
+
+  /* Черновик */
+  .modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.34);
+    display:none;
+    place-items:center;
+    z-index:100;
+    padding:18px;
+  }
+  .modal.open{display:grid}
+  .scratchpad{
+    width:min(900px,96vw);
+    height:min(650px,90vh);
+    background:var(--surface);
+    border-radius:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .scratch-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 14px;
+    background:var(--primary-soft);
+    border-bottom:1px solid var(--border);
+  }
+  .scratch-head strong{color:var(--primary)}
+  .scratch-head .spacer{flex:1}
+  .tool-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:9px;
+    padding:8px 10px;
+    font-weight:700;
+  }
+  #scratchCanvas{
+    flex:1;
+    width:100%;
+    min-height:0;
+    touch-action:none;
+    cursor:crosshair;
+    background-color:#fffef8;
+    background-image:
+      linear-gradient(rgba(100,120,100,.12) 1px, transparent 1px),
+      linear-gradient(90deg,rgba(100,120,100,.12) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+
+  .mobile-task-select{
+    display:none;
+    margin-bottom:12px;
+    width:100%;
+    padding:11px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--surface);
+  }
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;padding:10px}
+    .sidebar{display:none}
+    .workspace{padding:15px;min-height:600px}
+    .mobile-task-select{display:block}
+    .btn-primary{margin-left:0}
+    .topic-tab{min-width:145px}
+  }
+
+  /* Печать и PDF */
+  .export-actions{
+    display:flex;
+    gap:8px;
+    margin-right:auto;
+  }
+  .export-btn{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px 12px;
+    background:var(--surface);
+    color:var(--text);
+    font-weight:800;
+    cursor:pointer;
+  }
+  .export-btn:hover{background:var(--primary-soft);color:var(--primary)}
+
+  #printSheet{display:none;}
+  /* Для html2canvas/PDF печатный лист должен реально участвовать в раскладке.
+     На экран он не попадает: во время экспорта располагаем его далеко за пределами окна. */
+  #printSheet.export-render{
+    display:block!important;
+    position:fixed;
+    left:-12000px;
+    top:0;
+    width:210mm;
+    padding:10mm;
+    background:#fff;
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  /* Печатная версия: максимально близко к образцу — без интерфейса,
+     без заголовков подтем, сквозная нумерация, место для решения в клетку. */
+  .print-sheet{
+    width:190mm;
+    margin:0 auto;
+    background:#fff;
+    color:#111;
+    font-family:"Times New Roman",Times,serif;
+    font-size:11.5pt;
+    line-height:1.28;
+  }
+  .print-page{
+    width:190mm;
+    min-height:277mm;
+    background:#fff;
+    break-after:page;
+    page-break-after:always;
+  }
+  .print-page:last-child{
+    break-after:auto;
+    page-break-after:auto;
+  }
+  .print-task{
+    margin:0 0 3.8mm;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .print-question-row{
+    display:grid;
+    grid-template-columns:6.5mm 1fr;
+    column-gap:1.2mm;
+    align-items:start;
+  }
+  .print-num{
+    font-weight:400;
+    text-align:right;
+    padding-right:.5mm;
+  }
+  .print-prompt .question{
+    font-size:11.5pt;
+    line-height:1.28;
+    margin:0;
+  }
+  .print-prompt .example-box{
+    border:0;
+    background:transparent;
+    padding:0;
+    margin:0 0 1.5mm;
+  }
+  .print-prompt p{margin:0 0 1.2mm;}
+  .print-prompt mjx-container[display="true"]{margin:.8mm 0!important;}
+  .print-options{
+    margin:1.5mm 0 0 0;
+    font-size:11pt;
+    line-height:1.25;
+  }
+  .print-options span{
+    display:inline-block;
+    margin:0 5mm 1mm 0;
+  }
+  .print-prompt .choice-grid,.print-prompt .answer-row{display:none!important;}
+  .solution-grid{
+    margin:2.2mm 0 0 6.5mm;
+    border:0.22mm solid #d6d6d6;
+    background:#fff;
+    position:relative;
+    overflow:hidden;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  /* Клетка построена реальными линиями, а не фоновым градиентом.
+     Поэтому она сохраняется и при window.print(), и при html2canvas/html2pdf. */
+  .solution-grid .grid-v,
+  .solution-grid .grid-h{
+    position:absolute;
+    display:block;
+    pointer-events:none;
+    z-index:1;
+  }
+  .solution-grid .grid-v{
+    top:0;
+    bottom:0;
+    width:0;
+    border-left:0.18mm solid #dddddd;
+  }
+  .solution-grid .grid-h{
+    left:0;
+    right:0;
+    height:0;
+    border-top:0.18mm solid #dddddd;
+  }
+  .solution-grid.grid-small{height:25mm;}
+  .solution-grid.grid-medium{height:30mm;}
+  .solution-grid.grid-large{height:35mm;}
+  .solution-grid.grid-xlarge{height:40mm;}
+
+  .pdf-mode{padding:0;}
+
+  .preview-page-wrap{position:relative;margin:0 auto 12mm;}
+  .preview-page-actions{
+    display:flex;justify-content:flex-end;gap:7px;
+    width:190mm;margin:0 auto 5px;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+  }
+  .preview-page-actions .export-btn{font-size:12px;padding:6px 9px;}
+
+
+
+  /* Предпросмотр печати / PDF */
+  .print-preview-modal{
+    position:fixed;
+    inset:0;
+    z-index:250;
+    display:none;
+    grid-template-rows:auto 1fr;
+    background:rgba(20,25,20,.58);
+    backdrop-filter:blur(4px);
+  }
+  .print-preview-modal.open{display:grid;}
+  .print-preview-toolbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 4px 18px rgba(0,0,0,.12);
+  }
+  .print-preview-toolbar strong{color:var(--primary);margin-right:auto;}
+  .print-preview-toolbar .preview-hint{
+    color:var(--muted);
+    font-size:.9rem;
+  }
+  .print-preview-body{
+    overflow:auto;
+    padding:22px;
+  }
+  .print-preview-paper{
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 24px;
+    padding:10mm;
+    background:#fff;
+    box-shadow:0 10px 35px rgba(0,0,0,.24);
+  }
+  .preview-sheet .print-page{
+    width:190mm;
+    min-height:277mm;
+    margin:0 auto;
+    box-shadow:0 0 0 1px #e7e7e7;
+  }
+  .preview-sheet .preview-page-wrap:last-child{margin-bottom:0;}
+  .print-size-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin:1.4mm 0 0 6.5mm;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    font-size:10px;
+    color:#666;
+  }
+  .print-size-row span{margin-right:2px;}
+  .print-size-btn{
+    border:1px solid #cfcfcf;
+    border-radius:6px;
+    background:#fff;
+    color:#444;
+    padding:3px 7px;
+    cursor:pointer;
+    font-size:10px;
+    line-height:1.2;
+  }
+  .print-size-btn.active{
+    background:#e7eedc;
+    border-color:#89a46d;
+    color:#38502d;
+    font-weight:700;
+  }
+  @media (max-width:900px){
+    .print-preview-toolbar{flex-wrap:wrap;}
+    .print-preview-toolbar strong{width:100%;}
+    .print-preview-toolbar .preview-hint{display:none;}
+    .print-preview-body{padding:10px;}
+    .print-preview-paper{transform-origin:top left;}
+  }
+
+  @page{size:A4 portrait;margin:10mm;}
+  @media print{
+    html,body{background:#fff!important;}
+    body *{visibility:hidden!important;}
+    #printSheet,#printSheet *{visibility:visible!important;}
+    #printSheet{
+      display:block!important;
+      position:absolute;
+      left:0;top:0;
+      width:100%;
+    }
+    .print-sheet,.print-page{width:auto;margin:0;}
+    .print-page{min-height:auto;}
+  }
+
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-row" id="topicTabs"></div>
+    <div class="themebar">
+      <div class="export-actions">
+        <button class="export-btn" id="previewBtn" type="button">👁 Предпросмотр</button>
+        <button class="export-btn" id="printBtn" type="button">🖨 Печать</button>
+        <button class="export-btn" id="pdfBtn" type="button">⬇ PDF</button>
+      </div>
+      <span class="theme-label">Тема:</span>
+      <button class="theme-btn theme-sage active" data-theme="sage" title="Бежево-зелёная"></button>
+      <button class="theme-btn theme-blue" data-theme="blue" title="Голубая"></button>
+      <button class="theme-btn theme-rose" data-theme="rose" title="Розово-пудровая"></button>
+      <button class="theme-btn theme-night" data-theme="night" title="Тёмная золотая"></button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card sidebar-card">
+        <div class="sidebar-title">Задания</div>
+        <nav class="task-nav" id="taskNav"></nav>
+      </section>
+
+      <section class="card">
+        <div class="sidebar-title">Подсказка по теме</div>
+        <div class="info" id="topicInfo"></div>
+      </section>
+
+      <section class="card">
+        <div class="sidebar-title">Прогресс</div>
+        <div class="info">
+          <p><strong id="progressText">0 из 0</strong> заданий выполнено</p>
+          <div class="progress-line"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="card workspace">
+      <select class="mobile-task-select" id="mobileTaskSelect"></select>
+
+      <div class="task-header">
+        <div>
+          <h1 id="taskTitle"></h1>
+          <p class="task-kicker" id="taskInstruction"></p>
+        </div>
+      </div>
+
+      <div class="task-content" id="taskContent"></div>
+
+      <div class="actions">
+        <button class="btn btn-danger" id="resetBtn">↻ Сбросить</button>
+        <button class="btn btn-soft" id="scratchBtn">✎ Черновик</button>
+        <button class="btn" id="nextBtn">Следующая задача →</button>
+        <button class="btn btn-primary" id="checkBtn">✓ Проверить</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+  </main>
+</div>
+
+<div class="print-preview-modal" id="printPreviewModal" aria-hidden="true">
+  <div class="print-preview-toolbar">
+    <strong>Предпросмотр рабочего листа</strong>
+    <span class="preview-hint">Для каждого задания выберите высоту поля в клетку.</span>
+    <button class="export-btn" id="previewPrintBtn" type="button">🖨 Печать</button>
+    <button class="export-btn" id="previewPdfBtn" type="button">⬇ PDF</button>
+    <button class="export-btn" id="closePreviewBtn" type="button">✕ Закрыть</button>
+  </div>
+  <div class="print-preview-body">
+    <div class="print-preview-paper">
+      <div id="printPreview"></div>
+    </div>
+  </div>
+</div>
+
+<div id="printSheet" aria-hidden="true"></div>
+
+<div class="modal" id="scratchModal" aria-hidden="true">
+  <div class="scratchpad">
+    <div class="scratch-head">
+      <strong>Черновик</strong>
+      <button class="tool-btn" id="penBtn">✎ Ручка</button>
+      <button class="tool-btn" id="eraserBtn">⌫ Ластик</button>
+      <button class="tool-btn" id="clearCanvasBtn">Очистить</button>
+      <span class="spacer"></span>
+      <button class="tool-btn" id="closeScratchBtn">✕ Закрыть</button>
+    </div>
+    <canvas id="scratchCanvas"></canvas>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. ДАННЫЕ РАБОЧЕГО ЛИСТА
+   Меняйте названия подтем, задания, ответы и подсказки здесь.
+   Типы заданий в шаблоне:
+   - input  : краткий ответ
+   - choice : один правильный ответ
+   - multi  : несколько правильных ответов
+   ========================================================= */
+
+
+function axisEscape(value){
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+function axisSvg({min,max,ticks=[],points=[],width=720,height=110}){
+  const left=34;
+  const right=width-28;
+  const axisY=58;
+  const axisColor="#263125";
+  const scale=value=>left + ((value-min)/(max-min))*(right-left);
+
+  const tickMarkup=ticks.map(t=>{
+    const x=scale(t.value);
+    const cls=t.zero ? 'axis-label-bottom axis-zero' : 'axis-label-bottom';
+    return `<g transform="translate(${x},0)">
+      <line x1="0" y1="${axisY-10}" x2="0" y2="${axisY+10}" stroke="${axisColor}" stroke-width="1.8" stroke-linecap="round"></line>
+      <text class="${cls}" x="0" y="${axisY+30}" text-anchor="middle">${axisEscape(t.label)}</text>
+    </g>`;
+  }).join('');
+
+  const pointMarkup=points.map(p=>{
+    const x=scale(p.value);
+    const dx=p.dx||0;
+    const dy=p.dy||0;
+    return `<g transform="translate(${x},0)">
+      <line x1="0" y1="${axisY-10}" x2="0" y2="${axisY+10}" stroke="${axisColor}" stroke-width="1.8" stroke-linecap="round"></line>
+      <circle cx="0" cy="${axisY}" r="3.8" fill="${axisColor}"></circle>
+      <text class="axis-label-top" x="${dx}" y="${axisY-17+dy}" text-anchor="middle">${axisEscape(p.label)}</text>
+    </g>`;
+  }).join('');
+
+  return `<div class="example-box axis-box"><svg class="axis-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+    <line x1="${left}" y1="${axisY}" x2="${right-12}" y2="${axisY}" stroke="${axisColor}" stroke-width="2.4" stroke-linecap="round"></line>
+    <polygon points="${right-12},${axisY-8} ${right},${axisY} ${right-12},${axisY+8}" fill="${axisColor}"></polygon>
+    ${tickMarkup}
+    ${pointMarkup}
+  </svg></div>`;
+}
+
+const prototypeAxes={
+  p71:()=>axisSvg({min:0,max:7.2,ticks:[{value:0,label:'0',zero:true},{value:1,label:'1'}],points:[{value:6.1,label:'a'}]}),
+  p72:()=>axisSvg({min:-3,max:4,ticks:[{value:0,label:'0',zero:true}],points:[{value:-2.0,label:'y'},{value:3.0,label:'x'}]}),
+  p73:()=>axisSvg({min:-3,max:2.5,ticks:[{value:0,label:'0',zero:true}],points:[{value:-1.9,label:'a'},{value:1.0,label:'b'}]}),
+  p74:()=>axisSvg({min:-4,max:4.5,points:[{value:-2.8,label:'a'},{value:-1.2,label:'b'},{value:2.6,label:'c'}]}),
+  p75:()=>axisSvg({min:-4,max:4.5,points:[{value:-2.8,label:'c'},{value:-1.2,label:'b'},{value:2.6,label:'a'}]}),
+  p76:()=>axisSvg({min:7,max:9,ticks:[{value:7,label:'7'},{value:8,label:'8'},{value:9,label:'9'}],points:[{value:7.22,label:'A'},{value:7.77,label:'B'},{value:8.286,label:'C',dx:2},{value:8.76,label:'D'}]}),
+  p77:()=>axisSvg({min:-1,max:0.12,ticks:[{value:0,label:'0',zero:true}],points:[{value:-0.93,label:'A'},{value:-0.39,label:'B'},{value:-0.09,label:'C'},{value:0.03,label:'D',dx:5}]}),
+  p78:()=>axisSvg({min:0,max:1,ticks:[{value:0,label:'0',zero:true},{value:0.1,label:'0,1'},{value:0.2,label:'0,2'},{value:0.3,label:'0,3'},{value:0.4,label:'0,4'},{value:0.5,label:'0,5'},{value:0.6,label:'0,6'},{value:0.7,label:'0,7'},{value:0.8,label:'0,8'},{value:0.9,label:'0,9'},{value:1,label:'1'}],points:[{value:5/9,label:'A'}]}),
+  p79:()=>axisSvg({min:0,max:1,ticks:[{value:0,label:'0',zero:true},{value:0.1,label:'0,1'},{value:0.2,label:'0,2'},{value:0.3,label:'0,3'},{value:0.4,label:'0,4'},{value:0.5,label:'0,5'},{value:0.6,label:'0,6'},{value:0.7,label:'0,7'},{value:0.8,label:'0,8'},{value:0.9,label:'0,9'},{value:1,label:'1'}],points:[{value:2/7,label:'A'}]}),
+  p716:()=>axisSvg({min:5,max:7,ticks:[{value:5,label:'5'},{value:6,label:'6'},{value:7,label:'7'}],points:[{value:Math.sqrt(44),label:'A'}]}),
+  p717:()=>axisSvg({min:7,max:9,ticks:[{value:7,label:'7'},{value:8,label:'8'},{value:9,label:'9'}],points:[{value:7.24,label:'A'},{value:7.79,label:'B'},{value:8.42,label:'C'},{value:Math.sqrt(77),label:'D'}]})
+};
+
+const workbook = [
+  {
+    id:"warmup",
+    code:"5 минут",
+    title:"№6 + №8",
+    info:`<strong>Пятиминутка.</strong><p>5 коротких заданий из тем ОГЭ №6 «Дроби» и №8 «Степени и корни». Работайте без калькулятора.</p><p><strong>Цель:</strong> быстро вспомнить вычисления перед темой координатной прямой.</p>`,
+    tasks:[
+      {title:"1. ОГЭ №6 — десятичные дроби",instruction:"Введите значение выражения.",type:"input",prompt:`<div class="question">Найдите значение выражения $5{,}6+9{,}7$.</div>`,answer:["15,3","15.3"],hint:"Сложите десятые отдельно от целой части.",errorHint:"Проверьте сложение: $0{,}6+0{,}7=1{,}3$."},
+      {title:"2. ОГЭ №6 — вычитание",instruction:"Введите значение выражения.",type:"input",prompt:`<div class="question">Найдите значение выражения $3{,}3-1{,}9$.</div>`,answer:["1,4","1.4"],hint:"Можно представить $3{,}3-2+0{,}1$.",errorHint:"Проверьте разряд десятых."},
+      {title:"3. ОГЭ №6 — обыкновенные дроби",instruction:"Введите значение выражения.",type:"input",prompt:`<div class="question">Найдите значение выражения $\\frac{1}{2}+\\frac{11}{10}$.</div>`,answer:["1,6","1.6","8/5"],hint:"Приведите дроби к знаменателю $10$.",errorHint:"$\\frac{1}{2}=\\frac{5}{10}$."},
+      {title:"4. ОГЭ №8 — разность квадратов",instruction:"Введите значение выражения.",type:"input",prompt:`<div class="question">Найдите значение выражения $(\\sqrt{11}-3)(\\sqrt{11}+3)$.</div>`,answer:["2"],hint:"Используйте формулу $(a-b)(a+b)=a^2-b^2$.",errorHint:"Получается $11-9$."},
+      {title:"5. ОГЭ №8 — корни",instruction:"Введите значение выражения.",type:"input",prompt:`<div class="question">Найдите значение выражения $(\\sqrt{8}+\\sqrt{2})\\cdot\\sqrt{2}$.</div>`,answer:["6"],hint:"Раскройте скобки и используйте $\\sqrt a\\cdot\\sqrt b=\\sqrt{ab}$.",errorHint:"$\\sqrt8\\cdot\\sqrt2=\\sqrt{16}=4$, а $\\sqrt2\\cdot\\sqrt2=2$."}
+    ]
+  },
+  {
+    id:"line",
+    code:"Прямая",
+    title:"Порядок чисел",
+    info:`<strong>Главное правило:</strong><p>Если точка $A$ расположена левее точки $B$, то координата точки $A$ меньше координаты точки $B$.</p><div class="example-box">Левее $\\Rightarrow$ меньше.<br>Правее $\\Rightarrow$ больше.</div>`,
+    tasks:[
+      {title:"1. Читаем прямую",instruction:"Выберите верное неравенство.",type:"choice",prompt:`<div class="question">На прямой точки расположены так: $a$ левее $b$, а $b$ левее $c$.</div><div class="number-line"><span>a</span><span>b</span><span>c</span></div>`,options:["$a\\lt b\\lt c$","$c\\lt b\\lt a$","$a\\gt c$"],answer:0,hint:"Читайте слева направо: значения возрастают.",errorHint:"Самая левая точка имеет наименьшую координату."},
+      {title:"2. С нулём",instruction:"Выберите все верные утверждения.",type:"multi",prompt:`<div class="question">Известно, что $x\\lt 0\\lt y$. Какие утверждения верны?</div>`,options:["$x\\lt y$","$x\\lt 0$","$y\\lt 0$","$y\\gt x$"],answer:[0,1,3],hint:"Любое отрицательное число меньше нуля, а любое положительное — больше нуля.",errorHint:"Проверьте каждое утверждение по цепочке $x\\lt 0\\lt y$."},
+      {title:"3. Координата точки",instruction:"Введите координату.",type:"input",prompt:`<div class="question">Точка $A$ находится ровно посередине между числами $-2$ и $4$. Найдите координату $A$.</div>`,answer:["1","1,0","1.0"],hint:"Координата середины равна полусумме концов: $\\frac{-2+4}{2}$.",errorHint:"Сложите координаты концов и разделите на $2$."},
+      {title:"4. Типичная ошибка",instruction:"Найдите ошибочное утверждение.",type:"choice",prompt:`<div class="question">Ученик записал:</div><div class="example-box">1) $-6\\lt -2$<br>2) $-0{,}5\\lt 0$<br>3) $-8\\gt -3$</div>`,options:["1","2","3"],answer:2,hint:"У отрицательных чисел правее находится число с меньшим модулем.",errorHint:"Сравните положение $-8$ и $-3$ на прямой."},
+      {title:"5. Восстановите порядок",instruction:"Введите числа по возрастанию через точку с запятой.",type:"input",prompt:`<div class="question">Расположите числа $-1{,}2$, $0$, $-0{,}8$, $1{,}1$ по возрастанию.</div>`,answer:["-1,2;-0,8;0;1,1","-1.2;-0.8;0;1.1","-1,2; -0,8; 0; 1,1"],hint:"Сначала отрицательные числа, затем $0$, затем положительные.",errorHint:"Среди отрицательных меньше то, у которого модуль больше."}
+    ]
+  },
+  {
+    id:"signs",
+    code:"Знаки",
+    title:"Сравнение выражений",
+    info:`<strong>Как сравнить выражение с нулём?</strong><p>Разность $a-b$ положительна, если $a\\gt b$, и отрицательна, если $a\\lt b$.</p><p>Если известен порядок точек, сначала переведите его в неравенство, затем определяйте знак выражения.</p>`,
+    tasks:[
+      {title:"1. Знак разности",instruction:"Выберите ответ.",type:"choice",prompt:`<div class="question">Известно, что $a\\lt b$. Каков знак разности $a-b$?</div>`,options:["Положительный","Отрицательный","Нулевой"],answer:1,hint:"Из меньшего числа вычитаем большее.",errorHint:"Если $a\\lt b$, то $a-b\\lt 0$."},
+      {title:"2. Положительная разность",instruction:"Выберите выражение.",type:"choice",prompt:`<div class="question">На прямой $a\\lt b\\lt c$. Какая разность положительна?</div>`,options:["$a-b$","$b-c$","$c-a$","$a-c$"],answer:2,hint:"Положительна разность «большее минус меньшее».",errorHint:"Из цепочки $a\\lt b\\lt c$ следует $c\\gt a$."},
+      {title:"3. Сумма и знак",instruction:"Выберите верное утверждение.",type:"choice",prompt:`<div class="question">Известно, что $a\\lt -5$. Какое утверждение обязательно верно?</div>`,options:["$a+5\\gt 0$","$a+5\\lt 0$","$a-5\\gt 0$","$5-a\\lt 0$"],answer:1,hint:"Прибавьте $5$ к обеим частям неравенства $a\\lt -5$.",errorHint:"$a\\lt -5 \\Rightarrow a+5\\lt 0$."},
+      {title:"4. Произведение",instruction:"Выберите все верные утверждения.",type:"multi",prompt:`<div class="question">Пусть $x\\lt 0$, $y\\gt 0$. Какие выражения отрицательны?</div>`,options:["$xy$","$x^2y$","$xy^2$","$-xy$"],answer:[0,2],hint:"Квадрат любого ненулевого числа положителен.",errorHint:"Определите знак каждого множителя отдельно."},
+      {title:"5. Ошибка в рассуждении",instruction:"Выберите неверный шаг.",type:"choice",prompt:`<div class="question">Дано $m\\lt n$. Ученик рассуждает:</div><div class="example-box">1) $m-n\\lt 0$<br>2) $n-m\\gt 0$<br>3) $m+2\\gt n+2$</div>`,options:["1","2","3"],answer:2,hint:"При прибавлении одного и того же числа знак неравенства не меняется.",errorHint:"Из $m\\lt n$ следует $m+2\\lt n+2$."}
+    ]
+  },
+  {
+    id:"fractions",
+    code:"Дроби",
+    title:"Дроби и интервалы",
+    info:`<strong>Удобные приёмы.</strong><p>1) Сравнить дробь с целым: сравнить числитель с произведением знаменателя и целого.</p><p>2) Можно перевести дробь в десятичную, если это легко.</p><p>3) Чтобы понять, между какими целыми лежит неправильная дробь, выполните деление с остатком.</p>`,
+    tasks:[
+      {title:"1. Сравнение с единицей",instruction:"Выберите верный знак.",type:"choice",prompt:`<div class="question">Сравните $\\frac{7}{9}$ и $1$.</div>`,options:["$\\frac{7}{9}\\lt 1$","$\\frac{7}{9}\\gt 1$","$\\frac{7}{9}=1$"],answer:0,hint:"У положительной дроби со знаменателем больше числителя значение меньше $1$.",errorHint:"Сравните числитель и знаменатель: $7\\lt 9$."},
+      {title:"2. Между целыми",instruction:"Выберите верную пару.",type:"choice",prompt:`<div class="question">Между какими целыми числами заключено $\\frac{43}{6}$?</div>`,options:["$6$ и $7$","$7$ и $8$","$8$ и $9$"],answer:1,hint:"$42:6=7$, значит $\\frac{43}{6}$ чуть больше $7$.",errorHint:"Представьте $43=42+1$."},
+      {title:"3. В заданном промежутке",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Какое число принадлежит промежутку $[3;4]$?</div>`,options:["$\\frac{11}{4}$","$\\frac{13}{4}$","$\\frac{17}{4}$","$\\frac{21}{4}$"],answer:1,hint:"Умножьте границы $3$ и $4$ на знаменатель $4$.",errorHint:"Для попадания в $[3;4]$ числитель должен быть от $12$ до $16$."},
+      {title:"4. Сравнение двух дробей",instruction:"Выберите верное неравенство.",type:"choice",prompt:`<div class="question">Сравните $\\frac{5}{8}$ и $\\frac{2}{3}$.</div>`,options:["$\\frac{5}{8}\\lt \\frac{2}{3}$","$\\frac{5}{8}\\gt \\frac{2}{3}$","Равны"],answer:0,hint:"Сравните произведения $5\\cdot3$ и $2\\cdot8$.",errorHint:"$15\\lt 16$, значит первая дробь меньше."},
+      {title:"5. Дробь на прямой",instruction:"Введите десятичную запись.",type:"input",prompt:`<div class="question">Запишите десятичную дробь, равную $\\frac{3}{5}$.</div>`,answer:["0,6","0.6","3/5"],hint:"Домножьте знаменатель до $10$: $\\frac{3}{5}=\\frac{6}{10}$.",errorHint:"$3:5=0{,}6$."}
+    ]
+  },
+  {
+    id:"roots",
+    code:"Корни",
+    title:"Сравнение корней",
+    info:`<strong>Квадратные корни.</strong><p>Для $a,b\\ge0$: если $a\\lt b$, то $\\sqrt a\\lt \\sqrt b$.</p><p>Чтобы найти положение $\\sqrt n$, подберите соседние полные квадраты: если $k^2\\lt n\\lt (k+1)^2$, то $k\\lt \\sqrt n\\lt k+1$.</p>`,
+    tasks:[
+      {title:"1. Между целыми",instruction:"Выберите верную пару.",type:"choice",prompt:`<div class="question">Между какими целыми числами заключено $\\sqrt{20}$?</div>`,options:["$3$ и $4$","$4$ и $5$","$5$ и $6$"],answer:1,hint:"Сравните $20$ с $4^2$ и $5^2$.",errorHint:"$16\\lt 20\\lt 25$."},
+      {title:"2. Сравнение корней",instruction:"Выберите верное неравенство.",type:"choice",prompt:`<div class="question">Сравните $\\sqrt{31}$ и $\\sqrt{35}$.</div>`,options:["$\\sqrt{31}\\lt \\sqrt{35}$","$\\sqrt{31}\\gt \\sqrt{35}$","Равны"],answer:0,hint:"Для неотрицательных чисел корень сохраняет порядок.",errorHint:"Достаточно сравнить подкоренные выражения: $31\\lt 35$."},
+      {title:"3. Корень и целое",instruction:"Выберите ответ.",type:"choice",prompt:`<div class="question">Какое число больше: $6$ или $\\sqrt{37}$?</div>`,options:["$6$","$\\sqrt{37}$","Равны"],answer:1,hint:"Сравните квадраты: $6^2=36$ и $37$.",errorHint:"$37\\gt 36$, поэтому $\\sqrt{37}\\gt 6$."},
+      {title:"4. На отрезке",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Какое число принадлежит отрезку $[7;8]$?</div>`,options:["$\\sqrt{45}$","$\\sqrt{50}$","$\\sqrt{61}$","$\\sqrt{70}$"],answer:2,hint:"Возведите границы в квадрат: $49$ и $64$.",errorHint:"Ищите подкоренное число между $49$ и $64$."},
+      {title:"5. Типичная ошибка",instruction:"Найдите неверное утверждение.",type:"choice",prompt:`<div class="question">Какое утверждение неверно?</div>`,options:["$\\sqrt{26}\\gt 5$","$\\sqrt{26}\\lt 6$","$\\sqrt{26}=13$"],answer:2,hint:"Проверьте квадрат предполагаемого значения.",errorHint:"Корень из $26$ находится между $5$ и $6$."}
+    ]
+  },
+  {
+    id:"oge",
+    code:"ОГЭ №7",
+    title:"Все прототипы",
+    info:`<strong>Все прототипы ОГЭ №7 из открытого банка:</strong><p>7.1–7.5 — знаки выражений и порядок точек; 7.6–7.13 — дроби и промежутки; 7.14–7.17 — квадратные корни.</p><p><strong>Алгоритм:</strong> прочитайте положение точек → оцените число → только затем выбирайте ответ.</p>`,
+    tasks:[
+      {title:"1. Прототип 7.1",instruction:"Выберите номер верного утверждения.",type:"choice",prompt:`<div class="question">На координатной прямой отмечено число $a$.</div>${prototypeAxes.p71()}<div class="question">Какое из утверждений для этого числа является верным?</div>`,options:["$a-5\\lt 0$","$5-a\\lt 0$","$a-7\\gt 0$","$6-a\\gt 0$"],answer:1,hint:"По рисунку $a$ находится правее числа $5$.",errorHint:"Сравните $a$ с $5$: если $a\\gt 5$, то $5-a\\lt 0$."},
+      {title:"2. Прототип 7.2",instruction:"Выберите номер верного утверждения.",type:"choice",prompt:`<div class="question">На координатной прямой отмечены числа $x$ и $y$.</div>${prototypeAxes.p72()}<div class="question">Какое из приведённых утверждений для этих чисел верно?</div>`,options:["$x+y\\gt 0$","$xy^2\\lt 0$","$x-y\\lt 0$","$x^2y\\gt 0$"],answer:0,hint:"На рисунке $x\\gt 0$, $y\\lt 0$, причём $x$ расположен дальше от нуля, чем $y$.",errorHint:"Сравните модули $x$ и $y$: положительная часть больше по модулю."},
+      {title:"3. Прототип 7.3",instruction:"Выберите номер верного неравенства.",type:"choice",prompt:`<div class="question">На координатной прямой отмечены числа $a$ и $b$.</div>${prototypeAxes.p73()}<div class="question">Какое из следующих неравенств верно?</div>`,options:["$ab^2\\lt 0$","$b-a\\lt 0$","$ab\\gt 0$","$a+b\\gt 0$"],answer:0,hint:"$a\\lt 0$, а $b^2\\gt 0$.",errorHint:"Произведение отрицательного числа на положительное отрицательно."},
+      {title:"4. Прототип 7.4",instruction:"Выберите положительную разность.",type:"choice",prompt:`<div class="question">На координатной прямой отмечены числа $a$, $b$ и $c$.</div>${prototypeAxes.p74()}<div class="question">Какая из разностей $a-b$, $c-a$, $b-c$ положительна?</div>`,options:["$a-b$","$c-a$","$b-c$","ни одна из них"],answer:1,hint:"Положительна разность «правое число минус левое».",errorHint:"На прямой $c\\gt a$, значит $c-a\\gt 0$."},
+      {title:"5. Прототип 7.5",instruction:"Выберите отрицательную разность.",type:"choice",prompt:`<div class="question">На координатной прямой отмечены числа $a$, $b$ и $c$.</div>${prototypeAxes.p75()}<div class="question">Какая из разностей $a-b$, $a-c$, $c-b$ отрицательна?</div>`,options:["$a-b$","$a-c$","$c-b$","ни одна из них"],answer:2,hint:"Отрицательна разность «левое число минус правое».",errorHint:"Так как $c\\lt b$, то $c-b\\lt 0$."},
+      {title:"6. Прототип 7.6",instruction:"Определите точку.",type:"choice",prompt:`<div class="question">На координатной прямой отмечены точки $A$, $B$, $C$, $D$.</div>${prototypeAxes.p76()}<div class="question">Одна из них соответствует числу $\\frac{58}{7}$. Какая это точка?</div>`,options:["точка $A$","точка $B$","точка $C$","точка $D$"],answer:2,hint:"$\\frac{58}{7}=8\\frac{2}{7}\\approx8{,}29$.",errorHint:"Число немного больше $8$, поэтому ищите точку сразу справа от $8$."},
+      {title:"7. Прототип 7.7",instruction:"Определите точку.",type:"choice",prompt:`<div class="question">На координатной прямой точки $A$, $B$, $C$, $D$ соответствуют числам $-0{,}39$, $-0{,}09$, $-0{,}93$, $0{,}03$.</div>${prototypeAxes.p77()}<div class="question">Какой точке соответствует число $-0{,}09$?</div>`,options:["точка $A$","точка $B$","точка $C$","точка $D$"],answer:2,hint:"Расположите данные числа по возрастанию.",errorHint:"Порядок: $-0{,}93\\lt -0{,}39\\lt -0{,}09\\lt 0{,}03$."},
+      {title:"8. Прототип 7.8",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Одно из чисел $\\frac{5}{9}$, $\\frac{11}{9}$, $\\frac{13}{9}$ и $\\frac{14}{9}$ отмечено на числовой прямой точкой $A$.</div>${prototypeAxes.p78()}<div class="question">Какое это число?</div>`,options:["$\\frac59$","$\\frac{11}{9}$","$\\frac{13}{9}$","$\\frac{14}{9}$"],answer:0,hint:"Точка $A$ находится между $0{,}5$ и $0{,}6$.",errorHint:"$\\frac59\\approx0{,}56$, остальные дроби больше $1$."},
+      {title:"9. Прототип 7.9",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Одно из чисел $\\frac{2}{7}$, $\\frac{4}{7}$, $\\frac{10}{7}$ и $\\frac{11}{7}$ отмечено на числовой прямой точкой $A$.</div>${prototypeAxes.p79()}<div class="question">Какое это число?</div>`,options:["$\\frac27$","$\\frac47$","$\\frac{10}{7}$","$\\frac{11}{7}$"],answer:0,hint:"Точка $A$ расположена чуть левее $0{,}3$.",errorHint:"$\\frac27\\approx0{,}286$."},
+      {title:"10. Прототип 7.10",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Какое из чисел $\\frac{46}{7}$, $\\frac{53}{7}$, $\\frac{55}{7}$ и $\\frac{61}{7}$ принадлежит отрезку $[8;9]$?</div>`,options:["$\\frac{46}{7}$","$\\frac{53}{7}$","$\\frac{55}{7}$","$\\frac{61}{7}$"],answer:3,hint:"При знаменателе $7$ числитель должен быть от $56$ до $63$.",errorHint:"Умножьте обе границы отрезка на $7$."},
+      {title:"11. Прототип 7.11",instruction:"Выберите пару целых чисел.",type:"choice",prompt:`<div class="question">Между какими целыми числами заключено число $\\frac{160}{11}$?</div>`,options:["12 и 13","13 и 14","14 и 15","15 и 16"],answer:2,hint:"$11\\cdot14=154$, а $11\\cdot15=165$.",errorHint:"$154\\lt 160\\lt 165$."},
+      {title:"12. Прототип 7.12",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Какое из следующих чисел заключено между числами $\\frac83$ и $\\frac{11}{4}$?</div>`,options:["$2{,}7$","$2{,}8$","$2{,}9$","$3$"],answer:0,hint:"$\\frac83\\approx2{,}67$, $\\frac{11}{4}=2{,}75$.",errorHint:"Ищите число между $2{,}67$ и $2{,}75$."},
+      {title:"13. Прототип 7.13",instruction:"Выберите промежуток.",type:"choice",prompt:`<div class="question">Какому из данных промежутков принадлежит число $\\frac27$?</div>`,options:["$[0{,}1;0{,}2]$","$[0{,}2;0{,}3]$","$[0{,}3;0{,}4]$","$[0{,}4;0{,}5]$"],answer:1,hint:"$\\frac27\\approx0{,}286$.",errorHint:"Число больше $0{,}2$, но меньше $0{,}3$."},
+      {title:"14. Прототип 7.14",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Какое из чисел $\\sqrt5$, $\\sqrt6$, $\\sqrt{23}$, $\\sqrt{31}$ принадлежит промежутку $[5;6]$?</div>`,options:["$\\sqrt5$","$\\sqrt6$","$\\sqrt{23}$","$\\sqrt{31}$"],answer:3,hint:"Возведите границы $5$ и $6$ в квадрат.",errorHint:"Подкоренное число должно лежать между $25$ и $36$."},
+      {title:"15. Прототип 7.15",instruction:"Выберите пару целых чисел.",type:"choice",prompt:`<div class="question">Между какими целыми числами заключено число $\\sqrt{27}$?</div>`,options:["2 и 3","5 и 6","12 и 14","26 и 28"],answer:1,hint:"$25\\lt 27\\lt 36$.",errorHint:"$5^2=25$, $6^2=36$."},
+      {title:"16. Прототип 7.16",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Одно из чисел $\\sqrt{29}$, $\\sqrt{33}$, $\\sqrt{39}$, $\\sqrt{44}$ отмечено на прямой точкой $A$.</div>${prototypeAxes.p716()}<div class="question">Какое это число?</div>`,options:["$\\sqrt{29}$","$\\sqrt{33}$","$\\sqrt{39}$","$\\sqrt{44}$"],answer:3,hint:"Точка $A$ находится между $6$ и $7$ и ближе к $7$.",errorHint:"$\\sqrt{44}\\approx6{,}63$."},
+      {title:"17. Прототип 7.17 DEMO",instruction:"Определите точку.",type:"choice",prompt:`<div class="question">На координатной прямой отмечены точки $A$, $B$, $C$, $D$.</div>${prototypeAxes.p717()}<div class="question">Одна из них соответствует числу $\\sqrt{77}$. Какая это точка?</div>`,options:["точка $A$","точка $B$","точка $C$","точка $D$"],answer:3,hint:"$8^2=64$, $9^2=81$, а $77$ близко к $81$.",errorHint:"$\\sqrt{77}\\approx8{,}78$, поэтому нужна точка между $8$ и $9$, ближе к $9$."}
+    ]
+  },
+  {
+    id:"final",
+    code:"Финиш",
+    title:"Мини-проверка",
+    info:`<strong>Перед ответом:</strong><p>1) Определите тип числа: целое, дробь, корень.</p><p>2) Выберите удобный способ оценки.</p><p>3) Проверьте, не перепутали ли направление сравнения у отрицательных чисел.</p>`,
+    tasks:[
+      {title:"1. Смешанное сравнение",instruction:"Выберите наименьшее число.",type:"choice",prompt:`<div class="question">Какое число наименьшее?</div>`,options:["$-0{,}6$","$-\\frac12$","$0$","$-0{,}55$"],answer:0,hint:"Переведите $-\\frac12$ в $-0{,}5$.",errorHint:"Среди отрицательных меньше то, которое левее на прямой."},
+      {title:"2. Дробь в промежутке",instruction:"Выберите ответ.",type:"choice",prompt:`<div class="question">Какое число принадлежит промежутку $(4;5)$?</div>`,options:["$\\frac{19}{5}$","$\\frac{21}{5}$","$\\frac{26}{5}$","$5$"],answer:1,hint:"При знаменателе $5$ границы соответствуют числителям $20$ и $25$.",errorHint:"Нужен числитель строго между $20$ и $25$."},
+      {title:"3. Корень",instruction:"Введите целое число.",type:"input",prompt:`<div class="question">Какое наибольшее целое число меньше $\\sqrt{50}$?</div>`,answer:["7"],hint:"$7^2=49$, $8^2=64$.",errorHint:"Определите, между какими целыми находится $\\sqrt{50}$."},
+      {title:"4. Знак выражения",instruction:"Выберите ответ.",type:"choice",prompt:`<div class="question">Известно, что $p\\lt q\\lt 0$. Какой знак имеет $q-p$?</div>`,options:["Положительный","Отрицательный","Нулевой"],answer:0,hint:"Если $q\\gt p$, то $q-p\\gt 0$.",errorHint:"Сравните уменьшаемое $q$ и вычитаемое $p$."},
+      {title:"5. Итоговый ОГЭ-микс",instruction:"Выберите число.",type:"choice",prompt:`<div class="question">Какое из чисел принадлежит промежутку $[6;7]$?</div>`,options:["$\\sqrt{35}$","$\\frac{41}{6}$","$7{,}2$","$\\sqrt{50}$"],answer:1,hint:"Проверьте варианты по одному.",errorHint:"$\\frac{41}{6}\\approx6{,}83$; остальные варианты лежат вне $[6;7]$."}
+    ]
+  }
+];
+
+const themes = {
+  sage:{
+    "--bg":"#f7f4ea","--surface":"#fffdf7","--surface-2":"#f1f5e7","--text":"#263125",
+    "--muted":"#697468","--primary":"#6c8a52","--primary-2":"#89a46d","--primary-soft":"#e7eedc",
+    "--border":"#cbd6bc","--danger":"#b55d54","--success":"#4e7f53","--shadow":"0 8px 24px rgba(45,60,35,.08)"
+  },
+  blue:{
+    "--bg":"#edf4fb","--surface":"#ffffff","--surface-2":"#eff6fd","--text":"#1d2c3d",
+    "--muted":"#66788a","--primary":"#3f78b8","--primary-2":"#6b9bd0","--primary-soft":"#e3eef9",
+    "--border":"#c9d9e9","--danger":"#bb5b5b","--success":"#477d65","--shadow":"0 8px 24px rgba(40,70,100,.08)"
+  },
+  rose:{
+    "--bg":"#f8efec","--surface":"#fffafa","--surface-2":"#f7e9e9","--text":"#3b2b30",
+    "--muted":"#806c72","--primary":"#a96270","--primary-2":"#c78692","--primary-soft":"#f1dde1",
+    "--border":"#e2c9cf","--danger":"#a94e4e","--success":"#5d7c5e","--shadow":"0 8px 24px rgba(90,45,60,.08)"
+  },
+  night:{
+    "--bg":"#252b34","--surface":"#323a46","--surface-2":"#3a4350","--text":"#f4efe4",
+    "--muted":"#c6c2b8","--primary":"#d5ac57","--primary-2":"#e4c47e","--primary-soft":"#4a4438",
+    "--border":"#59616d","--danger":"#e18b82","--success":"#9ac18f","--shadow":"0 8px 24px rgba(0,0,0,.22)"
+  }
+};
+
+let state = {
+  topic:0,
+  task:0,
+  completed:{},
+  theme:localStorage.getItem("mathTheme") || "sage"
+};
+
+const el = id => document.getElementById(id);
+
+function applyTheme(name){
+  const t = themes[name] || themes.sage;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  state.theme = name;
+  localStorage.setItem("mathTheme",name);
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active",b.dataset.theme===name));
+}
+
+function renderTabs(){
+  el("topicTabs").innerHTML = workbook.map((t,i)=>`
+    <button class="topic-tab ${i===state.topic?'active':''}" data-topic="${i}">
+      ${t.code}<small>${t.title}</small>
+    </button>`).join("");
+  document.querySelectorAll(".topic-tab").forEach(btn=>{
+    btn.onclick=()=>{
+      state.topic=Number(btn.dataset.topic);
+      state.task=0;
+      renderAll();
+    };
+  });
+}
+
+function renderTaskNav(){
+  const topic = workbook[state.topic];
+  el("taskNav").innerHTML = topic.tasks.map((t,i)=>`
+    <button class="task-btn ${i===state.task?'active':''}" data-task="${i}">
+      <span class="task-num">${i+1}</span><span>${t.title.replace(/^\d+\.\s*/,'')}</span>
+    </button>`).join("");
+
+  document.querySelectorAll(".task-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      state.task=Number(btn.dataset.task);
+      renderTask();
+      renderTaskNav();
+      renderMobileSelect();
+    };
+  });
+}
+
+function renderMobileSelect(){
+  const topic=workbook[state.topic];
+  el("mobileTaskSelect").innerHTML=topic.tasks.map((t,i)=>`<option value="${i}" ${i===state.task?'selected':''}>${t.title}</option>`).join("");
+}
+
+function renderTask(){
+  const topic=workbook[state.topic];
+  const task=topic.tasks[state.task];
+
+  el("topicInfo").innerHTML = `${topic.info}${task.hint?`<div class="example-box"><strong>Подсказка к заданию:</strong><br>${task.hint}</div>`:""}`;
+  el("taskTitle").textContent = task.title;
+  el("taskInstruction").textContent = task.instruction;
+  el("feedback").className="feedback";
+  el("feedback").textContent="";
+
+  let html = task.prompt;
+
+  if(task.type==="input"){
+    html += `<div class="answer-row">
+      <label for="studentAnswer">Ответ:</label>
+      <input id="studentAnswer" class="answer-input" autocomplete="off" placeholder="Введите ответ">
+    </div>`;
+  }
+
+  if(task.type==="choice"){
+    html += `<div class="choice-grid">` + task.options.map((o,i)=>`
+      <label class="choice"><input type="radio" name="choice" value="${i}"> <span>${o}</span></label>
+    `).join("") + `</div>`;
+  }
+
+  if(task.type==="multi"){
+    html += `<div class="choice-grid">` + task.options.map((o,i)=>`
+      <label class="choice"><input type="checkbox" name="choice" value="${i}"> <span>${o}</span></label>
+    `).join("") + `</div>`;
+  }
+
+  el("taskContent").innerHTML = html;
+  el("nextBtn").disabled = state.task >= topic.tasks.length-1;
+
+  typesetDynamicMath();
+}
+
+async function typesetDynamicMath(){
+  if(!window.MathJax) return;
+  const nodes=[el("taskContent"),el("topicInfo")].filter(Boolean);
+  try{
+    if(MathJax.startup?.promise) await MathJax.startup.promise;
+    if(MathJax.typesetClear) MathJax.typesetClear(nodes);
+    if(MathJax.typesetPromise) await MathJax.typesetPromise(nodes);
+  }catch(e){
+    console.warn("MathJax dynamic render:",e);
+  }
+}
+
+function normalize(s){
+  return String(s).trim().toLowerCase()
+    .replace(/−/g,"-")
+    .replace(/,/g,".")
+    .replace(/\s*;\s*/g,";")
+    .replace(/\s+/g," ");
+}
+
+function checkCurrent(){
+  const topic=workbook[state.topic];
+  const task=topic.tasks[state.task];
+  let correct=false;
+
+  if(task.type==="input"){
+    const val=normalize(el("studentAnswer")?.value||"");
+    correct=task.answer.some(a=>normalize(a)===val);
+  }
+
+  if(task.type==="choice"){
+    const selected=document.querySelector('input[name="choice"]:checked');
+    correct=selected && Number(selected.value)===task.answer;
+  }
+
+  if(task.type==="multi"){
+    const selected=[...document.querySelectorAll('input[name="choice"]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+    correct=JSON.stringify(selected)===JSON.stringify([...task.answer].sort((a,b)=>a-b));
+  }
+
+  const fb=el("feedback");
+  fb.className="feedback show " + (correct?"ok":"bad");
+  fb.textContent=correct ? "Верно ✓" : (task.errorHint || "Неверно. Проверьте решение и попробуйте ещё раз.");
+
+  if(correct){
+    state.completed[topic.id+"_"+state.task]=true;
+    updateProgress();
+  }
+}
+
+function resetCurrent(){
+  const task=workbook[state.topic].tasks[state.task];
+  if(task.type==="input" && el("studentAnswer")) el("studentAnswer").value="";
+  document.querySelectorAll('input[name="choice"]').forEach(x=>x.checked=false);
+  el("feedback").className="feedback";
+  el("feedback").textContent="";
+}
+
+function nextTask(){
+  const max=workbook[state.topic].tasks.length-1;
+  if(state.task<max){
+    state.task++;
+    renderTaskNav();
+    renderTask();
+    renderMobileSelect();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+}
+
+function updateProgress(){
+  let total=0, done=0;
+  workbook.forEach(t=>t.tasks.forEach((_,i)=>{
+    total++;
+    if(state.completed[t.id+"_"+i]) done++;
+  }));
+  el("progressText").textContent=`${done} из ${total}`;
+  el("progressBar").style.width=(total?done/total*100:0)+"%";
+}
+
+function renderAll(){
+  renderTabs();
+  renderTaskNav();
+  renderMobileSelect();
+  renderTask();
+  updateProgress();
+}
+
+/* Черновик на canvas */
+const modal=el("scratchModal");
+const canvas=el("scratchCanvas");
+const ctx=canvas.getContext("2d");
+let drawing=false,lastX=0,lastY=0,mode="pen";
+
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const old=ctx.getImageData(0,0,canvas.width||1,canvas.height||1);
+  canvas.width=Math.max(1,Math.floor(rect.width*dpr));
+  canvas.height=Math.max(1,Math.floor(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+}
+
+function point(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener("pointerdown",e=>{
+  drawing=true;
+  canvas.setPointerCapture(e.pointerId);
+  const p=point(e); lastX=p.x; lastY=p.y;
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!drawing)return;
+  const p=point(e);
+  ctx.save();
+  if(mode==="eraser"){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.lineWidth=18;
+  } else {
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle="#283126";
+    ctx.lineWidth=2.5;
+  }
+  ctx.beginPath();
+  ctx.moveTo(lastX,lastY);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+  ctx.restore();
+  lastX=p.x;lastY=p.y;
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>canvas.addEventListener(ev,()=>drawing=false));
+
+el("scratchBtn").onclick=()=>{
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  setTimeout(resizeCanvas,50);
+};
+el("closeScratchBtn").onclick=()=>{
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+};
+modal.addEventListener("click",e=>{if(e.target===modal) el("closeScratchBtn").click()});
+el("penBtn").onclick=()=>mode="pen";
+el("eraserBtn").onclick=()=>mode="eraser";
+el("clearCanvasBtn").onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+window.addEventListener("resize",()=>{ if(modal.classList.contains("open")) resizeCanvas(); });
+
+/* Печать и PDF: печатная версия в стиле образца */
+const solutionSizeLabels={
+  "grid-small":"Маленькое",
+  "grid-medium":"Среднее",
+  "grid-large":"Большое",
+  "grid-xlarge":"Очень большое"
+};
+const solutionSizeOrder=["grid-small","grid-medium","grid-large","grid-xlarge"];
+const printGridOverrides={};
+
+function printableOptions(task){
+  if(!Array.isArray(task.options) || !task.options.length) return "";
+  return `<div class="print-options">${task.options.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+}
+
+/* Высота поля решения подбирается автоматически.
+   При необходимости пользователь меняет её в предпросмотре. */
+function solutionGridClass(task){
+  const plain=(task.prompt||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const displayMath=((task.prompt||"").match(/\$\$/g)||[]).length/2;
+  const title=(task.title||"").toLowerCase();
+  const instruction=(task.instruction||"").toLowerCase();
+
+  let score=0;
+  if(plain.length>170) score++;
+  if(plain.length>300) score++;
+  if(displayMath>=2) score++;
+  if(/решите|доказ|восстанов|найдите ошиб|самостоятель/.test(title+" "+instruction)) score++;
+
+  if(score>=4) return "grid-xlarge";
+  if(score>=2) return "grid-large";
+  if(score===1) return "grid-medium";
+  return "grid-small";
+}
+
+function allPrintableTasks(){
+  const tasks=[];
+  workbook.forEach((topic,topicIndex)=>topic.tasks.forEach((task,taskIndex)=>{
+    tasks.push({task, key:`${topic.id}_${taskIndex}`, topicIndex, taskIndex});
+  }));
+  return tasks;
+}
+
+function sizeControls(key,current){
+  return `<div class="print-size-row" data-size-key="${key}">
+    <span>Поле:</span>
+    ${solutionSizeOrder.map(size=>`<button type="button" class="print-size-btn ${size===current?'active':''}" data-size="${size}">${solutionSizeLabels[size]}</button>`).join("")}
+  </div>`;
+}
+
+/* Реальные линии клетки с шагом 5 мм.
+   Фоновые CSS-градиенты браузеры часто не печатают, если отключена
+   «Печать фоновой графики». Эти линии являются обычными DOM-элементами. */
+function solutionGridLines(){
+  const vertical=Array.from({length:40},(_,i)=>`<i class="grid-v" style="left:${(i+1)*5}mm"></i>`).join("");
+  const horizontal=Array.from({length:10},(_,i)=>`<i class="grid-h" style="top:${(i+1)*5}mm"></i>`).join("");
+  return vertical+horizontal;
+}
+
+function printTaskMarkup(item,globalNumber,{preview=false}={}){
+  const {task,key}=item;
+  const gridClass=printGridOverrides[key] || solutionGridClass(task);
+  return `<section class="print-task" data-task-key="${key}">
+    <div class="print-question-row">
+      <div class="print-num">${globalNumber}.</div>
+      <div class="print-prompt">${task.prompt}${printableOptions(task)}</div>
+    </div>
+    ${preview?sizeControls(key,gridClass):''}
+    <div class="solution-grid ${gridClass}" data-grid-key="${key}" aria-label="Место для решения">${solutionGridLines()}</div>
+  </section>`;
+}
+
+function mmPixels(mm){
+  const probe=document.createElement("div");
+  probe.style.cssText=`position:absolute;visibility:hidden;width:1mm;height:${mm}mm;`;
+  document.body.appendChild(probe);
+  const px=probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+/* Раскладка больше не привязана к фиксированным 5 заданиям.
+   Сначала браузер измеряет реальную высоту каждого задания вместе с выбранным
+   полем решения и отрендеренными формулами MathJax, затем на A4 помещается
+   максимально возможное число ЦЕЛЫХ заданий. */
+async function buildPaginatedMarkup({preview=false,onlyPage=null}={}){
+  const tasks=allPrintableTasks();
+  const measure=document.createElement("div");
+  measure.className="print-sheet";
+  measure.style.cssText="position:fixed;left:-12000px;top:0;visibility:hidden;width:190mm;background:#fff;";
+  measure.innerHTML=tasks.map((item,i)=>printTaskMarkup(item,i+1,{preview})).join("");
+  document.body.appendChild(measure);
+  await typesetPrintNode(measure);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const pageHeight=mmPixels(277);
+  const pages=[];
+  let current=[];
+  let used=0;
+  [...measure.querySelectorAll(".print-task")].forEach((node,i)=>{
+    const cs=getComputedStyle(node);
+    const h=node.getBoundingClientRect().height + parseFloat(cs.marginTop||0) + parseFloat(cs.marginBottom||0);
+    if(current.length && used+h>pageHeight){
+      pages.push(current);
+      current=[];
+      used=0;
+    }
+    current.push(i);
+    used+=h;
+  });
+  if(current.length) pages.push(current);
+  measure.remove();
+
+  const selected=onlyPage==null ? pages : (pages[onlyPage] ? [pages[onlyPage]] : []);
+  let html=`<div class="print-sheet ${preview?'preview-sheet':''}">`;
+  selected.forEach((indexes,localPageIndex)=>{
+    const sourcePageIndex=onlyPage==null ? localPageIndex : onlyPage;
+    if(preview){
+      html += `<div class="preview-page-wrap" data-preview-page="${sourcePageIndex}">
+        <div class="preview-page-actions">
+          <button type="button" class="export-btn print-one-page" data-page="${sourcePageIndex}">🖨 Печать страницы ${sourcePageIndex+1}</button>
+          <button type="button" class="export-btn pdf-one-page" data-page="${sourcePageIndex}">⬇ PDF страницы ${sourcePageIndex+1}</button>
+        </div>`;
+    }
+    html += `<div class="print-page" data-page-index="${sourcePageIndex}">`;
+    indexes.forEach(taskIndex=>{ html += printTaskMarkup(tasks[taskIndex],taskIndex+1,{preview}); });
+    html += `</div>`;
+    if(preview) html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+async function buildPrintableSheet(onlyPage=null){
+  const root=el("printSheet");
+  root.innerHTML=await buildPaginatedMarkup({preview:false,onlyPage});
+  return root.querySelector(".print-sheet");
+}
+
+async function typesetPrintNode(node){
+  if(window.MathJax?.startup?.promise){
+    try{ await MathJax.startup.promise; }catch(e){}
+  }
+  if(window.MathJax?.typesetPromise && node){
+    try{
+      if(MathJax.typesetClear) MathJax.typesetClear([node]);
+      await MathJax.typesetPromise([node]);
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }catch(e){ console.warn("MathJax print render:",e); }
+  }
+}
+
+async function preparePrintableMath(onlyPage=null){
+  const sheet=await buildPrintableSheet(onlyPage);
+  await typesetPrintNode(sheet);
+  return sheet;
+}
+
+async function openPrintPreview(){
+  const previewRoot=el("printPreview");
+  previewRoot.innerHTML=await buildPaginatedMarkup({preview:true});
+  await typesetPrintNode(previewRoot);
+
+  previewRoot.querySelectorAll(".print-size-row").forEach(row=>{
+    row.addEventListener("click",e=>{
+      const btn=e.target.closest(".print-size-btn");
+      if(!btn) return;
+      const key=row.dataset.sizeKey;
+      const size=btn.dataset.size;
+      printGridOverrides[key]=size;
+      row.querySelectorAll(".print-size-btn").forEach(b=>b.classList.toggle("active",b===btn));
+      const grid=previewRoot.querySelector(`.solution-grid[data-grid-key="${key}"]`);
+      if(grid){
+        solutionSizeOrder.forEach(c=>grid.classList.remove(c));
+        grid.classList.add(size);
+      }
+    });
+  });
+
+  previewRoot.querySelectorAll(".print-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await printWorkbook(page);
+    };
+  });
+  previewRoot.querySelectorAll(".pdf-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await exportWorkbookPdf(page);
+    };
+  });
+
+  const modal=el("printPreviewModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+
+function closePrintPreview(){
+  const modal=el("printPreviewModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+async function printWorkbook(onlyPage=null){
+  await preparePrintableMath(onlyPage);
+  window.print();
+}
+
+async function exportWorkbookPdf(onlyPage=null){
+  const root=el("printSheet");
+  root.classList.add("export-render");
+  try{
+    const sheet=await preparePrintableMath(onlyPage);
+    if(typeof html2pdf==="undefined"){
+      alert("Модуль PDF ещё загружается. Повторите попытку через пару секунд.");
+      return;
+    }
+
+    /* MathJax 3 здесь уже превратил TeX в обычные inline-SVG.
+       Держим узел видимым для html2canvas до завершения снимка и ждём шрифты. */
+    if(document.fonts?.ready) await document.fonts.ready;
+    await typesetPrintNode(sheet);
+    await new Promise(resolve=>setTimeout(resolve,60));
+
+    sheet.classList.add("pdf-mode");
+    const base=(document.title || "Рабочий лист").replace(/[\\/:*?"<>|]+/g,"_");
+    const filename=onlyPage==null ? `${base}.pdf` : `${base}_страница_${onlyPage+1}.pdf`;
+    const options={
+      margin:[10,10,10,10],
+      filename,
+      image:{type:"png",quality:1},
+      html2canvas:{
+        scale:2.2,
+        useCORS:true,
+        allowTaint:false,
+        backgroundColor:"#ffffff",
+        scrollX:0,scrollY:0,
+        logging:false
+      },
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["css","legacy"],after:[".print-page:not(:last-child)"],avoid:[".print-task","mjx-container"]}
+    };
+    try{
+      await html2pdf().set(options).from(sheet).save();
+    }finally{
+      sheet.classList.remove("pdf-mode");
+    }
+  }finally{
+    root.classList.remove("export-render");
+  }
+}
+
+el("previewBtn").onclick=openPrintPreview;
+el("printBtn").onclick=openPrintPreview;
+el("pdfBtn").onclick=openPrintPreview;
+el("closePreviewBtn").onclick=closePrintPreview;
+el("previewPrintBtn").onclick=async()=>{ closePrintPreview(); await printWorkbook(); };
+el("previewPdfBtn").onclick=async()=>{ closePrintPreview(); await exportWorkbookPdf(); };
+el("printPreviewModal").addEventListener("click",e=>{ if(e.target===el("printPreviewModal")) closePrintPreview(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && el("printPreviewModal").classList.contains("open")) closePrintPreview(); });
+
+/* Кнопки */
+el("checkBtn").onclick=checkCurrent;
+el("resetBtn").onclick=resetCurrent;
+el("nextBtn").onclick=nextTask;
+el("mobileTaskSelect").onchange=e=>{
+  state.task=Number(e.target.value);
+  renderTaskNav();
+  renderTask();
+};
+
+document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));
+
+applyTheme(state.theme);
+renderAll();
+window.addEventListener("load",()=>{ typesetDynamicMath(); });
+</script>
+</body>
+</html>
