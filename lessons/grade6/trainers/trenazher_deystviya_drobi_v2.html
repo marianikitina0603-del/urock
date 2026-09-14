@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Действия по шагам — тренажёр</title>
+<script>
+window.MathJax = {
+  tex: {inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']]},
+  svg: {fontCache: 'global'}
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://unpkg.com/mathlive"></script>
+<style>
+:root{
+  --bg:#f6f8fb; --card:#ffffff; --ink:#253047; --muted:#667085;
+  --accent:#5b6ee1; --accent2:#eef1ff; --ok:#2f7d63; --okbg:#edf8f3;
+  --soft:#f1f4f8; --warn:#9a6b1f; --warnbg:#fff8e8; --border:#dfe5ee;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:Inter,Segoe UI,Arial,sans-serif; background:var(--bg); color:var(--ink);
+}
+.app{max-width:1100px;margin:auto;padding:22px}
+.top{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px
+}
+.brand h1{font-size:24px;margin:0 0 4px}
+.brand p{margin:0;color:var(--muted);font-size:14px}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+.nav button,.ghost,.primary,.hintBtn{
+  border:0;border-radius:12px;padding:11px 16px;font-size:15px;cursor:pointer;
+}
+.nav button{background:var(--soft);color:var(--ink)}
+.nav button.active{background:var(--accent);color:white}
+.page{display:none}
+.page.active{display:block}
+.hero{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:22px;box-shadow:0 8px 30px rgba(30,41,59,.05);margin-bottom:16px
+}
+.heroTop{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.badge{
+  display:inline-block;background:var(--accent2);color:var(--accent);padding:7px 11px;
+  border-radius:999px;font-size:13px;font-weight:700
+}
+.expr{
+  font-size:27px;line-height:1.45;margin:20px 0 8px;overflow-x:auto;padding:6px 2px
+}
+.calm{
+  background:#f7fbff;border:1px solid #d9e9f7;border-radius:14px;padding:12px 14px;
+  color:#43556b;font-size:14px;max-width:360px
+}
+.progressWrap{margin:14px 0 4px}
+.progressText{font-size:13px;color:var(--muted);margin-bottom:7px}
+.bar{height:8px;background:#e8edf4;border-radius:99px;overflow:hidden}
+.bar > div{height:100%;background:var(--accent);width:0%;transition:.3s}
+.steps{display:grid;gap:12px}
+.step{
+  background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;
+  opacity:.52;pointer-events:none;transition:.2s
+}
+.step.active{opacity:1;pointer-events:auto;border-color:#bdc8ff;box-shadow:0 6px 24px rgba(91,110,225,.08)}
+.step.done{opacity:1;pointer-events:auto;border-color:#cde7dc}
+.stepHead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.num{
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--soft);
+  font-weight:700
+}
+.step.active .num{background:var(--accent2);color:var(--accent)}
+.step.done .num{background:var(--okbg);color:var(--ok)}
+.step h3{margin:0;font-size:17px}
+.task{font-size:21px;margin:10px 0 14px;overflow-x:auto}
+.answerRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+math-field{
+  min-width:210px;max-width:360px;flex:1;border:1.5px solid #cfd7e3;border-radius:12px;
+  padding:10px 13px;font-size:20px;outline:none;background:white;
+  --caret-color: var(--accent);
+  --selection-background-color: rgba(91,110,225,.16);
+  --contains-highlight-background-color: transparent;
+}
+math-field:focus-within{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,110,225,.10)
+}
+math-field[disabled]{background:#f8fafc;color:var(--ink)}
+.fracNote{font-size:12px;color:var(--muted);margin-top:6px}
+.primary{background:var(--accent);color:white;font-weight:700}
+.hintBtn,.ghost{background:var(--soft);color:var(--ink)}
+.feedback{margin-top:10px;font-size:14px;min-height:20px}
+.feedback.ok{color:var(--ok)}
+.feedback.soft{color:var(--warn)}
+.carried{
+  display:inline-flex;align-items:center;gap:6px;background:var(--okbg);color:var(--ok);
+  border-radius:10px;padding:5px 9px;font-weight:700
+}
+.hint{
+  display:none;margin-top:10px;background:var(--warnbg);border-radius:12px;padding:10px 12px;
+  color:#6d5428;font-size:14px
+}
+.hint.show{display:block}
+.doneBox{
+  display:none;background:var(--okbg);border:1px solid #cde7dc;border-radius:18px;
+  padding:18px;margin-top:14px
+}
+.doneBox.show{display:block}
+.doneBox h2{margin:0 0 7px;color:var(--ok)}
+.small{font-size:13px;color:var(--muted)}
+.footerNav{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+@media (max-width:700px){
+  .app{padding:12px}.top{align-items:flex-start;flex-direction:column}
+  .expr{font-size:21px}.task{font-size:18px}
+  .nav{width:100%}.nav button{flex:1}
+}
+@media print{
+  .nav,.footerNav,.calm,.hintBtn,.primary{display:none!important}
+  .page{display:block!important;page-break-after:always}
+  .step{opacity:1!important;pointer-events:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">
+      <h1>Действия по шагам</h1>
+      <p>Без таймера и без штрафов: решаем только один маленький шаг за раз.</p>
+    </div>
+    <div class="nav" id="nav"></div>
+  </div>
+  <div id="pages"></div>
+</div>
+
+<script>
+const examples = [
+{
+  title:"Пример 1",
+  latex:String.raw`\frac{0{,}125:0{,}25+1\frac{9}{16}:2{,}5}{(10-22:2{,}3)\cdot0{,}46+1{,}6}+\left(\frac{17}{20}+1{,}9\right)\cdot0{,}5`,
+  final:"2",
+  steps:[
+    {task:String.raw`0{,}125:0{,}25`, ans:"0.5", hint:"Деление на 0,25 удобно понимать как деление на 1/4."},
+    {task:String.raw`1\frac{9}{16}:2{,}5`, ans:"0.625", hint:"Смешанное число можно сначала превратить в неправильную дробь: 1 9/16 = 25/16."},
+    {task:(v)=>String.raw`${fmt(v[0])}+${fmt(v[1])}`, ans:"1.125", hint:"Это числитель большой дроби. Сложи два уже найденных результата."},
+    {task:String.raw`22:2{,}3`, ans:String(220/23), hint:"Можно умножить делимое и делитель на 10: 220 : 23."},
+    {task:(v)=>String.raw`10-${fmt(v[3])}`, ans:String(10-220/23), hint:"Здесь нормально получить дробь. Можно ввести 10/23."},
+    {task:(v)=>String.raw`${fmt(v[4])}\cdot0{,}46`, ans:"0.2", hint:"0,46 = 46/100 = 23/50. Дроби здесь хорошо сокращаются."},
+    {task:(v)=>String.raw`${fmt(v[5])}+1{,}6`, ans:"1.8", hint:"Это знаменатель большой дроби."},
+    {task:(v)=>String.raw`${fmt(v[2])}:${fmt(v[6])}`, ans:"0.625", hint:"Теперь делим числитель большой дроби на знаменатель."},
+    {task:String.raw`\frac{17}{20}+1{,}9`, ans:"2.75", hint:"17/20 = 0,85."},
+    {task:(v)=>String.raw`${fmt(v[8])}\cdot0{,}5`, ans:"1.375", hint:"Умножение на 0,5 — это половина числа."},
+    {task:(v)=>String.raw`${fmt(v[7])}+${fmt(v[9])}`, ans:"2", hint:"Последний шаг — сложить две части выражения."}
+  ]
+},
+{
+  title:"Пример 2",
+  latex:String.raw`\left(-13{,}6+5{,}1\right)\cdot1\frac{3}{17}+\left(2\frac{7}{23}-1\frac{45}{46}\right):1\frac{7}{23}`,
+  final:"-9.75",
+  steps:[
+    {task:String.raw`-13{,}6+5{,}1`, ans:"-8.5", hint:"У чисел разные знаки: вычти модули и оставь знак числа с большим модулем."},
+    {task:String.raw`1\frac{3}{17}`, ans:String(20/17), hint:"1 3/17 = (17+3)/17 = 20/17.", label:"Переведи в неправильную дробь"},
+    {task:(v)=>String.raw`${fmt(v[0])}\cdot${fmt(v[1])}`, ans:"-10", hint:"Можно представить -8,5 как -17/2 — сокращение получится сразу."},
+    {task:String.raw`2\frac{7}{23}-1\frac{45}{46}`, ans:String(15/46), hint:"Удобно привести к знаменателю 46: 2 7/23 = 2 14/46."},
+    {task:String.raw`1\frac{7}{23}`, ans:String(30/23), hint:"1 7/23 = 30/23.", label:"Переведи делитель в неправильную дробь"},
+    {task:(v)=>String.raw`${fmt(v[3])}:${fmt(v[4])}`, ans:"0.25", hint:"Деление на дробь замени умножением на обратную."},
+    {task:(v)=>String.raw`${fmt(v[2])}+${fmt(v[5])}`, ans:"-9.75", hint:"Последний шаг: -10 + 0,25."}
+  ]
+},
+{
+  title:"Пример 3",
+  latex:String.raw`\frac{-2\frac{2}{11}\cdot4{,}125+1{,}6\cdot3\frac{3}{4}}{9-5\frac{5}{6}\cdot2\frac{4}{7}}`,
+  final:"0.5",
+  steps:[
+    {task:String.raw`-2\frac{2}{11}\cdot4{,}125`, ans:"-9", hint:"-2 2/11 = -24/11, а 4,125 = 33/8. После сокращения считать легче."},
+    {task:String.raw`1{,}6\cdot3\frac{3}{4}`, ans:"6", hint:"3 3/4 = 15/4, а 1,6 = 8/5."},
+    {task:(v)=>String.raw`${fmt(v[0])}+${fmt(v[1])}`, ans:"-3", hint:"Это числитель большой дроби."},
+    {task:String.raw`5\frac{5}{6}\cdot2\frac{4}{7}`, ans:"15", hint:"5 5/6 = 35/6, 2 4/7 = 18/7. Сначала сократи множители."},
+    {task:(v)=>String.raw`9-${fmt(v[3])}`, ans:"-6", hint:"Это знаменатель большой дроби."},
+    {task:(v)=>String.raw`${fmt(v[2])}:${fmt(v[4])}`, ans:"0.5", hint:"Минус делим на минус — получаем плюс."}
+  ]
+}
+];
+
+function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
+function decimalToFraction(x){
+  if(!Number.isFinite(x)) return String(x);
+  if(Math.abs(x-Math.round(x))<1e-10) return String(Math.round(x));
+  const sign=x<0?-1:1; x=Math.abs(x);
+  let bestN=0,bestD=1,bestErr=Infinity;
+  for(let d=1;d<=1000;d++){
+    const n=Math.round(x*d), err=Math.abs(x-n/d);
+    if(err<bestErr){bestErr=err;bestN=n;bestD=d}
+    if(err<1e-10) break;
+  }
+  const g=gcd(bestN,bestD);
+  return {n:sign*(bestN/g), d:bestD/g};
+}
+function fmt(x){
+  if(x===undefined || x===null || x==="") return "?";
+  const n=parseFloat(x);
+  if(!Number.isFinite(n)) return "?";
+  if(Math.abs(n-Math.round(n))<1e-10) return String(Math.round(n));
+  const f=decimalToFraction(n);
+  const sign=f.n<0 ? "-" : "";
+  return `${sign}\\frac{${Math.abs(f.n)}}{${f.d}}`;
+}
+function replaceLatexFractions(s){
+  while(s.includes("\\frac")){
+    const i=s.lastIndexOf("\\frac");
+    const a0=s.indexOf("{",i);
+    if(a0<0) break;
+    let depth=0,a1=-1;
+    for(let j=a0;j<s.length;j++){
+      if(s[j]==="{") depth++;
+      if(s[j]==="}"){depth--;if(depth===0){a1=j;break}}
+    }
+    if(a1<0) break;
+    const b0=s.indexOf("{",a1+1);
+    if(b0<0) break;
+    depth=0; let b1=-1;
+    for(let j=b0;j<s.length;j++){
+      if(s[j]==="{") depth++;
+      if(s[j]==="}"){depth--;if(depth===0){b1=j;break}}
+    }
+    if(b1<0) break;
+    const num=s.slice(a0+1,a1), den=s.slice(b0+1,b1);
+    s=s.slice(0,i)+`((${num})/(${den}))`+s.slice(b1+1);
+  }
+  return s;
+}
+function parseVal(raw){
+  if(raw===undefined || raw===null) return NaN;
+  let s=String(raw).trim();
+  if(!s) return NaN;
+  s=s.replace(/\\left|\\right/g,"")
+     .replace(/\\,/g,"")
+     .replace(/\{,\}/g,".")
+     .replace(/,/g,".")
+     .replace(/−/g,"-")
+     .replace(/\\operatorname\{[^}]*\}/g,"")
+     .replace(/\\text\{[^}]*\}/g,"");
+  // Смешанное число из MathLive: 1\frac{3}{17} или -2\frac{2}{11}
+  let mm=s.match(/^(-?\d+)\s*\\frac\{(-?\d+(?:\.\d+)?)\}\{(-?\d+(?:\.\d+)?)\}$/);
+  if(mm){
+    const w=Number(mm[1]), n=Number(mm[2]), d=Number(mm[3]);
+    if(!d) return NaN;
+    return w<0 ? w-Math.abs(n/d) : w+n/d;
+  }
+  s=replaceLatexFractions(s);
+  s=s.replace(/\{/g,"(").replace(/\}/g,")")
+     .replace(/\\cdot|\\times/g,"*")
+     .replace(/:/g,"/")
+     .replace(/\s+/g,"");
+  if(!/^[0-9+\-*/().]+$/.test(s)) return NaN;
+  try{
+    const v=Function('"use strict";return ('+s+')')();
+    return Number.isFinite(v)?v:NaN;
+  }catch(e){ return NaN; }
+}
+function eq(a,b){return Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<1e-7}
+function typeset(el){ if(window.MathJax?.typesetPromise) MathJax.typesetPromise([el]); }
+
+const pagesEl=document.getElementById('pages'), navEl=document.getElementById('nav');
+
+examples.forEach((ex,ei)=>{
+  const nb=document.createElement('button');
+  nb.textContent=String(ei+1); nb.onclick=()=>showPage(ei); if(ei===0)nb.classList.add('active');
+  navEl.appendChild(nb);
+
+  const p=document.createElement('section'); p.className='page'+(ei===0?' active':''); p.dataset.page=ei;
+  p.innerHTML=`
+    <div class="hero">
+      <div class="heroTop">
+        <div style="flex:1;min-width:260px">
+          <span class="badge">${ex.title}</span>
+          <div class="expr">\\[${ex.latex}\\]</div>
+          <div class="progressWrap"><div class="progressText">Выполнено: <span class="pc">0</span> из ${ex.steps.length} шагов</div>
+          <div class="bar"><div></div></div></div>
+        </div>
+        <div class="calm">
+          <b>Можно решать спокойно.</b><br>
+          Ошибка здесь ничего не портит: предыдущие верные шаги сохраняются, а подсказку можно открыть в любой момент.
+        </div>
+      </div>
+    </div>
+    <div class="steps"></div>
+    <div class="doneBox"><h2>Готово ✓</h2><div>Ты дошёл до ответа: <b class="finalAnswer"></b></div>
+      <div class="small" style="margin-top:6px">Все промежуточные действия сохранены — можно вернуться и посмотреть ход решения.</div>
+    </div>
+    <div class="footerNav">
+      <button class="ghost prev">← Предыдущий пример</button>
+      <button class="ghost next">Следующий пример →</button>
+    </div>`;
+  pagesEl.appendChild(p);
+
+  const stepsEl=p.querySelector('.steps');
+  ex.steps.forEach((st,si)=>{
+    const s=document.createElement('div'); s.className='step'+(si===0?' active':''); s.dataset.step=si;
+    s.innerHTML=`
+      <div class="stepHead"><div class="num">${si+1}</div><h3>${st.label||'Выполни действие'}</h3></div>
+      <div class="task"></div>
+      <div class="answerRow">
+        <math-field virtual-keyboard-mode="off" placeholder="Например: 0,5 или 1/2"></math-field>
+        <button class="primary">Проверить</button>
+        <button class="hintBtn">Подсказка</button>
+      </div>
+      <div class="fracNote">Набери <b>/</b> — дробь сразу станет обычной, с числителем и знаменателем.</div><div class="feedback"></div>
+      <div class="hint">${st.hint}</div>`;
+    stepsEl.appendChild(s);
+    const renderTask=()=>{
+      const vals=ex._vals||[];
+      const tx=typeof st.task==='function'?st.task(vals):st.task;
+      s.querySelector('.task').innerHTML='\\('+tx+'\\)';
+      typeset(s.querySelector('.task'));
+    };
+    st._render=renderTask; renderTask();
+
+    const input=s.querySelector('math-field'), fb=s.querySelector('.feedback');
+    input.setAttribute('smart-mode','true');
+    const check=()=>{
+      const got=parseVal(input.value), want=parseVal(st.ans);
+      if(eq(got,want)){
+        ex._vals=ex._vals||[]; ex._vals[si]=String(want);
+        s.classList.remove('active'); s.classList.add('done');
+        fb.className='feedback ok'; fb.innerHTML='Верно ✓ Этот результат подставится дальше автоматически.';
+        input.disabled=true; s.querySelector('.primary').disabled=true;
+        if(si+1<ex.steps.length){
+          const ns=stepsEl.children[si+1]; ns.classList.add('active');
+          ex.steps[si+1]._render();
+          setTimeout(()=>ns.scrollIntoView({behavior:'smooth',block:'center'}),120);
+        }else{
+          p.querySelector('.doneBox').classList.add('show');
+          p.querySelector('.finalAnswer').textContent=String(ex.final).replace('.',',');
+        }
+        updateProgress(ei);
+      }else{
+        st.tries=(st.tries||0)+1;
+        fb.className='feedback soft';
+        fb.textContent=st.tries<2
+          ? 'Почти. Проверь только это действие — всё остальное сейчас трогать не нужно.'
+          : 'Можно открыть подсказку. Ошибка не засчитывается и не влияет на результат.';
+      }
+    };
+    s.querySelector('.primary').onclick=check;
+    input.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+    s.querySelector('.hintBtn').onclick=()=>s.querySelector('.hint').classList.toggle('show');
+  });
+  p.querySelector('.prev').onclick=()=>showPage(Math.max(0,ei-1));
+  p.querySelector('.next').onclick=()=>showPage(Math.min(examples.length-1,ei+1));
+  p.querySelector('.prev').style.visibility=ei===0?'hidden':'visible';
+  p.querySelector('.next').style.visibility=ei===examples.length-1?'hidden':'visible';
+});
+
+function updateProgress(i){
+  const ex=examples[i], p=document.querySelector(`[data-page="${i}"]`);
+  const done=(ex._vals||[]).filter(v=>v!==undefined).length;
+  p.querySelector('.pc').textContent=done;
+  p.querySelector('.bar > div').style.width=(done/ex.steps.length*100)+'%';
+}
+function showPage(i){
+  document.querySelectorAll('.page').forEach((p,j)=>p.classList.toggle('active',j===i));
+  document.querySelectorAll('.nav button').forEach((b,j)=>b.classList.toggle('active',j===i));
+  window.scrollTo({top:0,behavior:'smooth'});
+  typeset(document.querySelector(`[data-page="${i}"]`));
+}
+setTimeout(()=>typeset(document.body),500);
+</script>
+</body>
+</html>
