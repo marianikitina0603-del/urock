@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Дело №10. Теория случайностей</title>
+<style>
+:root{
+  --ink:#f7f0dc; --paper:#efe4c8; --dark:#13231f; --dark2:#1d3029;
+  --gold:#d3ad62; --gold2:#f0d18c; --red:#9d4e45; --ok:#8fb59b;
+  --panel:rgba(18,30,27,.90); --shadow:0 18px 50px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0d1714;color:var(--ink);font-family:Georgia,"Times New Roman",serif}
+button,input{font:inherit}
+button{cursor:pointer}
+#app{min-height:100vh}
+.screen{
+  min-height:100vh; position:relative; display:none; overflow:hidden;
+  background:#10201b center/cover no-repeat;
+}
+.screen.active{display:flex;flex-direction:column}
+.screen::before{
+  content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,12,10,.80),rgba(5,12,10,.36),rgba(5,12,10,.70));
+  pointer-events:none
+}
+.layer{position:relative;z-index:2}
+.topbar{
+  display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(8,16,14,.72);
+  border-bottom:1px solid rgba(211,173,98,.32);backdrop-filter:blur(8px)
+}
+.brand{font-weight:700;letter-spacing:.04em;color:var(--gold2)}
+.progress{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:14px}
+.pill{padding:7px 11px;border:1px solid rgba(240,209,140,.35);border-radius:999px;background:rgba(255,255,255,.05)}
+.content{width:min(1180px,94vw);margin:auto;padding:32px 0 42px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:34px;align-items:center;min-height:70vh}
+.hero h1{font-size:clamp(42px,6vw,86px);line-height:.98;margin:.1em 0 .18em;text-shadow:0 5px 24px #000}
+.kicker{text-transform:uppercase;letter-spacing:.22em;color:var(--gold2);font-size:13px}
+.lead{font-size:clamp(18px,2vw,25px);line-height:1.5;max-width:760px}
+.character{max-width:100%;max-height:70vh;object-fit:contain;filter:drop-shadow(0 20px 22px rgba(0,0,0,.45))}
+.asset-button{border:0;background:transparent;padding:0}
+.asset-button img{height:64px;max-width:250px;object-fit:contain;transition:.2s transform,.2s filter}
+.asset-button:hover img{transform:translateY(-2px) scale(1.02);filter:brightness(1.08)}
+.fallback-btn,.text-btn{
+  border:1px solid #c9a55d;background:linear-gradient(#405146,#27362f);color:#fff4d8;
+  border-radius:14px;padding:12px 18px;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.25)
+}
+.text-btn.secondary{background:rgba(255,255,255,.08)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.panel{
+  background:var(--panel);border:1px solid rgba(240,209,140,.30);border-radius:22px;
+  box-shadow:var(--shadow);padding:24px;backdrop-filter:blur(8px)
+}
+.paper{
+  background:linear-gradient(#f4ecd6,#e9ddbf);color:#29251e;border-radius:18px;padding:24px;
+  box-shadow:0 16px 44px rgba(0,0,0,.4);border:1px solid #d4bd86
+}
+.paper h2,.paper h3{color:#282117}
+.case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+.case-card{
+  min-height:155px;border:1px solid rgba(240,209,140,.35);border-radius:18px;padding:18px;
+  background:rgba(9,18,16,.72);position:relative;transition:.2s transform,.2s border-color
+}
+.case-card.open{cursor:pointer}
+.case-card.open:hover{transform:translateY(-3px);border-color:var(--gold2)}
+.case-card.locked{opacity:.52;filter:saturate(.5)}
+.case-card.done{border-color:#8fb59b;background:rgba(33,71,51,.68)}
+.case-card img.icon{width:44px;height:44px;object-fit:contain;position:absolute;right:14px;top:14px}
+.case-card h3{margin:0 50px 8px 0;color:var(--gold2)}
+.case-card p{margin:0;color:#dfd7c5;line-height:1.35}
+.chapter-head{display:flex;gap:18px;align-items:center;margin-bottom:20px}
+.chapter-head img{width:72px;height:72px;object-fit:contain}
+.task-wrap{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+.task-title{font-size:clamp(24px,3vw,36px);margin:0 0 8px;color:#332718}
+.task-text{font-size:20px;line-height:1.52}
+.task-meta{color:#6e5c3e;font-size:14px;margin-bottom:12px}
+.answer-line{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.answer-line input{
+  width:180px;border:2px solid #ad9668;background:#fffdf5;color:#222;padding:12px 14px;border-radius:12px;
+  font-size:22px;outline:none
+}
+.answer-line input:focus{border-color:#735d32}
+.feedback{min-height:27px;margin-top:12px;font-weight:700}
+.feedback.ok{color:#2d6a45}.feedback.bad{color:#9d3f35}
+.side{display:grid;gap:14px}
+.cluebox{display:flex;gap:12px;align-items:flex-start}
+.cluebox img{width:54px;height:54px;object-fit:contain}
+.mini{font-size:14px;line-height:1.4;color:#ddd3bf}
+.formula{font-size:24px;text-align:center;padding:12px;background:rgba(255,255,255,.06);border-radius:14px}
+.visual{margin:16px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.token{
+  width:54px;height:54px;display:grid;place-items:center;border-radius:12px;background:#f4ead0;color:#1f1b14;
+  border:2px solid #cdb47a;font-size:28px;box-shadow:0 4px 9px rgba(0,0,0,.18)
+}
+.token.small{width:38px;height:38px;font-size:18px;border-radius:9px}
+.token.blue{background:#b7d7e7}.token.red{background:#e6aaa3}.token.green{background:#b8d2aa}
+.token.yellow{background:#edd98e}.token.black{background:#262626;color:#fff}.token.purple{background:#c8b0da}
+.diagram-img{display:block;max-width:min(650px,100%);max-height:300px;margin:14px auto;border-radius:12px;background:#fff;padding:9px}
+.dice-grid{display:grid;grid-template-columns:44px repeat(6,44px);gap:4px;justify-content:center;margin:16px auto}
+.dice-grid div{height:40px;display:grid;place-items:center;border-radius:7px;background:#f1e6cb;color:#292118;font-weight:700}
+.dice-grid .hit{background:#d2b366}
+.scratch{
+  position:fixed;right:18px;bottom:18px;width:min(520px,calc(100vw - 36px));height:360px;background:#f6efd9;
+  color:#1f1d18;border:2px solid #b79c61;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.55);
+  z-index:30;display:none;overflow:hidden
+}
+.scratch.open{display:block}
+.scratch-head{height:45px;display:flex;align-items:center;padding:0 12px;background:#332f27;color:#fff}
+.scratch-head button{margin-left:auto}
+#scratchCanvas{width:100%;height:270px;touch-action:none;background:
+ linear-gradient(#d8d0bb 1px,transparent 1px),linear-gradient(90deg,#d8d0bb 1px,transparent 1px),#fffdf7;
+ background-size:24px 24px}
+.scratch-tools{display:flex;gap:8px;padding:7px 10px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);display:none;place-items:center;z-index:40;padding:20px}
+.modal.open{display:grid}
+.modal-card{width:min(650px,96vw);background:#efe4c8;color:#252019;padding:24px;border-radius:22px;border:2px solid #c8a96a}
+.modal-card h2{margin-top:0}
+.map-title{text-align:center;margin-bottom:20px}
+.location-step{font-size:13px;color:#cdbb98}
+.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}
+.result-item{padding:12px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.result-item.warn{border-color:#d5a35d}
+img.final-crystal{max-height:250px;max-width:80%;object-fit:contain;filter:drop-shadow(0 0 35px rgba(240,209,140,.7))}
+@media(max-width:850px){
+ .hero,.task-wrap{grid-template-columns:1fr}.hero{padding-top:40px}.hero .character{max-height:38vh}
+ .case-grid{grid-template-columns:1fr 1fr}.side{grid-row:1}.content{padding-top:18px}
+}
+@media(max-width:560px){.case-grid,.result-grid{grid-template-columns:1fr}.topbar{padding:10px}.progress .pill:first-child{display:none}.paper{padding:17px}.task-text{font-size:18px}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<section class="screen active" id="intro" style="background-image:url('Локация 1.png')">
+  <div class="content layer hero">
+    <div>
+      <div class="kicker">ОГЭ · задание №10 · вероятность</div>
+      <h1>Дело №10.<br>Теория случайностей</h1>
+      <p class="lead">Из музея исчез «Кристалл случая». Камеры молчали ровно десять минут. Остались только случайные события, журналы опытов и схемы. Пройди все 18 прототипов №10 и восстанови дело.</p>
+      <button class="asset-button" onclick="startGame()"><img src="01_Начать.png" alt="Начать"></button>
+    </div>
+    <img class="character" src="Персонаж 1.png" alt="Главный детектив">
+  </div>
+</section>
+
+<section class="screen" id="story" style="background-image:url('Локация 2.png')">
+  <div class="content layer hero">
+    <div class="panel">
+      <div class="kicker">Срочный вызов</div>
+      <h2 style="font-size:42px;margin:.2em 0;color:var(--gold2)">Кристалл исчез.</h2>
+      <p class="lead">Я веду это дело, а ты будешь аналитиком. У нас шесть локаций. В каждой — несколько математических улик. Ошибка не заканчивает расследование: она открывает подсказку, а прототип попадёт в список для повторения.</p>
+      <div class="row">
+        <button class="asset-button" onclick="showScreen('map')"><img src="02_Дальше.png" alt="Дальше"></button>
+        <button class="text-btn secondary" onclick="openRules()">Правила расследования</button>
+      </div>
+    </div>
+    <img class="character" src="Персонаж 2.png" alt="Помощник">
+  </div>
+</section>
+
+<section class="screen" id="map" style="background-image:url('Локация 3.png')">
+ <div class="topbar layer">
+   <div class="brand">ДЕЛО №10</div>
+   <div class="progress"><span class="pill" id="mapClues">Улики: 0/6</span><span class="pill" id="mapProgress">Прототипы: 0/18</span></div>
+ </div>
+ <div class="content layer">
+   <div class="map-title">
+    <div class="kicker">Карта расследования</div>
+    <h2 style="font-size:42px;margin:8px 0">Выбери открытую локацию</h2>
+   </div>
+   <div class="case-grid" id="chapterGrid"></div>
+ </div>
+</section>
+
+<section class="screen" id="chapter" style="background-image:url('Локация 4.png')">
+ <div class="topbar layer">
+   <div class="brand">ДЕЛО №10</div>
+   <div class="progress"><span class="pill" id="chapterName"></span><span class="pill" id="chapterCount"></span></div>
+ </div>
+ <div class="content layer">
+   <div class="panel">
+    <div class="chapter-head">
+      <img src="Папка_дела.png" alt="">
+      <div><div class="kicker" id="chapterKicker"></div><h2 style="margin:6px 0;font-size:38px" id="chapterTitle"></h2></div>
+    </div>
+    <p class="lead" id="chapterText"></p>
+    <div class="row">
+      <button class="asset-button" onclick="openNextTask()"><img src="02_Дальше.png" alt="Дальше"></button>
+      <button class="asset-button" onclick="showScreen('map')"><img src="06_К_карте.png" alt="К карте"></button>
+    </div>
+   </div>
+ </div>
+</section>
+
+<section class="screen" id="task" style="background-image:url('Локация 4.png')">
+ <div class="topbar layer">
+  <div class="brand">ДЕЛО №10</div>
+  <div class="progress"><span class="pill" id="taskChapter"></span><span class="pill" id="taskProgress"></span></div>
+ </div>
+ <div class="content layer">
+  <div class="task-wrap">
+   <div class="paper">
+    <div class="task-meta" id="taskMeta"></div>
+    <h2 class="task-title" id="taskTitle"></h2>
+    <div class="task-text" id="taskText"></div>
+    <div id="taskVisual"></div>
+    <div class="answer-line">
+      <label for="answer"><b>Ответ:</b></label>
+      <input id="answer" inputmode="decimal" autocomplete="off" placeholder="0,00">
+      <button class="asset-button" onclick="checkAnswer()"><img src="03_Проверить.png" alt="Проверить"></button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+   </div>
+   <aside class="side">
+    <div class="panel cluebox">
+      <img src="Значок_улика.png" alt="">
+      <div><b>Досье аналитика</b><div class="mini" id="skillText"></div></div>
+    </div>
+    <div class="panel">
+      <div class="formula" id="formulaBox">P(A) = m / n</div>
+    </div>
+    <div class="row">
+      <button class="asset-button" onclick="showHint()"><img src="04_Подсказка.png" alt="Подсказка"></button>
+      <button class="asset-button" onclick="toggleScratch()"><img src="05_Черновик.png" alt="Черновик"></button>
+      <button class="asset-button" onclick="showScreen('map')"><img src="06_К_карте.png" alt="К карте"></button>
+    </div>
+   </aside>
+  </div>
+ </div>
+</section>
+
+<section class="screen" id="clue" style="background-image:url('Локация 7.png')">
+ <div class="content layer hero">
+  <div class="panel">
+   <div class="kicker">Локация закрыта</div>
+   <h2 style="font-size:44px;color:var(--gold2);margin:.2em 0">Улика найдена</h2>
+   <p class="lead" id="clueText"></p>
+   <div class="row">
+     <img src="Конверт_открытый.png" alt="" style="height:120px;object-fit:contain">
+     <button class="asset-button" onclick="finishChapter()"><img src="02_Дальше.png" alt="Дальше"></button>
+   </div>
+  </div>
+  <img class="character" src="Персонаж 1.png" alt="">
+ </div>
+</section>
+
+<section class="screen" id="final" style="background-image:url('Локация 8.png')">
+ <div class="content layer hero">
+  <div class="panel">
+   <div class="kicker">Расследование завершено</div>
+   <h2 style="font-size:48px;color:var(--gold2);margin:.2em 0">Кристалл случая найден</h2>
+   <p class="lead">Все 18 прототипов №10 проверены. Ниже — досье с результатами.</p>
+   <div class="result-grid" id="resultGrid"></div>
+   <div class="row">
+     <button class="asset-button" onclick="repeatErrors()"><img src="07_Повторить_ошибки.png" alt="Повторить ошибки"></button>
+     <button class="text-btn secondary" onclick="resetGame()">Начать заново</button>
+   </div>
+  </div>
+  <div style="text-align:center">
+   <img id="safeImg" src="Сейф_открытый.png" alt="Открытый сейф" style="max-width:90%;max-height:42vh;object-fit:contain">
+   <br><img class="final-crystal" src="Кристалл_случая.png" alt="Кристалл случая">
+  </div>
+ </div>
+</section>
+
+<div class="scratch" id="scratch">
+ <div class="scratch-head"><b>Черновик</b><button class="text-btn secondary" onclick="toggleScratch()">×</button></div>
+ <canvas id="scratchCanvas"></canvas>
+ <div class="scratch-tools"><button class="text-btn secondary" onclick="clearScratch()">Очистить</button><span class="mini" style="color:#333">Пиши мышью или стилусом</span></div>
+</div>
+
+<div class="modal" id="modal">
+ <div class="modal-card">
+  <h2 id="modalTitle">Подсказка</h2>
+  <div id="modalText"></div>
+  <div style="margin-top:18px"><button class="fallback-btn" onclick="closeModal()">Понятно</button></div>
+ </div>
+</div>
+
+</div>
+
+<script>
+const chapters = [
+ {title:'Кабинет дежурного', kicker:'Глава 1 · Классическая вероятность', bg:'Локация 4.png', tasks:[1,2,3],
+  text:'Охранная система сохранила первые записи о случайном выборе. Определи число всех и благоприятных исходов.',
+  clue:'Улика 1. Система действительно работала со случайным выбором: каждый исход должен оцениваться среди всех равновозможных вариантов.'},
+ {title:'Комната хранения', kicker:'Глава 2 · Случайный выбор предметов', bg:'Локация 5.png', tasks:[4,5,6,7],
+  text:'В хранилище всё перемешано: подарки, жеребьёвка, билеты и маркеры. Здесь важно точно считать благоприятные исходы.',
+  clue:'Улика 2. Подозреваемый оставил ложные предметы. Теперь мы умеем отделять благоприятные исходы от всех возможных.'},
+ {title:'Канцелярская лаборатория', kicker:'Глава 3 · «Или» и выбор без возвращения', bg:'Локация 6.png', tasks:[8,9],
+  text:'След приводит к канцтоварам. Одно событие объединяет несколько случаев, а после извлечения предмета состав множества меняется.',
+  clue:'Улика 3. После первого выбора ситуация изменилась. Значит, в дальнейших расчётах нужно использовать уже новый состав исходов.'},
+ {title:'Экспериментальная комната', kicker:'Глава 4 · Серии испытаний', bg:'Локация 4.png', tasks:[10,11],
+  text:'На столе — кубик, монета и журнал экспериментов. Восстанови данные опытов.',
+  clue:'Улика 4. Преступник проводил эксперименты и фиксировал результаты. След ведёт к экспертной лаборатории.'},
+ {title:'Экспертная лаборатория', kicker:'Глава 5 · Статистика и противоположное событие', bg:'Локация 5.png', tasks:[12,13],
+  text:'Здесь вероятности оценивают по наблюдениям и находят через противоположные события.',
+  clue:'Улика 5. Часть нужных вероятностей легче получить через противоположное событие: 1 − P(A).'},
+ {title:'Секретный архив', kicker:'Глава 6 · Диаграммы и дерево опыта', bg:'Локация 6.png', tasks:[14,15,16,17,18],
+  text:'Финальная папка содержит диаграммы Эйлера–Венна и дерево случайного опыта. Это код к сейфу.',
+  clue:'Улика 6. Код восстановлен. Последнее дерево событий указывает прямо на сейф с Кристаллом случая.'}
+];
+
+const tasks = {
+1:{title:'Прототип 10.1',skill:'Равновозможные элементарные события.',text:'В случайном опыте N = 30 равновозможных элементарных событий, из которых N(A) = 27 благоприятствуют событию A. Вычислите вероятность события A.',answer:.9,hint:'Используй P(A)=N(A)/N. Благоприятных исходов 27, всего 30.',formula:'P(A)=N(A)/N',visual:'events'},
+2:{title:'Прототип 10.2',skill:'Выбор одного предмета из нескольких.',text:'У бабушки 10 чашек: 1 с красными цветами, остальные с синими. Бабушка наливает чай в случайно выбранную чашку. Найдите вероятность того, что это будет чашка с синими цветами.',answer:.9,hint:'Сначала найди количество синих чашек: 10 − 1.',formula:'P = благоприятные / все',visual:'cups'},
+3:{title:'Прототип 10.3',skill:'Выбор объекта нужного типа.',text:'В фирме такси свободно 10 машин: 1 чёрная, 1 жёлтая и 8 зелёных. По вызову выехала одна из машин. Найдите вероятность того, что приедет жёлтое такси.',answer:.1,hint:'Жёлтая машина одна из десяти свободных.',formula:'P = 1/10',visual:'taxis'},
+4:{title:'Прототип 10.4',skill:'Случайное распределение подарков.',text:'Родительский комитет закупил 10 пазлов: 3 с машинами и 7 с видами городов. Подарки случайно распределяются между 10 детьми. Найдите вероятность того, что Мише достанется пазл с машиной.',answer:.3,hint:'Для Миши равновозможны все 10 подарков, подходящих — 3.',formula:'P = 3/10',visual:'gifts'},
+5:{title:'Прототип 10.5',skill:'Жеребьёвка и порядок участников.',text:'В лыжных гонках участвуют 7 спортсменов из России, 1 из Швеции и 2 из Норвегии. Порядок старта определяется жребием. Найдите вероятность того, что первым будет спортсмен из Швеции.',answer:.1,hint:'Всего спортсменов 10. Из Швеции — один.',formula:'P = 1/10',visual:'flags'},
+6:{title:'Прототип 10.6',skill:'Событие через количество подходящих вариантов.',text:'На экзамене 20 билетов, Андрей не выучил 1 из них. Найдите вероятность того, что ему попадётся выученный билет.',answer:.95,hint:'Выученных билетов 20 − 1 = 19.',formula:'P = 19/20',visual:'tickets'},
+7:{title:'Прототип 10.7',skill:'Выбор предмета из двух групп.',text:'Под классной доской лежат 18 чёрных и 22 синих маркера. Берут случайный маркер. Найдите вероятность того, что он окажется синим.',answer:.55,hint:'Всего маркеров 18 + 22. Синих — 22.',formula:'P = 22/(18+22)',visual:'markers'},
+8:{title:'Прототип 10.8',skill:'Событие «A или B» и восстановление недостающего количества.',text:'В магазине 200 ручек: 31 красная, 25 зелёных, 38 фиолетовых, остальные синие и чёрные, их поровну. Найдите вероятность того, что случайно выбранная ручка окажется красной или чёрной.',answer:.42,hint:'Осталось 200−31−25−38=106 ручек. Чёрных 53. Благоприятных: 31+53.',formula:'P(A или B)=(mA+mB)/n',visual:'pens'},
+9:{title:'Прототип 10.9',skill:'Выбор без возвращения.',text:'В ящике 7 жёлтых и 14 зелёных карандашей. Не глядя достали два карандаша. Известно, что первый оказался зелёным. Найдите вероятность того, что второй тоже окажется зелёным.',answer:.65,hint:'После первого зелёного осталось 20 карандашей, из них 13 зелёных.',formula:'P = 13/20',visual:'pencils'},
+10:{title:'Прототип 10.10',skill:'Два броска кубика и пространство исходов.',text:'Симметричный игральный кубик бросают два раза. Найдите вероятность события «сумма выпавших очков равна 3, 4 или 5».',answer:.25,hint:'Всего 36 пар результатов. Посчитай пары с суммой 3, 4 или 5: 2+3+4.',formula:'P = благоприятные пары / 36',visual:'dice'},
+11:{title:'Прототип 10.11',skill:'Частота результата серии испытаний.',text:'Монету бросили 20 раз. Известно, что орёл выпал 9 раз. Найдите вероятность того, что при случайном выборе одного из результатов броска будет решка.',answer:.55,hint:'Решка выпала 20 − 9 = 11 раз. Отношение 11/20.',formula:'P ≈ частота = m/n',visual:'coins'},
+12:{title:'Прототип 10.12',skill:'Статистическое определение вероятности.',text:'В среднем из 50 карманных фонариков, поступивших в продажу, пять неисправных. Найдите вероятность того, что выбранный наудачу фонарик окажется исправен.',answer:.9,hint:'Исправных в среднем 50 − 5 = 45.',formula:'P ≈ 45/50',visual:'lights'},
+13:{title:'Прототип 10.13',skill:'Вероятность противоположного события.',text:'Вероятность того, что новая шариковая ручка пишет плохо или не пишет, равна 0,02. Найдите вероятность того, что ручка пишет хорошо.',answer:.98,hint:'События «пишет хорошо» и «пишет плохо» противоположны.',formula:'P(не A)=1−P(A)',visual:'opposite'},
+14:{title:'Прототип 10.14',skill:'Диаграмма Эйлера–Венна: сумма вероятностей областей.',text:'На рисунке изображена диаграмма Эйлера для событий A и B. В каждой из четырёх областей указана вероятность. Найдите вероятность события A ∪ B.',answer:.8,hint:'В объединение A ∪ B входят все области внутри хотя бы одного из кругов.',formula:'P(A∪B)=сумма нужных областей',visual:'img14'},
+15:{title:'Прототип 10.15',skill:'Диаграмма Эйлера–Венна: равновозможные точки.',text:'На рисунке изображена диаграмма Эйлера для событий A и B. Точками показаны все равновозможные элементарные события. Найдите вероятность события A ∪ B.',answer:.6,hint:'Посчитай все точки, затем точки, лежащие внутри A или B.',formula:'P=m/n',visual:'img15'},
+16:{title:'Прототип 10.16',skill:'Диаграмма: элементарные события имеют разные вероятности.',text:'На рисунке изображена диаграмма Эйлера. Около каждой точки указана её вероятность. Найдите вероятность события A.',answer:.7,hint:'Здесь точки не равновозможны. Нужно сложить вероятности всех точек, принадлежащих A.',formula:'P(A)=Σ вероятностей исходов A',visual:'img16'},
+17:{title:'Прототип 10.17',skill:'Диаграмма: количество исходов в областях.',text:'На рисунке изображена диаграмма Эйлера для событий A и B. В каждой области указано количество равновозможных исходов. Найдите вероятность события A ∪ B.',answer:.6,hint:'Сначала найди число исходов в объединении, затем общее число исходов.',formula:'P(A∪B)=m/n',visual:'img17'},
+18:{title:'Прототип 10.18',skill:'Дерево случайного опыта.',text:'На рисунке изображено дерево случайного опыта. Найдите вероятность события B.',answer:.75,hint:'К событию B ведут несколько ветвей. Вероятности соответствующих путей нужно учесть и сложить.',formula:'P(B)=сумма вероятностей путей к B',visual:'img18'}
+};
+
+let state = JSON.parse(localStorage.getItem('case10state') || 'null') || {
+  chapter:0, taskIndex:0, completed:{}, attempts:{}, errors:{}, chaptersDone:{}
+};
+
+function save(){localStorage.setItem('case10state',JSON.stringify(state))}
+function completedCount(){return Object.keys(state.completed).filter(k=>state.completed[k]).length}
+function clueCount(){return Object.keys(state.chaptersDone).filter(k=>state.chaptersDone[k]).length}
+
+function showScreen(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ window.scrollTo(0,0);
+ if(id==='map') renderMap();
+}
+
+function startGame(){showScreen('story')}
+
+function openRules(){
+ document.getElementById('modalTitle').textContent='Правила расследования';
+ document.getElementById('modalText').innerHTML='<p>Для каждого прототипа введи вероятность десятичной дробью. Запятая и точка принимаются одинаково.</p><p><b>Алгоритм:</b> определи все исходы → выдели благоприятные → составь отношение → проверь, что ответ от 0 до 1.</p><p>После ошибки можно открыть подсказку. Черновик работает мышью и стилусом.</p>';
+ document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+
+function renderMap(){
+ const grid=document.getElementById('chapterGrid'); grid.innerHTML='';
+ document.getElementById('mapClues').textContent='Улики: '+clueCount()+'/6';
+ document.getElementById('mapProgress').textContent='Прототипы: '+completedCount()+'/18';
+ chapters.forEach((c,i)=>{
+   const open=i===0 || state.chaptersDone[i-1];
+   const done=!!state.chaptersDone[i];
+   const card=document.createElement('div');
+   card.className='case-card '+(done?'done':open?'open':'locked');
+   const icon=done?'Значок_открытый_замок.png':open?'Папка_дела.png':'Значок_замок.png';
+   const numDone=c.tasks.filter(n=>state.completed[n]).length;
+   card.innerHTML='<img class="icon" src="'+icon+'" alt=""><div class="location-step">ЛОКАЦИЯ '+(i+1)+'</div><h3>'+c.title+'</h3><p>'+c.kicker+'</p><p style="margin-top:10px">'+numDone+'/'+c.tasks.length+' прототипов</p>';
+   if(open) card.onclick=()=>enterChapter(i);
+   grid.appendChild(card);
+ });
+}
+
+function enterChapter(i){
+ state.chapter=i; state.taskIndex=0; save();
+ const c=chapters[i];
+ document.getElementById('chapter').style.backgroundImage="url('"+c.bg+"')";
+ document.getElementById('chapterName').textContent='Локация '+(i+1);
+ document.getElementById('chapterCount').textContent=c.tasks.filter(n=>state.completed[n]).length+'/'+c.tasks.length;
+ document.getElementById('chapterKicker').textContent=c.kicker;
+ document.getElementById('chapterTitle').textContent=c.title;
+ document.getElementById('chapterText').textContent=c.text;
+ showScreen('chapter');
+}
+
+function openNextTask(){
+ const c=chapters[state.chapter];
+ let idx=c.tasks.findIndex(n=>!state.completed[n]);
+ if(idx<0){showClue();return}
+ state.taskIndex=idx; save(); renderTask(c.tasks[idx]); showScreen('task');
+}
+
+function renderTask(n){
+ const t=tasks[n], c=chapters[state.chapter];
+ document.getElementById('task').style.backgroundImage="url('"+c.bg+"')";
+ document.getElementById('taskChapter').textContent=c.title;
+ document.getElementById('taskProgress').textContent='Прототип '+n+' · '+completedCount()+'/18';
+ document.getElementById('taskMeta').textContent='ОГЭ №10 · исходный прототип '+n+' из 18';
+ document.getElementById('taskTitle').textContent=t.title;
+ document.getElementById('taskText').textContent=t.text;
+ document.getElementById('skillText').textContent=t.skill;
+ document.getElementById('formulaBox').textContent=t.formula;
+ document.getElementById('feedback').textContent='';
+ document.getElementById('feedback').className='feedback';
+ document.getElementById('answer').value='';
+ document.getElementById('taskVisual').innerHTML=visualHTML(t.visual);
+ setTimeout(()=>document.getElementById('answer').focus(),100);
+}
+
+function visualHTML(type){
+ if(type==='events') return '<div class="visual">'+Array.from({length:30},(_,i)=>'<span class="token small '+(i<27?'green':'red')+'">'+(i+1)+'</span>').join('')+'</div>';
+ if(type==='cups') return '<div class="visual">'+Array.from({length:10},(_,i)=>'<span class="token '+(i===0?'red':'blue')+'">☕</span>').join('')+'</div>';
+ if(type==='taxis') return '<div class="visual"><span class="token black">🚕</span><span class="token yellow">🚕</span>'+Array.from({length:8},()=>'<span class="token green">🚕</span>').join('')+'</div>';
+ if(type==='gifts') return '<div class="visual">'+Array.from({length:3},()=>'<span class="token red">🚗</span>').join('')+Array.from({length:7},()=>'<span class="token blue">🏙️</span>').join('')+'</div>';
+ if(type==='flags') return '<div class="visual">'+Array.from({length:7},()=>'<span class="token">🇷🇺</span>').join('')+'<span class="token">🇸🇪</span>'+Array.from({length:2},()=>'<span class="token">🇳🇴</span>').join('')+'</div>';
+ if(type==='tickets') return '<div class="visual">'+Array.from({length:20},(_,i)=>'<span class="token small '+(i===19?'red':'')+'">№'+(i+1)+'</span>').join('')+'</div>';
+ if(type==='markers') return '<div class="visual">'+Array.from({length:18},()=>'<span class="token small black">▌</span>').join('')+Array.from({length:22},()=>'<span class="token small blue">▌</span>').join('')+'</div>';
+ if(type==='pens') return '<div class="visual"><span class="token red">31</span><span class="token green">25</span><span class="token purple">38</span><span class="token blue">?</span><span class="token black">?</span></div>';
+ if(type==='pencils') return '<div class="visual">'+Array.from({length:7},()=>'<span class="token small yellow">✎</span>').join('')+Array.from({length:13},()=>'<span class="token small green">✎</span>').join('')+'<span class="mini" style="color:#4b3e2a;width:100%;text-align:center">Один зелёный уже извлечён → осталось 20 карандашей</span></div>';
+ if(type==='dice'){
+   let h='<div class="dice-grid"><div>+</div>';
+   for(let j=1;j<=6;j++)h+='<div>'+j+'</div>';
+   for(let i=1;i<=6;i++){h+='<div>'+i+'</div>';for(let j=1;j<=6;j++){let s=i+j;h+='<div class="'+((s===3||s===4||s===5)?'hit':'')+'">'+s+'</div>'}}
+   return h+'</div>';
+ }
+ if(type==='coins') return '<div class="visual">'+Array.from({length:9},()=>'<span class="token small">О</span>').join('')+Array.from({length:11},()=>'<span class="token small">Р</span>').join('')+'</div>';
+ if(type==='lights') return '<div class="visual">'+Array.from({length:45},()=>'<span class="token small green">💡</span>').join('')+Array.from({length:5},()=>'<span class="token small red">×</span>').join('')+'</div>';
+ if(type==='opposite') return '<div class="visual"><span class="token red">плохо<br>0,02</span><span style="font-size:34px;color:#4a3b24">↔</span><span class="token green">хорошо<br>?</span></div>';
+ if(type==='img14') return '<img class="diagram-img" src="задача 10_14.png" alt="Диаграмма к задаче 10.14">';
+ if(type==='img15') return '<img class="diagram-img" src="задача 10_15.png" alt="Диаграмма к задаче 10.15">';
+ if(type==='img16') return '<img class="diagram-img" src="задача 10_16.png" alt="Диаграмма к задаче 10.16">';
+ if(type==='img17') return '<img class="diagram-img" src="задача 10_17.png" alt="Диаграмма к задаче 10.17">';
+ if(type==='img18') return '<img class="diagram-img" src="задача 10_18.png" alt="Дерево к задаче 10.18">';
+ return '';
+}
+
+function normalize(v){return parseFloat(String(v).trim().replace(',','.'))}
+function checkAnswer(){
+ const n=chapters[state.chapter].tasks[state.taskIndex], t=tasks[n];
+ const val=normalize(document.getElementById('answer').value);
+ const fb=document.getElementById('feedback');
+ state.attempts[n]=(state.attempts[n]||0)+1;
+ if(Number.isFinite(val) && Math.abs(val-t.answer)<1e-9){
+   state.completed[n]=true; save(); fb.className='feedback ok';
+   fb.textContent='Верно. Улика подтверждена.';
+   setTimeout(()=>{
+     const c=chapters[state.chapter];
+     const next=c.tasks.findIndex(x=>!state.completed[x]);
+     if(next<0) showClue();
+     else{state.taskIndex=next;save();renderTask(c.tasks[next])}
+   },850);
+ } else {
+   state.errors[n]=true; save(); fb.className='feedback bad';
+   fb.textContent=(state.attempts[n]===1?'Пока не сходится. Определи все исходы и благоприятные.':'Есть ошибка. Открой подсказку и проверь расчёт ещё раз.');
+ }
+}
+
+function showHint(){
+ const n=chapters[state.chapter].tasks[state.taskIndex],t=tasks[n];
+ document.getElementById('modalTitle').textContent='Подсказка к '+t.title;
+ document.getElementById('modalText').innerHTML='<p>'+t.hint+'</p><p><b>Опорная запись:</b> '+t.formula+'</p>';
+ document.getElementById('modal').classList.add('open');
+}
+
+function showClue(){
+ const c=chapters[state.chapter];
+ document.getElementById('clueText').textContent=c.clue;
+ showScreen('clue');
+}
+function finishChapter(){
+ state.chaptersDone[state.chapter]=true; save();
+ if(state.chapter===chapters.length-1 && completedCount()===18) renderFinal();
+ else showScreen('map');
+}
+function renderFinal(){
+ const g=document.getElementById('resultGrid');g.innerHTML='';
+ const groups=[
+  ['Классическая вероятность',[1,2,3,4,5,6,7]],
+  ['Событие «или»',[8]],
+  ['Без возвращения',[9]],
+  ['Серии испытаний',[10,11]],
+  ['Статистика и противоположное событие',[12,13]],
+  ['Диаграммы и дерево',[14,15,16,17,18]]
+ ];
+ groups.forEach(([name,nums])=>{
+  const bad=nums.some(n=>state.errors[n]);
+  const d=document.createElement('div');d.className='result-item '+(bad?'warn':'');
+  d.innerHTML='<b>'+name+'</b><div class="mini">'+(bad?'Есть прототипы для повторения':'Пройдено без ошибок')+'</div>';
+  g.appendChild(d);
+ });
+ showScreen('final');
+}
+function repeatErrors(){
+ const nums=Object.keys(state.errors).map(Number).filter(n=>state.errors[n]);
+ if(!nums.length){alert('Ошибок для повторения нет. Отличная работа!');return}
+ const n=nums[0], ci=chapters.findIndex(c=>c.tasks.includes(n));
+ state.chapter=ci;state.taskIndex=chapters[ci].tasks.indexOf(n);save();renderTask(n);showScreen('task');
+}
+function resetGame(){
+ if(confirm('Сбросить весь прогресс расследования?')){localStorage.removeItem('case10state');location.reload()}
+}
+
+function toggleScratch(){document.getElementById('scratch').classList.toggle('open');resizeCanvas()}
+const canvas=document.getElementById('scratchCanvas'),ctx=canvas.getContext('2d');let drawing=false;
+function resizeCanvas(){
+ const rect=canvas.getBoundingClientRect();
+ if(!rect.width||!rect.height)return;
+ const old=document.createElement('canvas');old.width=canvas.width;old.height=canvas.height;old.getContext('2d').drawImage(canvas,0,0);
+ canvas.width=Math.floor(rect.width*devicePixelRatio);canvas.height=Math.floor(rect.height*devicePixelRatio);
+ ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=2.2;ctx.strokeStyle='#222';
+ if(old.width)ctx.drawImage(old,0,0,old.width/devicePixelRatio,old.height/devicePixelRatio);
+}
+function pt(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+canvas.addEventListener('pointerdown',e=>{drawing=true;canvas.setPointerCapture(e.pointerId);let p=pt(e);ctx.beginPath();ctx.moveTo(p.x,p.y)});
+canvas.addEventListener('pointermove',e=>{if(!drawing)return;let p=pt(e);ctx.lineTo(p.x,p.y);ctx.stroke()});
+canvas.addEventListener('pointerup',()=>drawing=false);canvas.addEventListener('pointercancel',()=>drawing=false);
+function clearScratch(){ctx.clearRect(0,0,canvas.width,canvas.height)}
+
+document.getElementById('answer').addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer()});
+renderMap();
+</script>
+</body>
+</html>
