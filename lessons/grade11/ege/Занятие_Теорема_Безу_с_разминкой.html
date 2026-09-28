@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Теорема Безу — занятие ЕГЭ</title>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']]
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+:root{
+  --bg:#f7f4ea;
+  --surface:#fffdf7;
+  --surface2:#eef3e5;
+  --text:#263125;
+  --muted:#687268;
+  --primary:#6c8a52;
+  --primary2:#89a46d;
+  --border:#cbd6bc;
+  --danger:#a95f57;
+  --success:#4e7f53;
+  --shadow:0 8px 24px rgba(45,60,35,.08);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--bg),#fff 72%);
+  min-height:100vh;
+}
+button,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible, textarea:focus-visible{outline:3px solid rgba(108,138,82,.28);outline-offset:2px}
+
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 3px 15px rgba(0,0,0,.04);
+}
+.topbar-inner{
+  width:min(1250px,100%);
+  margin:auto;
+  padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+.brand{font-weight:900;color:var(--primary);font-size:1.05rem}
+.progress-wrap{display:flex;align-items:center;gap:9px;min-width:260px}
+.progress{height:9px;flex:1;background:#e7ebdf;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;width:0;background:var(--primary);transition:.25s}
+.progress-text{font-size:.86rem;color:var(--muted);white-space:nowrap}
+
+.layout{
+  width:min(1250px,100%);
+  margin:auto;
+  padding:18px;
+  display:grid;
+  grid-template-columns:250px minmax(0,1fr);
+  gap:18px;
+}
+.sidebar{position:sticky;top:82px;height:max-content}
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.nav-card{padding:10px}
+.nav-title{font-weight:900;color:var(--primary);padding:8px 10px 10px}
+.nav-btn{
+  width:100%;border:0;background:transparent;text-align:left;
+  padding:11px 12px;border-radius:11px;color:var(--text);font-weight:750;
+  margin:2px 0;display:flex;justify-content:space-between;gap:8px;
+}
+.nav-btn:hover{background:var(--surface2)}
+.nav-btn.active{background:var(--primary);color:#fff}
+.nav-btn.done:not(.active)::after{content:"✓";color:var(--success);font-weight:900}
+.nav-btn.active.done::after{content:"✓";color:#fff}
+
+.side-info{margin-top:12px;padding:13px 14px;font-size:.9rem;line-height:1.45;color:var(--muted)}
+.side-info strong{color:var(--primary)}
+
+.main{min-width:0}
+.section{display:none}
+.section.active{display:block}
+.hero{padding:24px;margin-bottom:16px}
+.hero h1{margin:0 0 8px;color:var(--primary);font-size:clamp(1.5rem,2.8vw,2.35rem)}
+.hero p{margin:7px 0;line-height:1.55}
+.tag{
+  display:inline-block;padding:5px 9px;border-radius:999px;
+  background:var(--surface2);color:var(--primary);font-size:.82rem;font-weight:800;margin-right:6px
+}
+.theory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.theory-card{padding:18px}
+.theory-card h2{margin:0 0 10px;color:var(--primary);font-size:1.1rem}
+.theory-card p,.theory-card li{line-height:1.55}
+.note{
+  border-left:4px solid var(--primary);
+  background:var(--surface2);
+  padding:12px 14px;border-radius:10px;margin-top:12px;line-height:1.5
+}
+.task-card{padding:22px;margin-bottom:16px}
+.task-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.task-head h2{margin:0;color:var(--primary);font-size:1.25rem}
+.source{font-size:.82rem;color:var(--muted);text-align:right}
+.problem{
+  margin:18px 0;
+  padding:18px;
+  background:#fff;
+  border:1px solid #dfe5d7;
+  border-radius:14px;
+  font-size:1.06rem;
+  overflow-x:auto;
+}
+.method-box{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0
+}
+.mini-card{
+  background:var(--surface2);padding:12px 14px;border-radius:12px;
+  border:1px solid var(--border);line-height:1.5
+}
+.workspace-label{font-weight:800;margin:14px 0 7px}
+.horner-wrap{
+  margin:14px 0 10px;
+  padding:14px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+.horner-title{
+  font-weight:850;
+  color:var(--primary);
+  margin-bottom:8px;
+}
+.horner-sub{
+  font-size:.92rem;
+  color:var(--muted);
+  margin-bottom:10px;
+  line-height:1.45;
+}
+.horner-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  table-layout:fixed;
+  overflow:hidden;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid var(--border);
+}
+.horner-table td{
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:0;
+  text-align:center;
+  vertical-align:middle;
+  height:46px;
+}
+.horner-table tr:last-child td{border-bottom:0}
+.horner-table td:last-child{border-right:0}
+.horner-table .root-cell{
+  width:70px;
+  font-weight:800;
+  background:#fbfcf8;
+}
+.horner-table .divider{
+  border-right:3px solid var(--primary2)!important;
+}
+.horner-table input{
+  width:100%;
+  height:44px;
+  border:0;
+  padding:6px 4px;
+  text-align:center;
+  background:transparent;
+  color:var(--text);
+}
+.horner-table input::placeholder{color:#a4ad9e}
+.horner-tip{
+  margin-top:8px;
+  font-size:.88rem;
+  color:var(--muted);
+}
+textarea.solution{
+  width:100%;min-height:125px;resize:vertical;border:1px solid var(--border);
+  border-radius:12px;padding:12px;background:#fff;color:var(--text);line-height:1.45
+}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  padding:10px 13px;border-radius:10px;font-weight:800
+}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn.ghost{background:transparent}
+.reveal{
+  display:none;margin-top:12px;padding:14px;border-radius:12px;
+  border:1px solid var(--border);background:#fff;line-height:1.55
+}
+.reveal.show{display:block}
+.hint-title{font-weight:900;color:var(--primary);margin-bottom:6px}
+.selfcheck{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)}
+.selfcheck span{font-weight:800;margin-right:8px}
+.status{display:inline-block;padding:5px 9px;border-radius:999px;font-size:.84rem;font-weight:850}
+.status.ok{background:#e3f0e5;color:var(--success)}
+.status.wait{background:#f1ede1;color:#796e54}
+
+.scratch-modal{
+  position:fixed;inset:0;background:rgba(20,25,18,.46);z-index:100;
+  display:none;align-items:center;justify-content:center;padding:12px
+}
+.scratch-modal.show{display:flex}
+.scratch-panel{
+  width:min(920px,100%);height:min(720px,92vh);background:#fff;border-radius:18px;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.25)
+}
+.scratch-top{
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap
+}
+.scratch-tools{display:flex;gap:7px;flex-wrap:wrap}
+canvas{display:block;flex:1;width:100%;touch-action:none;background:
+  linear-gradient(#dfe7d5 1px,transparent 1px),
+  linear-gradient(90deg,#dfe7d5 1px,transparent 1px);
+  background-size:28px 28px;background-color:#fff;
+}
+.results{padding:22px}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.stat{padding:18px;border-radius:14px;background:var(--surface2);text-align:center}
+.stat b{display:block;font-size:1.8rem;color:var(--primary);margin-top:5px}
+.result-list{margin-top:14px}
+.result-row{padding:11px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px}
+.print-only{display:none}
+
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr;padding:10px}
+  .sidebar{position:static}
+  .nav-card{display:flex;overflow-x:auto;gap:5px}
+  .nav-title{display:none}
+  .nav-btn{min-width:max-content;width:auto}
+  .side-info{display:none}
+  .theory-grid,.method-box,.stats-grid{grid-template-columns:1fr}
+  .topbar-inner{align-items:flex-start;flex-direction:column}
+  .progress-wrap{width:100%;min-width:0}
+}
+@media print{
+  body{background:#fff}
+  .topbar,.sidebar,.actions,.scratch-modal,.selfcheck,.no-print{display:none!important}
+  .layout{display:block;width:100%;padding:0}
+  .section{display:block!important}
+  #theory{display:none!important}
+  #results{display:none!important}
+  .task-card{box-shadow:none;border:0;border-bottom:1px solid #aaa;border-radius:0;page-break-inside:avoid;padding:10mm 8mm}
+  .reveal{display:none!important}
+  .problem{border:0;padding:0;margin:6mm 0}
+  textarea.solution{display:none}
+  .print-only{display:block}
+  .print-grid{
+    height:105mm;
+    background:
+      linear-gradient(#ddd 1px,transparent 1px),
+      linear-gradient(90deg,#ddd 1px,transparent 1px);
+    background-size:7mm 7mm;
+    border:1px solid #ccc;
+  }
+  @page{size:A4;margin:10mm}
+}
+</style>
+</head>
+
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">ЕГЭ Пифагор · Теорема Безу</div>
+    <div class="progress-wrap">
+      <div class="progress"><div id="progressBar"></div></div>
+      <div class="progress-text" id="progressText">0 из 5</div>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="card nav-card" id="nav">
+      <div class="nav-title">Занятие</div>
+      <button class="nav-btn active" data-target="theory">Теория</button>
+      <button class="nav-btn" data-target="warmup">Разминка</button>
+      <button class="nav-btn" data-target="task1">ЕГЭ 1</button>
+      <button class="nav-btn" data-target="task2">ЕГЭ 2</button>
+      <button class="nav-btn" data-target="task3">ЕГЭ 3</button>
+      <button class="nav-btn" data-target="task4">ЕГЭ 4</button>
+      <button class="nav-btn" data-target="task5">ЕГЭ 5</button>
+      <button class="nav-btn" data-target="results">Итоги</button>
+    </div>
+    <div class="card side-info">
+      <strong>Цель занятия</strong>
+      <p>Научиться замечать многочлен, подбирать рациональный корень, применять теорему Безу и завершать решение методом интервалов.</p>
+      <p>Ответы не проверяются автоматически: в заданиях требуется развёрнутое преобразование.</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section id="theory" class="section active">
+      <div class="card hero">
+        <span class="tag">Неравенства</span>
+        <span class="tag">Многочлены</span>
+        <span class="tag">Без параметров</span>
+        <h1>Теорема Безу в задачах ЕГЭ</h1>
+        <p>Здесь теорема Безу используется как инструмент разложения многочлена на множители. Главная идея: после преобразований получить многочлен, найти один удобный корень и «снять» линейный множитель.</p>
+      </div>
+
+      <div class="theory-grid">
+        <div class="card theory-card">
+          <h2>1. Теорема Безу</h2>
+          <p>Остаток от деления многочлена $P(x)$ на $x-a$ равен $P(a)$.</p>
+          <p>Следовательно, если $P(a)=0$, то</p>
+          $$P(x)=(x-a)Q(x).$$
+          <div class="note"><b>Практический смысл:</b> нашли корень $a$ → получили множитель $x-a$.</div>
+        </div>
+
+        <div class="card theory-card">
+          <h2>2. Как искать целый корень</h2>
+          <p>Если у многочлена с целыми коэффициентами старший коэффициент равен 1, целые корни стоит искать среди делителей свободного члена.</p>
+          <p>Например, для $P(x)=x^3-2x^2-5x+6$ проверяем $\pm1,\pm2,\pm3,\pm6$.</p>
+          <div class="note">Всегда начинай с самых простых кандидатов: $0,\pm1,\pm2$.</div>
+        </div>
+
+        <div class="card theory-card" style="grid-column:1/-1">
+          <h2>3. Схема Горнера — подробно</h2>
+          <p>Схема Горнера — это быстрый способ разделить многочлен $P(x)$ на $x-a$, если мы уже знаем или предполагаем, что $a$ — корень.</p>
+
+          <div class="note">
+            <b>Идея:</b> если $P(a)=0$, то по теореме Безу многочлен делится на $x-a$ без остатка.
+            Схема Горнера помогает сразу получить коэффициенты частного.
+          </div>
+
+          <p><b>Пример.</b> Разложим на множители</p>
+          $$P(x)=x^3-2x^2-5x+6.$$
+
+          <p><b>Шаг 1. Ищем целый корень.</b></p>
+          <p>Свободный член равен $6$, поэтому проверяем делители числа $6$:</p>
+          $$\pm1,\ \pm2,\ \pm3,\ \pm6.$$
+          <p>Проверим $x=1$:</p>
+          $$P(1)=1-2-5+6=0.$$
+          <p>Значит, $x=1$ — корень, а $x-1$ — множитель.</p>
+
+          <p><b>Шаг 2. Выписываем только коэффициенты многочлена.</b></p>
+          $$\begin{array}{c|rrrr}
+          1 & 1 & -2 & -5 & 6
+          \end{array}$$
+          <p>Слева пишем найденный корень $a=1$, справа — коэффициенты $1,-2,-5,6$.</p>
+
+          <p><b>Шаг 3. Первый коэффициент просто сносим вниз.</b></p>
+          $$\begin{array}{c|rrrr}
+          1 & 1 & -2 & -5 & 6\\
+            &   &    &    & \\
+          \hline
+            & 1 &    &    &
+          \end{array}$$
+
+          <p><b>Шаг 4. Умножаем число внизу на $a$ и прибавляем к следующему коэффициенту.</b></p>
+          <p>Первое действие:</p>
+          $$1\cdot1=1,\qquad -2+1=-1.$$
+          <p>Получаем второй коэффициент частного: $-1$.</p>
+
+          <p>Второе действие:</p>
+          $$(-1)\cdot1=-1,\qquad -5+(-1)=-6.$$
+
+          <p>Третье действие:</p>
+          $$(-6)\cdot1=-6,\qquad 6+(-6)=0.$$
+
+          <p>Итоговая строка:</p>
+          $$\begin{array}{c|rrrr}
+          1 & 1 & -2 & -5 & 6\\
+            &   & 1  & -1 & -6\\
+          \hline
+            & 1 & -1 & -6 & 0
+          \end{array}$$
+
+          <p><b>Как читать результат.</b></p>
+          <ul>
+            <li>$1,-1,-6$ — коэффициенты частного;</li>
+            <li>$0$ — остаток;</li>
+            <li>так как остаток равен нулю, деление выполнено без остатка.</li>
+          </ul>
+
+          <p>Следовательно,</p>
+          $$P(x)=(x-1)(x^2-x-6).$$
+          <p>Дальше раскладываем квадратный трёхчлен:</p>
+          $$x^2-x-6=(x-3)(x+2).$$
+          <p>И окончательно:</p>
+          $$\boxed{P(x)=(x-1)(x-3)(x+2)}.$$
+
+          <div class="note">
+            <b>Важно:</b> если в многочлене пропущена степень, её коэффициент всё равно нужно записать.
+            Например, для $x^3-5x+4$ коэффициенты: $1,\ 0,\ -5,\ 4$.
+          </div>
+
+          <div class="note">
+            <b>Проверка:</b> последнее число в схеме Горнера — это $P(a)$.
+            Если оно не равно нулю, то $a$ не является корнем и $x-a$ не является множителем.
+          </div>
+        </div>
+
+        <div class="card theory-card">
+          <h2>4. После разложения</h2>
+          <p>Для рационального неравенства:</p>
+          <ol>
+            <li>найди ОДЗ;</li>
+            <li>перенеси всё в одну сторону;</li>
+            <li>приведи к одной дроби;</li>
+            <li>разложи числитель и знаменатель;</li>
+            <li>отметь нули и запрещённые точки;</li>
+            <li>примени метод интервалов.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card theory-card" style="margin-top:14px">
+        <h2>Типичная ошибка</h2>
+        <p>Нельзя сокращать множитель, не учитывая исходное ОДЗ. Если в знаменателе был множитель $x-a$, точка $x=a$ остаётся запрещённой даже после сокращения.</p>
+        <div class="actions no-print">
+          <button class="btn primary" onclick="go('warmup')">Перейти к разминке</button>
+          <button class="btn" onclick="openScratch()">Черновик</button>
+          <button class="btn" onclick="window.print()">Печать рабочего листа</button>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="warmup" class="section">
+      <div class="card hero">
+        <span class="tag">Разминка</span>
+        <span class="tag">Авторские примеры</span>
+        <h1>Сначала отработаем сам навык</h1>
+        <p>Эти короткие примеры не взяты из сборника ЕГЭ. Они добавлены специально для понимания теоремы Безу и схемы Горнера — от самого простого действия к небольшому неравенству.</p>
+      </div>
+
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Разминка 1. Что означает остаток?</h2>
+          <div class="source">Авторский пример</div>
+        </div>
+        <div class="problem">
+          Найдите остаток от деления многочлена
+          $$P(x)=x^2+3x+5$$
+          на $x-2$.
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Идея:</b> по теореме Безу остаток равен $P(2)$.</div>
+          <div class="mini-card"><b>Здесь Горнер не обязателен.</b> Сначала важно понять смысл теоремы.</div>
+        </div>
+        <div class="workspace-label">Ответ и вычисления</div>
+        <textarea class="solution" data-save="warm1" placeholder="Вычисли P(2)..."></textarea>
+        <div class="actions">
+          <button class="btn" onclick="toggleReveal('warmAns1')">Показать ответ</button>
+        </div>
+        <div id="warmAns1" class="reveal">
+          <div class="hint-title">Проверка</div>
+          $$P(2)=2^2+3\cdot2+5=4+6+5=15.$$
+          <p><b>Ответ: 15.</b></p>
+        </div>
+      </div>
+
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Разминка 2. Является ли $x+2$ множителем?</h2>
+          <div class="source">Авторский пример</div>
+        </div>
+        <div class="problem">
+          Определите, делится ли без остатка многочлен
+          $$P(x)=x^3+3x^2-4x-12$$
+          на $x+2$.
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Заметь:</b> $x+2=x-(-2)$, поэтому нужно вычислить $P(-2)$.</div>
+          <div class="mini-card"><b>Критерий:</b> если $P(-2)=0$, то $x+2$ — множитель.</div>
+        </div>
+        <div class="workspace-label">Краткое решение</div>
+        <textarea class="solution" data-save="warm2"></textarea>
+        <div class="actions">
+          <button class="btn" onclick="toggleReveal('warmAns2')">Показать ответ</button>
+        </div>
+        <div id="warmAns2" class="reveal">
+          <div class="hint-title">Проверка</div>
+          $$P(-2)=-8+12+8-12=0.$$
+          <p>Значит, многочлен делится на $x+2$ без остатка.</p>
+        </div>
+      </div>
+
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Разминка 3. Первая схема Горнера</h2>
+          <div class="source">Авторский пример</div>
+        </div>
+        <div class="problem">
+          Разложите на множители
+          $$P(x)=x^3-6x^2+11x-6.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Шаг 1:</b> попробуй $x=1$.</div>
+          <div class="mini-card"><b>Шаг 2:</b> раздели на $x-1$ по схеме Горнера.</div>
+        </div>
+
+        <div class="horner-wrap">
+          <div class="horner-title">Схема Горнера</div>
+          <div class="horner-sub">В верхнюю строку внеси коэффициенты $1,-6,11,-6$.</div>
+          <table class="horner-table">
+            <tr>
+              <td class="root-cell divider" rowspan="3"><input type="text" data-save="w3_a" placeholder="a"></td>
+              <td><input type="text" data-save="w3_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="w3_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="w3_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="w3_c4" placeholder="c₄"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="w3_m1"></td>
+              <td><input type="text" data-save="w3_m2"></td>
+              <td><input type="text" data-save="w3_m3"></td>
+              <td><input type="text" data-save="w3_m4"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="w3_r1"></td>
+              <td><input type="text" data-save="w3_r2"></td>
+              <td><input type="text" data-save="w3_r3"></td>
+              <td><input type="text" data-save="w3_r4" placeholder="остаток"></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="workspace-label">Разложение</div>
+        <textarea class="solution" data-save="warm3"></textarea>
+        <div class="actions">
+          <button class="btn" onclick="toggleReveal('warmAns3')">Показать решение</button>
+        </div>
+        <div id="warmAns3" class="reveal">
+          <div class="hint-title">Решение</div>
+          <p>$P(1)=0$, поэтому делим на $x-1$.</p>
+          $$\begin{array}{c|rrrr}
+          1&1&-6&11&-6\\
+           &&1&-5&6\\ \hline
+           &1&-5&6&0
+          \end{array}$$
+          <p>Получаем</p>
+          $$P(x)=(x-1)(x^2-5x+6)=(x-1)(x-2)(x-3).$$
+        </div>
+      </div>
+
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Разминка 4. Не забываем нулевой коэффициент</h2>
+          <div class="source">Авторский пример</div>
+        </div>
+        <div class="problem">
+          Разложите на множители
+          $$P(x)=x^3-3x+2.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Важно:</b> перед $x^2$ коэффициент равен нулю.</div>
+          <div class="mini-card">В схеме Горнера коэффициенты нужно записать как $1,0,-3,2$.</div>
+        </div>
+
+        <div class="horner-wrap">
+          <div class="horner-title">Схема Горнера</div>
+          <div class="horner-sub">Проверь корень $a=1$ и обязательно внеси нулевой коэффициент.</div>
+          <table class="horner-table">
+            <tr>
+              <td class="root-cell divider" rowspan="3"><input type="text" data-save="w4_a" placeholder="a"></td>
+              <td><input type="text" data-save="w4_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="w4_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="w4_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="w4_c4" placeholder="c₄"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="w4_m1"></td>
+              <td><input type="text" data-save="w4_m2"></td>
+              <td><input type="text" data-save="w4_m3"></td>
+              <td><input type="text" data-save="w4_m4"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="w4_r1"></td>
+              <td><input type="text" data-save="w4_r2"></td>
+              <td><input type="text" data-save="w4_r3"></td>
+              <td><input type="text" data-save="w4_r4" placeholder="остаток"></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="workspace-label">Разложение</div>
+        <textarea class="solution" data-save="warm4"></textarea>
+        <div class="actions">
+          <button class="btn" onclick="toggleReveal('warmAns4')">Показать решение</button>
+        </div>
+        <div id="warmAns4" class="reveal">
+          <div class="hint-title">Решение</div>
+          $$\begin{array}{c|rrrr}
+          1&1&0&-3&2\\
+           &&1&1&-2\\ \hline
+           &1&1&-2&0
+          \end{array}$$
+          <p>Значит,</p>
+          $$P(x)=(x-1)(x^2+x-2)=(x-1)^2(x+2).$$
+        </div>
+      </div>
+
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Разминка 5. Безу + метод интервалов</h2>
+          <div class="source">Авторский пример</div>
+        </div>
+        <div class="problem">
+          Решите неравенство
+          $$x^3+x^2-4x-4\le0.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Шаг 1:</b> найди один целый корень многочлена.</div>
+          <div class="mini-card"><b>Шаг 2:</b> разложи его полностью и примени метод интервалов.</div>
+        </div>
+
+        <div class="horner-wrap">
+          <div class="horner-title">Схема Горнера</div>
+          <div class="horner-sub">Попробуй один из делителей свободного члена: $\pm1,\pm2,\pm4$.</div>
+          <table class="horner-table">
+            <tr>
+              <td class="root-cell divider" rowspan="3"><input type="text" data-save="w5_a" placeholder="a"></td>
+              <td><input type="text" data-save="w5_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="w5_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="w5_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="w5_c4" placeholder="c₄"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="w5_m1"></td>
+              <td><input type="text" data-save="w5_m2"></td>
+              <td><input type="text" data-save="w5_m3"></td>
+              <td><input type="text" data-save="w5_m4"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="w5_r1"></td>
+              <td><input type="text" data-save="w5_r2"></td>
+              <td><input type="text" data-save="w5_r3"></td>
+              <td><input type="text" data-save="w5_r4" placeholder="остаток"></td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="workspace-label">Решение неравенства</div>
+        <textarea class="solution" data-save="warm5" placeholder="Разложение → критические точки → интервалы..."></textarea>
+        <div class="actions">
+          <button class="btn" onclick="toggleReveal('warmAns5')">Показать решение</button>
+          <button class="btn primary" onclick="go('task1')">Перейти к заданиям ЕГЭ</button>
+        </div>
+        <div id="warmAns5" class="reveal">
+          <div class="hint-title">Решение</div>
+          <p>$P(2)=0$, значит $x-2$ — множитель.</p>
+          $$x^3+x^2-4x-4=(x-2)(x^2+3x+2)=(x-2)(x+1)(x+2).$$
+          <p>Критические точки: $-2,-1,2$. По методу интервалов:</p>
+          $$\boxed{(-\infty;-2]\cup[-1;2]}.$$
+        </div>
+      </div>
+    </section>
+
+    <section id="task1" class="section task-section" data-task="1">
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Задание 1</h2>
+          <div class="source">Для работы с курсом 15<br>стр. 28</div>
+        </div>
+        <div class="problem">
+          Решите неравенство
+          $$x^3+5x^2+\frac{28x^2+5x-30}{x-6}\le 5.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Фокус:</b> после приведения к общей дроби разложить многочлен.</div>
+          <div class="mini-card"><b>Не забудь:</b> $x\ne6$.</div>
+        </div>
+        <div class="workspace-label">Краткая запись решения</div>
+        <div class="horner-wrap">
+          <div class="horner-title">Таблица для схемы Горнера</div>
+          <div class="horner-sub">
+            Впиши предполагаемый корень <b>$a$</b>, коэффициенты многочлена в верхнюю строку,
+            затем заполни промежуточную и нижнюю строки по схеме Горнера.
+            Если какая-то степень пропущена, запиши коэффициент <b>0</b>.
+          </div>
+          <table class="horner-table" aria-label="Схема Горнера для задания 1">
+            <tr>
+              <td class="root-cell divider" rowspan="3">
+                <input type="text" data-save="h1_a" placeholder="a">
+              </td>
+              <td><input type="text" data-save="h1_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="h1_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="h1_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="h1_c4" placeholder="c₄"></td>
+              <td><input type="text" data-save="h1_c5" placeholder="c₅"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h1_m1"></td>
+              <td><input type="text" data-save="h1_m2"></td>
+              <td><input type="text" data-save="h1_m3"></td>
+              <td><input type="text" data-save="h1_m4"></td>
+              <td><input type="text" data-save="h1_m5"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h1_r1"></td>
+              <td><input type="text" data-save="h1_r2"></td>
+              <td><input type="text" data-save="h1_r3"></td>
+              <td><input type="text" data-save="h1_r4"></td>
+              <td><input type="text" data-save="h1_r5" placeholder="остаток"></td>
+            </tr>
+          </table>
+          <div class="horner-tip">Последнее число в нижней строке — это остаток, то есть значение $P(a)$.</div>
+        </div>
+
+        <textarea class="solution" data-save="sol1" placeholder="Запиши преобразования, найденные корни и интервалы..."></textarea>
+        <div class="print-only"><div class="print-grid"></div></div>
+        <div class="actions">
+          <button class="btn" onclick="nextHint(1)">Подсказка</button>
+          <button class="btn" onclick="toggleReveal('answer1')">Показать ответ</button>
+          <button class="btn" onclick="toggleReveal('solution1')">Показать решение</button>
+          <button class="btn" onclick="openScratch()">Черновик</button>
+        </div>
+        <div id="hint1" class="reveal"></div>
+        <div id="answer1" class="reveal"><div class="hint-title">Ответ</div>
+          $$(-\infty;-1]\cup\{0\}\cup[2;6).$$
+        </div>
+        <div id="solution1" class="reveal"><div class="hint-title">Ключевые шаги</div>
+          <p>Переносим $5$ влево и приводим к одной дроби:</p>
+          $$\frac{x^2(x-2)(x+1)}{x-6}\le0.$$
+          <p>Критические точки: $-1,0,2,6$. Точка $6$ исключается из ОДЗ; $x=0$ — корень чётной кратности.</p>
+        </div>
+        <div class="selfcheck">
+          <span>Самопроверка:</span>
+          <button class="btn success" onclick="markDone(1,true)">Решено</button>
+          <button class="btn" onclick="markDone(1,false)">Вернуться позже</button>
+          <span id="status1" class="status wait">не отмечено</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="task2" class="section task-section" data-task="2">
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Задание 2</h2>
+          <div class="source">Для работы с курсом 15<br>стр. 29</div>
+        </div>
+        <div class="problem">
+          Решите неравенство
+          $$\frac{(4x+7)^2}{x-3}\ge
+          \frac{49+56x+16x^2}{21-10x+x^2}.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Фокус:</b> разложение квадратного знаменателя и общего числителя.</div>
+          <div class="mini-card"><b>ОДЗ:</b> знаменатели не равны нулю.</div>
+        </div>
+        <div class="workspace-label">Краткая запись решения</div>
+        <div class="horner-wrap">
+          <div class="horner-title">Таблица для схемы Горнера</div>
+          <div class="horner-sub">
+            Впиши предполагаемый корень <b>$a$</b>, коэффициенты многочлена в верхнюю строку,
+            затем заполни промежуточную и нижнюю строки по схеме Горнера.
+            Если какая-то степень пропущена, запиши коэффициент <b>0</b>.
+          </div>
+          <table class="horner-table" aria-label="Схема Горнера для задания 2">
+            <tr>
+              <td class="root-cell divider" rowspan="3">
+                <input type="text" data-save="h2_a" placeholder="a">
+              </td>
+              <td><input type="text" data-save="h2_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="h2_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="h2_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="h2_c4" placeholder="c₄"></td>
+              <td><input type="text" data-save="h2_c5" placeholder="c₅"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h2_m1"></td>
+              <td><input type="text" data-save="h2_m2"></td>
+              <td><input type="text" data-save="h2_m3"></td>
+              <td><input type="text" data-save="h2_m4"></td>
+              <td><input type="text" data-save="h2_m5"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h2_r1"></td>
+              <td><input type="text" data-save="h2_r2"></td>
+              <td><input type="text" data-save="h2_r3"></td>
+              <td><input type="text" data-save="h2_r4"></td>
+              <td><input type="text" data-save="h2_r5" placeholder="остаток"></td>
+            </tr>
+          </table>
+          <div class="horner-tip">Последнее число в нижней строке — это остаток, то есть значение $P(a)$.</div>
+        </div>
+
+        <textarea class="solution" data-save="sol2"></textarea>
+        <div class="print-only"><div class="print-grid"></div></div>
+        <div class="actions">
+          <button class="btn" onclick="nextHint(2)">Подсказка</button>
+          <button class="btn" onclick="toggleReveal('answer2')">Показать ответ</button>
+          <button class="btn" onclick="toggleReveal('solution2')">Показать решение</button>
+          <button class="btn" onclick="openScratch()">Черновик</button>
+        </div>
+        <div id="hint2" class="reveal"></div>
+        <div id="answer2" class="reveal"><div class="hint-title">Ответ</div>
+          $$\left\{-\frac74\right\}\cup(3;7)\cup[8;+\infty).$$
+        </div>
+        <div id="solution2" class="reveal"><div class="hint-title">Ключевые шаги</div>
+          <p>$21-10x+x^2=(x-3)(x-7)$, а после приведения к общей дроби:</p>
+          $$\frac{(x-8)(4x+7)^2}{(x-7)(x-3)}\ge0.$$
+          <p>Точки $3$ и $7$ запрещённые. Корень $x=-\frac74$ имеет чётную кратность.</p>
+        </div>
+        <div class="selfcheck">
+          <span>Самопроверка:</span>
+          <button class="btn success" onclick="markDone(2,true)">Решено</button>
+          <button class="btn" onclick="markDone(2,false)">Вернуться позже</button>
+          <span id="status2" class="status wait">не отмечено</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="task3" class="section task-section" data-task="3">
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Задание 3</h2>
+          <div class="source">Для работы с курсом 15<br>стр. 30</div>
+        </div>
+        <div class="problem">
+          Решите неравенство
+          $$\frac{(5x-2)^2}{x-3}\ge
+          \frac{4-20x+25x^2}{24-11x+x^2}.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Фокус:</b> то же преобразование, но без опоры на готовый шаблон.</div>
+          <div class="mini-card"><b>Проверь:</b> какие точки меняют знак, а какие — нет.</div>
+        </div>
+        <div class="workspace-label">Краткая запись решения</div>
+        <div class="horner-wrap">
+          <div class="horner-title">Таблица для схемы Горнера</div>
+          <div class="horner-sub">
+            Впиши предполагаемый корень <b>$a$</b>, коэффициенты многочлена в верхнюю строку,
+            затем заполни промежуточную и нижнюю строки по схеме Горнера.
+            Если какая-то степень пропущена, запиши коэффициент <b>0</b>.
+          </div>
+          <table class="horner-table" aria-label="Схема Горнера для задания 3">
+            <tr>
+              <td class="root-cell divider" rowspan="3">
+                <input type="text" data-save="h3_a" placeholder="a">
+              </td>
+              <td><input type="text" data-save="h3_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="h3_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="h3_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="h3_c4" placeholder="c₄"></td>
+              <td><input type="text" data-save="h3_c5" placeholder="c₅"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h3_m1"></td>
+              <td><input type="text" data-save="h3_m2"></td>
+              <td><input type="text" data-save="h3_m3"></td>
+              <td><input type="text" data-save="h3_m4"></td>
+              <td><input type="text" data-save="h3_m5"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h3_r1"></td>
+              <td><input type="text" data-save="h3_r2"></td>
+              <td><input type="text" data-save="h3_r3"></td>
+              <td><input type="text" data-save="h3_r4"></td>
+              <td><input type="text" data-save="h3_r5" placeholder="остаток"></td>
+            </tr>
+          </table>
+          <div class="horner-tip">Последнее число в нижней строке — это остаток, то есть значение $P(a)$.</div>
+        </div>
+
+        <textarea class="solution" data-save="sol3"></textarea>
+        <div class="print-only"><div class="print-grid"></div></div>
+        <div class="actions">
+          <button class="btn" onclick="nextHint(3)">Подсказка</button>
+          <button class="btn" onclick="toggleReveal('answer3')">Показать ответ</button>
+          <button class="btn" onclick="toggleReveal('solution3')">Показать решение</button>
+          <button class="btn" onclick="openScratch()">Черновик</button>
+        </div>
+        <div id="hint3" class="reveal"></div>
+        <div id="answer3" class="reveal"><div class="hint-title">Ответ</div>
+          $$\left\{\frac25\right\}\cup(3;8)\cup[9;+\infty).$$
+        </div>
+        <div id="solution3" class="reveal"><div class="hint-title">Ключевые шаги</div>
+          <p>$24-11x+x^2=(x-3)(x-8)$, а итоговая рациональная функция:</p>
+          $$\frac{(x-9)(5x-2)^2}{(x-8)(x-3)}\ge0.$$
+        </div>
+        <div class="selfcheck">
+          <span>Самопроверка:</span>
+          <button class="btn success" onclick="markDone(3,true)">Решено</button>
+          <button class="btn" onclick="markDone(3,false)">Вернуться позже</button>
+          <span id="status3" class="status wait">не отмечено</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="task4" class="section task-section" data-task="4">
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Задание 4</h2>
+          <div class="source">Для работы с курсом 15<br>стр. 31</div>
+        </div>
+        <div class="problem">
+          Решите неравенство
+          $$x^3+9x^2+8-\frac{8x^3-73x^2}{2(x-5)}
+          \le\frac{(4x+1)^2-41}{x-5}.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Фокус:</b> аккуратное приведение дробей и разложение многочлена четвёртой степени.</div>
+          <div class="mini-card"><b>ОДЗ:</b> $x\ne5$.</div>
+        </div>
+        <div class="workspace-label">Краткая запись решения</div>
+        <div class="horner-wrap">
+          <div class="horner-title">Таблица для схемы Горнера</div>
+          <div class="horner-sub">
+            Впиши предполагаемый корень <b>$a$</b>, коэффициенты многочлена в верхнюю строку,
+            затем заполни промежуточную и нижнюю строки по схеме Горнера.
+            Если какая-то степень пропущена, запиши коэффициент <b>0</b>.
+          </div>
+          <table class="horner-table" aria-label="Схема Горнера для задания 4">
+            <tr>
+              <td class="root-cell divider" rowspan="3">
+                <input type="text" data-save="h4_a" placeholder="a">
+              </td>
+              <td><input type="text" data-save="h4_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="h4_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="h4_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="h4_c4" placeholder="c₄"></td>
+              <td><input type="text" data-save="h4_c5" placeholder="c₅"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h4_m1"></td>
+              <td><input type="text" data-save="h4_m2"></td>
+              <td><input type="text" data-save="h4_m3"></td>
+              <td><input type="text" data-save="h4_m4"></td>
+              <td><input type="text" data-save="h4_m5"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h4_r1"></td>
+              <td><input type="text" data-save="h4_r2"></td>
+              <td><input type="text" data-save="h4_r3"></td>
+              <td><input type="text" data-save="h4_r4"></td>
+              <td><input type="text" data-save="h4_r5" placeholder="остаток"></td>
+            </tr>
+          </table>
+          <div class="horner-tip">Последнее число в нижней строке — это остаток, то есть значение $P(a)$.</div>
+        </div>
+
+        <textarea class="solution" data-save="sol4"></textarea>
+        <div class="print-only"><div class="print-grid"></div></div>
+        <div class="actions">
+          <button class="btn" onclick="nextHint(4)">Подсказка</button>
+          <button class="btn" onclick="toggleReveal('answer4')">Показать ответ</button>
+          <button class="btn" onclick="toggleReveal('solution4')">Показать решение</button>
+          <button class="btn" onclick="openScratch()">Черновик</button>
+        </div>
+        <div id="hint4" class="reveal"></div>
+        <div id="answer4" class="reveal"><div class="hint-title">Ответ</div>
+          $$\left(-\infty;-\frac{7\sqrt2}{2}\right]\cup\{0\}\cup
+          \left[\frac{7\sqrt2}{2};5\right).$$
+        </div>
+        <div id="solution4" class="reveal"><div class="hint-title">Ключевые шаги</div>
+          <p>После переноса правой части влево и приведения к общей дроби:</p>
+          $$\frac{x^2(2x^2-49)}{2(x-5)}\le0.$$
+          <p>Разложи $2x^2-49=(\sqrt2x-7)(\sqrt2x+7)$ и примени метод интервалов.</p>
+        </div>
+        <div class="selfcheck">
+          <span>Самопроверка:</span>
+          <button class="btn success" onclick="markDone(4,true)">Решено</button>
+          <button class="btn" onclick="markDone(4,false)">Вернуться позже</button>
+          <span id="status4" class="status wait">не отмечено</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="task5" class="section task-section" data-task="5">
+      <div class="card task-card">
+        <div class="task-head">
+          <h2>Задание 5</h2>
+          <div class="source">Для работы с курсом 15<br>стр. 32</div>
+        </div>
+        <div class="problem">
+          Решите неравенство
+          $$x^3+9x^2+6-\frac{6x^3+\frac92x^2}{x-3}
+          \le\frac{(3x+1)^2-19}{x-3}.$$
+        </div>
+        <div class="method-box">
+          <div class="mini-card"><b>Фокус:</b> итоговое самостоятельное преобразование.</div>
+          <div class="mini-card"><b>ОДЗ:</b> $x\ne3$.</div>
+        </div>
+        <div class="workspace-label">Краткая запись решения</div>
+        <div class="horner-wrap">
+          <div class="horner-title">Таблица для схемы Горнера</div>
+          <div class="horner-sub">
+            Впиши предполагаемый корень <b>$a$</b>, коэффициенты многочлена в верхнюю строку,
+            затем заполни промежуточную и нижнюю строки по схеме Горнера.
+            Если какая-то степень пропущена, запиши коэффициент <b>0</b>.
+          </div>
+          <table class="horner-table" aria-label="Схема Горнера для задания 5">
+            <tr>
+              <td class="root-cell divider" rowspan="3">
+                <input type="text" data-save="h5_a" placeholder="a">
+              </td>
+              <td><input type="text" data-save="h5_c1" placeholder="c₁"></td>
+              <td><input type="text" data-save="h5_c2" placeholder="c₂"></td>
+              <td><input type="text" data-save="h5_c3" placeholder="c₃"></td>
+              <td><input type="text" data-save="h5_c4" placeholder="c₄"></td>
+              <td><input type="text" data-save="h5_c5" placeholder="c₅"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h5_m1"></td>
+              <td><input type="text" data-save="h5_m2"></td>
+              <td><input type="text" data-save="h5_m3"></td>
+              <td><input type="text" data-save="h5_m4"></td>
+              <td><input type="text" data-save="h5_m5"></td>
+            </tr>
+            <tr>
+              <td class="divider"><input type="text" data-save="h5_r1"></td>
+              <td><input type="text" data-save="h5_r2"></td>
+              <td><input type="text" data-save="h5_r3"></td>
+              <td><input type="text" data-save="h5_r4"></td>
+              <td><input type="text" data-save="h5_r5" placeholder="остаток"></td>
+            </tr>
+          </table>
+          <div class="horner-tip">Последнее число в нижней строке — это остаток, то есть значение $P(a)$.</div>
+        </div>
+
+        <textarea class="solution" data-save="sol5"></textarea>
+        <div class="print-only"><div class="print-grid"></div></div>
+        <div class="actions">
+          <button class="btn" onclick="nextHint(5)">Подсказка</button>
+          <button class="btn" onclick="toggleReveal('answer5')">Показать ответ</button>
+          <button class="btn" onclick="toggleReveal('solution5')">Показать решение</button>
+          <button class="btn" onclick="openScratch()">Черновик</button>
+        </div>
+        <div id="hint5" class="reveal"></div>
+        <div id="answer5" class="reveal"><div class="hint-title">Ответ</div>
+          $$\left(-\infty;-\frac{9\sqrt2}{2}\right]\cup\{0\}\cup
+          \left(3;\frac{9\sqrt2}{2}\right].$$
+        </div>
+        <div id="solution5" class="reveal"><div class="hint-title">Ключевые шаги</div>
+          <p>После преобразований:</p>
+          $$\frac{x^2(2x^2-81)}{2(x-3)}\le0.$$
+          <p>Критические точки: $-\frac{9\sqrt2}{2},0,3,\frac{9\sqrt2}{2}$.</p>
+        </div>
+        <div class="selfcheck">
+          <span>Самопроверка:</span>
+          <button class="btn success" onclick="markDone(5,true)">Решено</button>
+          <button class="btn" onclick="markDone(5,false)">Вернуться позже</button>
+          <span id="status5" class="status wait">не отмечено</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" class="section">
+      <div class="card results">
+        <h1 style="color:var(--primary);margin-top:0">Итоги занятия</h1>
+        <div class="stats-grid">
+          <div class="stat">Выполнено<b id="doneCount">0</b></div>
+          <div class="stat">Всего заданий<b>5</b></div>
+          <div class="stat">Прогресс<b id="percent">0%</b></div>
+        </div>
+        <div id="resultList" class="result-list"></div>
+        <div class="note">
+          Критерий завершения занятия: ученик умеет самостоятельно получить рациональную функцию,
+          найти её критические точки и объяснить, где именно используется теорема Безу или делимость многочлена.
+        </div>
+        <div class="actions no-print">
+          <button class="btn" onclick="go('theory')">Вернуться к теории</button>
+          <button class="btn" onclick="window.print()">Печать рабочего листа</button>
+          <button class="btn ghost" onclick="resetProgress()">Сбросить прогресс</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scratch-modal" id="scratchModal" aria-hidden="true">
+  <div class="scratch-panel">
+    <div class="scratch-top">
+      <b>Черновик</b>
+      <div class="scratch-tools">
+        <button class="btn" onclick="setTool('pen')">Ручка</button>
+        <button class="btn" onclick="setTool('eraser')">Ластик</button>
+        <button class="btn" onclick="undoCanvas()">Отмена</button>
+        <button class="btn" onclick="clearCanvas()">Очистить</button>
+        <button class="btn primary" onclick="closeScratch()">Готово</button>
+      </div>
+    </div>
+    <canvas id="scratch"></canvas>
+  </div>
+</div>
+
+<script>
+const TOTAL = 5;
+const hints = {
+  1:[
+    'Перенеси 5 в левую часть и приведи всё к знаменателю $x-6$.',
+    'После упрощения числитель равен $x^4-x^3-2x^2$. Сначала вынеси $x^2$.',
+    'Оставшийся квадратный многочлен: $x^2-x-2=(x-2)(x+1)$.'
+  ],
+  2:[
+    'Заметь, что $49+56x+16x^2=(4x+7)^2$.',
+    'Разложи $x^2-10x+21$. Корни знаменателя можно проверить по теореме Безу.',
+    'После приведения к одной дроби получится $\\frac{(x-8)(4x+7)^2}{(x-7)(x-3)}\\ge0$.'
+  ],
+  3:[
+    'Заметь, что $4-20x+25x^2=(5x-2)^2$.',
+    'Разложи $x^2-11x+24$ на множители.',
+    'Итог: $\\frac{(x-9)(5x-2)^2}{(x-8)(x-3)}\\ge0$.'
+  ],
+  4:[
+    'Перенеси правую часть влево. Общий знаменатель удобно взять $2(x-5)$.',
+    'После сокращения подобных членов числитель равен $x^2(2x^2-49)$.',
+    'Нули: $x=0$ и $x=\\pm\\frac{7\\sqrt2}{2}$; точка $x=5$ запрещена.'
+  ],
+  5:[
+    'Общий знаменатель — $2(x-3)$, чтобы избавиться от дробного коэффициента $\\frac92$.',
+    'После упрощения числитель равен $x^2(2x^2-81)$.',
+    'Нули: $x=0$ и $x=\\pm\\frac{9\\sqrt2}{2}$; точка $x=3$ запрещена.'
+  ]
+};
+
+let hintSteps = JSON.parse(localStorage.getItem('bezout_hint_steps') || '{}');
+let done = JSON.parse(localStorage.getItem('bezout_done') || '{}');
+
+function go(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.target===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([document.getElementById(id)]);
+}
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>go(b.dataset.target)));
+
+function toggleReveal(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('show');
+  if(el.classList.contains('show') && window.MathJax?.typesetPromise) MathJax.typesetPromise([el]);
+}
+
+function nextHint(n){
+  const idx = hintSteps[n] || 0;
+  const el = document.getElementById('hint'+n);
+  if(idx < hints[n].length){
+    let current = el.dataset.content || '';
+    current += `<div style="margin-bottom:8px"><b>Подсказка ${idx+1}.</b> ${hints[n][idx]}</div>`;
+    el.dataset.content=current;
+    el.innerHTML='<div class="hint-title">Подсказки</div>'+current;
+    el.classList.add('show');
+    hintSteps[n]=idx+1;
+    localStorage.setItem('bezout_hint_steps',JSON.stringify(hintSteps));
+    if(window.MathJax?.typesetPromise) MathJax.typesetPromise([el]);
+  }
+}
+
+function markDone(n,value){
+  done[n]=value;
+  localStorage.setItem('bezout_done',JSON.stringify(done));
+  updateProgress();
+}
+function updateProgress(){
+  let count=0;
+  for(let n=1;n<=TOTAL;n++){
+    const isDone=done[n]===true;
+    if(isDone) count++;
+    const st=document.getElementById('status'+n);
+    if(st){
+      st.textContent=isDone?'выполнено':'не отмечено';
+      st.className='status '+(isDone?'ok':'wait');
+    }
+    const nav=document.querySelector(`.nav-btn[data-target="task${n}"]`);
+    if(nav) nav.classList.toggle('done',isDone);
+  }
+  const pct=Math.round(count/TOTAL*100);
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressText').textContent=`${count} из ${TOTAL}`;
+  document.getElementById('doneCount').textContent=count;
+  document.getElementById('percent').textContent=pct+'%';
+  document.getElementById('resultList').innerHTML=Array.from({length:TOTAL},(_,i)=>{
+    const n=i+1, ok=done[n]===true;
+    return `<div class="result-row"><span>Задание ${n}</span><b>${ok?'Выполнено ✓':'Не отмечено'}</b></div>`;
+  }).join('');
+}
+
+document.querySelectorAll('[data-save]').forEach(el=>{
+  const key='bezout_'+el.dataset.save;
+  el.value=localStorage.getItem(key)||'';
+  el.addEventListener('input',()=>localStorage.setItem(key,el.value));
+});
+
+function resetProgress(){
+  if(!confirm('Сбросить отметки выполнения и тексты решений?')) return;
+  localStorage.removeItem('bezout_done');
+  localStorage.removeItem('bezout_hint_steps');
+  for(let n=1;n<=TOTAL;n++) localStorage.removeItem('bezout_sol'+n);
+  document.querySelectorAll('[data-save]').forEach(el=>localStorage.removeItem('bezout_'+el.dataset.save));
+  done={}; hintSteps={};
+  document.querySelectorAll('[data-save]').forEach(x=>x.value='');
+  document.querySelectorAll('[id^="hint"]').forEach(x=>{x.classList.remove('show');x.innerHTML='';x.dataset.content='';});
+  updateProgress();
+}
+
+/* Черновик */
+const modal=document.getElementById('scratchModal');
+const canvas=document.getElementById('scratch');
+const ctx=canvas.getContext('2d');
+let drawing=false, tool='pen', history=[];
+
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  const old=canvas.toDataURL();
+  const dpr=Math.max(1,window.devicePixelRatio||1);
+  canvas.width=Math.floor(rect.width*dpr);
+  canvas.height=Math.floor(rect.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  if(old && old !== 'data:,'){
+    const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,rect.width,rect.height);img.src=old;
+  }
+}
+function openScratch(){
+  modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+  requestAnimationFrame(resizeCanvas);
+}
+function closeScratch(){modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
+function setTool(t){tool=t}
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const p=e.touches?e.touches[0]:e;
+  return {x:p.clientX-r.left,y:p.clientY-r.top};
+}
+function saveState(){
+  history.push(canvas.toDataURL());
+  if(history.length>15)history.shift();
+}
+function startDraw(e){
+  e.preventDefault();saveState();drawing=true;
+  const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);
+}
+function moveDraw(e){
+  if(!drawing)return;e.preventDefault();
+  const p=pos(e);
+  ctx.globalCompositeOperation=tool==='eraser'?'destination-out':'source-over';
+  ctx.strokeStyle='#243023';
+  ctx.lineWidth=tool==='eraser'?18:2.2;
+  ctx.lineTo(p.x,p.y);ctx.stroke();
+}
+function endDraw(e){if(drawing){e?.preventDefault();drawing=false;ctx.closePath();}}
+function undoCanvas(){
+  const src=history.pop();if(!src)return;
+  const r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);
+  const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,r.width,r.height);img.src=src;
+}
+function clearCanvas(){
+  saveState();
+  const r=canvas.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);
+}
+canvas.addEventListener('pointerdown',startDraw);
+canvas.addEventListener('pointermove',moveDraw);
+canvas.addEventListener('pointerup',endDraw);
+canvas.addEventListener('pointercancel',endDraw);
+window.addEventListener('resize',()=>{if(modal.classList.contains('show'))resizeCanvas()});
+
+updateProgress();
+</script>
+</body>
+</html>
