@@ -87,6 +87,11 @@ button{cursor:pointer}
 .cluebox img{width:54px;height:54px;object-fit:contain}
 .mini{font-size:14px;line-height:1.4;color:#ddd3bf}
 .formula{font-size:24px;text-align:center;padding:12px;background:rgba(255,255,255,.06);border-radius:14px}
+.formula-general{display:flex;align-items:center;justify-content:center;gap:10px;font-size:28px;font-weight:700}
+.frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;vertical-align:middle;min-width:150px}
+.frac .top{border-bottom:2px solid currentColor;padding:0 8px 5px;width:100%;font-size:18px}
+.frac .bottom{padding:5px 8px 0;width:100%;font-size:18px}
+.formula-note{margin-top:9px;font-size:12px;line-height:1.35;color:#d8cfbc}
 .visual{margin:16px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
 .token{
   width:54px;height:54px;display:grid;place-items:center;border-radius:12px;background:#f4ead0;color:#1f1b14;
@@ -217,7 +222,7 @@ img.final-crystal{max-height:250px;max-width:80%;object-fit:contain;filter:drop-
       <div><b>Досье аналитика</b><div class="mini" id="skillText"></div></div>
     </div>
     <div class="panel">
-      <div class="formula" id="formulaBox">P(A) = m / n</div>
+      <div class="formula" id="formulaBox"></div>
     </div>
     <div class="row">
       <button class="asset-button" onclick="showHint()"><img src="04_Подсказка.png" alt="Подсказка"></button>
@@ -391,7 +396,15 @@ function renderTask(n){
  document.getElementById('taskTitle').textContent=t.title;
  document.getElementById('taskText').textContent=t.text;
  document.getElementById('skillText').textContent=t.skill;
- document.getElementById('formulaBox').textContent=t.formula;
+ document.getElementById('formulaBox').innerHTML=`
+    <div class="formula-general">
+      <span>P(A) =</span>
+      <span class="frac">
+        <span class="top">число благоприятных исходов</span>
+        <span class="bottom">число всех равновозможных исходов</span>
+      </span>
+    </div>
+    <div class="formula-note">Сначала определи, какие исходы подходят событию A, затем раздели их количество на число всех возможных исходов.</div>`;
  document.getElementById('feedback').textContent='';
  document.getElementById('feedback').className='feedback';
  document.getElementById('answer').value='';
