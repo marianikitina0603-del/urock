@@ -166,7 +166,7 @@ img.final-crystal{max-height:250px;max-width:80%;object-fit:contain;filter:drop-
 <section class="screen" id="map" style="background-image:url('Локация 3.png')">
  <div class="topbar layer">
    <div class="brand">ДЕЛО №10</div>
-   <div class="progress"><span class="pill" id="mapClues">Улики: 0/6</span><span class="pill" id="mapProgress">Прототипы: 0/18</span></div>
+   <div class="progress"><span class="pill" id="mapClues">Улики: 0/6</span><span class="pill" id="mapProgress">Прототипы: 0/18</span><button class="text-btn secondary" onclick="resetGame()">Сбросить прогресс</button></div>
  </div>
  <div class="content layer">
    <div class="map-title">
@@ -258,7 +258,7 @@ img.final-crystal{max-height:250px;max-width:80%;object-fit:contain;filter:drop-
    <div class="result-grid" id="resultGrid"></div>
    <div class="row">
      <button class="asset-button" onclick="repeatErrors()"><img src="07_Повторить_ошибки.png" alt="Повторить ошибки"></button>
-     <button class="text-btn secondary" onclick="resetGame()">Начать заново</button>
+     <button class="text-btn secondary" onclick="resetGame()">Сбросить прогресс</button>
    </div>
   </div>
   <div style="text-align:center">
@@ -326,6 +326,13 @@ const tasks = {
 17:{title:'Прототип 10.17',skill:'Диаграмма: количество исходов в областях.',text:'На рисунке изображена диаграмма Эйлера для событий A и B. В каждой области указано количество равновозможных исходов. Найдите вероятность события A ∪ B.',answer:.6,hint:'Определи, сколько исходов относятся к A ∪ B, затем найди общее число исходов во всех областях.',formula:'P(A∪B)=m/n',visual:'img17'},
 18:{title:'Прототип 10.18',skill:'Дерево случайного опыта.',text:'На рисунке изображено дерево случайного опыта. Найдите вероятность события B.',answer:.75,hint:'Найди все пути в дереве, которые заканчиваются событием B. Для каждого пути используй вероятности на его ветвях, затем объедини результаты.',formula:'P(B): учти все пути, ведущие к B',visual:'img18'}
 };
+
+const navEntry = performance.getEntriesByType('navigation')[0];
+const legacyNavType = performance.navigation ? performance.navigation.type : null;
+const isReload = (navEntry && navEntry.type === 'reload') || legacyNavType === 1;
+if (isReload) {
+  localStorage.removeItem('case10state');
+}
 
 let state = JSON.parse(localStorage.getItem('case10state') || 'null') || {
   chapter:0, taskIndex:0, completed:{}, attempts:{}, errors:{}, chaptersDone:{}
@@ -502,7 +509,7 @@ function repeatErrors(){
  state.chapter=ci;state.taskIndex=chapters[ci].tasks.indexOf(n);save();renderTask(n);showScreen('task');
 }
 function resetGame(){
- if(confirm('Сбросить весь прогресс расследования?')){localStorage.removeItem('case10state');location.reload()}
+ if(confirm('Сбросить весь прогресс расследования? Все пройденные задания и ошибки будут удалены.')){localStorage.removeItem('case10state');location.href=location.pathname+location.search}
 }
 
 function toggleScratch(){document.getElementById('scratch').classList.toggle('open');resizeCanvas()}
