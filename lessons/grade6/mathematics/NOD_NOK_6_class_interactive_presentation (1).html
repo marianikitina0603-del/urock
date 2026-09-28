@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>НОД и НОК — понятная интерактивная презентация</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+:root{
+  --bg:#f6f2e8;
+  --paper:#fffdf8;
+  --ink:#263125;
+  --muted:#6f786d;
+  --green:#688a50;
+  --green2:#89a86c;
+  --soft:#e9f0df;
+  --line:#cad5bd;
+  --warn:#b37435;
+  --bad:#b25a54;
+  --ok:#4e7f53;
+  --blue:#496f9b;
+  --shadow:0 18px 50px rgba(43,58,35,.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#f6f2e8,#edf3e6);color:var(--ink)}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto}
+.top{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;background:rgba(255,255,255,.92);
+  border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;backdrop-filter:blur(10px)
+}
+.brand{font-weight:900;color:var(--green);white-space:nowrap}
+.progress-wrap{flex:1;height:9px;background:#e4eadf;border-radius:999px;overflow:hidden}
+.progress{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--green2));transition:.25s}
+.counter{font-weight:800;color:var(--muted);min-width:72px;text-align:right}
+.stage{padding:18px;display:grid;place-items:center}
+.deck{width:min(1180px,100%);height:min(720px,calc(100vh - 135px));min-height:560px;position:relative}
+.slide{
+  position:absolute;inset:0;display:none;background:var(--paper);border:1px solid var(--line);border-radius:26px;
+  box-shadow:var(--shadow);padding:clamp(24px,4vw,54px);overflow:auto
+}
+.slide.active{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+.slide h1,.slide h2{margin-top:0;color:var(--green)}
+.slide h1{font-size:clamp(2.3rem,5vw,4.6rem);line-height:1.02;margin-bottom:18px}
+.slide h2{font-size:clamp(1.8rem,3.2vw,3rem);margin-bottom:18px}
+.lead{font-size:clamp(1.15rem,2.1vw,1.6rem);line-height:1.55}
+.big{font-size:clamp(1.4rem,2.6vw,2.15rem);font-weight:900}
+.func-name{font-weight:900;letter-spacing:.01em;white-space:nowrap;margin-right:.06em}
+.center{text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{border:1px solid var(--line);background:#fff;border-radius:18px;padding:18px}
+.card.soft{background:var(--soft)}
+.card h3{margin:0 0 8px;color:var(--green);font-size:1.22rem}
+.tag{display:inline-block;border-radius:999px;padding:7px 11px;background:var(--soft);color:var(--green);font-weight:900;margin:0 6px 6px 0}
+.remember{border-left:7px solid var(--green);background:var(--soft);padding:18px 20px;border-radius:14px;font-size:1.2rem;line-height:1.5}
+.warning{border-left-color:var(--warn);background:#fff2df}
+.compare{display:grid;grid-template-columns:1fr 80px 1fr;align-items:stretch;gap:12px}
+.vs{display:grid;place-items:center;font-weight:1000;font-size:1.4rem;color:var(--muted)}
+.numline{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.pill{display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:white;font-weight:900}
+.pill.hit{border-color:var(--green);background:var(--soft);color:var(--green)}
+.factor{font-size:clamp(1.25rem,2vw,1.7rem);line-height:1.8}
+.practice{margin-top:16px;border-top:1px dashed var(--line);padding-top:16px}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}
+.option,.choice-btn{
+  border:2px solid var(--line);background:#fff;border-radius:14px;padding:13px 14px;text-align:left;font-weight:800;color:var(--ink)
+}
+.option:hover,.choice-btn:hover{border-color:var(--green2);background:var(--soft)}
+.choice-btn.selected{border-color:var(--green);background:var(--soft)}
+.inputrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.answer{
+  min-width:190px;max-width:320px;flex:1;border:2px solid var(--line);border-radius:12px;padding:12px 14px;background:white;outline:none
+}
+.answer:focus{border-color:var(--green)}
+.check,.hint{
+  border:0;border-radius:12px;padding:12px 16px;font-weight:900
+}
+.check{background:var(--green);color:white}
+.hint{background:var(--soft);color:var(--green);border:1px solid var(--line)}
+.feedback{min-height:46px;margin-top:10px;padding:11px 14px;border-radius:12px;display:none;font-weight:800;line-height:1.4}
+.feedback.show{display:block}
+.feedback.ok{background:#e7f3e6;color:var(--ok);border:1px solid #b8d4b5}
+.feedback.bad{background:#fae8e6;color:var(--bad);border:1px solid #e6b9b5}
+.steps{counter-reset:step;display:grid;gap:10px}
+.step{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start}
+.step:before{
+  counter-increment:step;content:counter(step);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--green);color:#fff;font-weight:1000
+}
+.teacher{background:linear-gradient(135deg,#fff7dc,#fffdf8);border:2px solid #e7d49e}
+.badline{padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--line);margin:7px 0}
+.footer{
+  display:flex;gap:10px;justify-content:center;padding:10px 16px 14px;background:transparent
+}
+.nav{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 16px;font-weight:900;color:var(--ink)}
+.nav.primary{background:var(--green);color:white;border-color:var(--green)}
+.nav:disabled{opacity:.45;cursor:not-allowed}
+kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:2px 7px;background:#fff}
+.small{font-size:.93rem;color:var(--muted)}
+.mini-table{width:100%;border-collapse:collapse;font-size:1.05rem}
+.mini-table td,.mini-table th{border:1px solid var(--line);padding:9px;text-align:center}
+.mini-table th{background:var(--soft);color:var(--green)}
+.score{font-size:clamp(2rem,5vw,4rem);font-weight:1000;color:var(--green);text-align:center}
+@media (max-width:760px){
+  .deck{height:calc(100vh - 135px);min-height:600px}
+  .grid2,.grid3,.compare{grid-template-columns:1fr}
+  .vs{display:none}
+  .slide{padding:22px}
+  .top{gap:8px}
+  .brand{font-size:.9rem}
+}
+@media print{
+  .top,.footer{display:none!important}
+  body{background:white}
+  .stage{display:block;padding:0}
+  .deck{width:100%;height:auto}
+  .slide{display:block!important;position:relative;page-break-after:always;box-shadow:none;border:0;border-radius:0;min-height:190mm}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">НОД и НОК • 6 класс</div>
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+    <div class="counter" id="counter">1 / 16</div>
+  </header>
+
+  <main class="stage">
+    <div class="deck" id="deck">
+
+      <section class="slide active">
+        <div class="center">
+          <div class="tag">Очень понятное объяснение</div>
+          <h1>НОД и НОК</h1>
+          <p class="lead">Сегодня разберём две похожие аббревиатуры так, чтобы они больше не путались.</p>
+          <div class="grid2" style="margin-top:28px;text-align:left">
+            <div class="card soft"><h3>НОД</h3><p class="big">делим на группы</p><p>Ищем самое большое число, которое делит оба числа без остатка.</p></div>
+            <div class="card soft"><h3>НОК</h3><p class="big">ищем общую встречу</p><p>Ищем самое маленькое число, которое кратно обоим числам.</p></div>
+          </div>
+          <p class="small" style="margin-top:28px">Переключение: кнопки снизу или клавиши <kbd>←</kbd> <kbd>→</kbd>.</p>
+        </div>
+      </section>
+
+      <section class="slide">
+        <h2>Шаг 0. Вспомним два слова</h2>
+        <div class="grid2">
+          <div class="card">
+            <h3>Делитель</h3>
+            <p class="lead">Число, на которое можно <b>разделить без остатка</b>.</p>
+            <p class="big">$12:3=4$</p>
+            <p>Значит, $3$ — делитель числа $12$.</p>
+          </div>
+          <div class="card">
+            <h3>Кратное</h3>
+            <p class="lead">Число, которое получается, если данное число <b>умножить на натуральное число</b>.</p>
+            <p class="big">$3\cdot4=12$</p>
+            <p>Значит, $12$ — кратное числа $3$.</p>
+          </div>
+        </div>
+        <div class="remember" style="margin-top:18px"><b>Подсказка:</b> делители обычно меньше числа, а кратные могут расти дальше и дальше.</div>
+      </section>
+
+      <section class="slide">
+        <h2>Проверим основу</h2>
+        <p class="lead">Что верно для числа $18$?</p>
+        <div class="options" id="q1">
+          <button class="choice-btn" data-correct="1">$6$ — делитель $18$</button>
+          <button class="choice-btn" data-correct="0">$5$ — делитель $18$</button>
+          <button class="choice-btn" data-correct="1">$36$ — кратное $18$</button>
+          <button class="choice-btn" data-correct="0">$20$ — кратное $18$</button>
+        </div>
+        <div class="inputrow">
+          <button class="check" onclick="checkMulti('q1','fb1')">Проверить</button>
+          <button class="hint" onclick="showHint('fb1','Для делителя проверь деление без остатка. Для кратного спроси: можно ли получить число умножением 18 на натуральное число?')">Подсказка</button>
+        </div>
+        <div class="feedback" id="fb1"></div>
+      </section>
+
+      <section class="slide">
+        <h2>НОД: что означает?</h2>
+        <div class="remember">
+          <b>НОД</b> = <b>наибольший общий делитель</b>.<br>
+          Это <b>самое большое</b> натуральное число, на которое <b>оба числа делятся без остатка</b>.
+        </div>
+        <p class="lead">Найдём <span class="func-name">НОД</span>$(12,18)$.</p>
+        <div class="grid2">
+          <div class="card">
+            <h3>Делители 12</h3>
+            <div class="numline"><span class="pill">1</span><span class="pill hit">2</span><span class="pill hit">3</span><span class="pill hit">6</span><span class="pill">12</span></div>
+          </div>
+          <div class="card">
+            <h3>Делители 18</h3>
+            <div class="numline"><span class="pill">1</span><span class="pill hit">2</span><span class="pill hit">3</span><span class="pill hit">6</span><span class="pill">9</span><span class="pill">18</span></div>
+          </div>
+        </div>
+        <p class="big center">Общие: $1,2,3,6$. Самый большой — $6$.</p>
+        <p class="big center"><span class="func-name">НОД</span>$(12,18)=6$</p>
+      </section>
+
+      <section class="slide">
+        <h2>Как понять, что задача про НОД?</h2>
+        <div class="grid3">
+          <div class="card soft"><h3>Разделить поровну</h3><p>Нужно сделать одинаковые наборы без остатка.</p></div>
+          <div class="card soft"><h3>Самый большой размер</h3><p>Нужна максимально большая одинаковая группа, плитка, шаг, кусок.</p></div>
+          <div class="card soft"><h3>Общий делитель</h3><p>Одно число должно делить сразу несколько чисел.</p></div>
+        </div>
+        <div class="practice">
+          <p class="lead">Есть $18$ красных и $24$ синих карандаша. Хотят сделать <b>максимально возможное</b> число одинаковых наборов без остатка. Что нужно искать?</p>
+          <div class="options" id="q2">
+            <button class="choice-btn" data-correct="1">НОД$(18,24)$</button>
+            <button class="choice-btn" data-correct="0">НОК$(18,24)$</button>
+          </div>
+          <button class="check" onclick="checkSingle('q2','fb2')">Проверить</button>
+          <div class="feedback" id="fb2"></div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <h2>НОД через простые множители</h2>
+        <p class="lead">Для больших чисел перечислять все делители долго. Тогда раскладываем числа на простые множители.</p>
+        <div class="card soft factor">
+          $36=2\cdot2\cdot3\cdot3$<br>
+          $48=2\cdot2\cdot2\cdot2\cdot3$
+        </div>
+        <div class="steps" style="margin-top:16px">
+          <div class="step"><div><b>Найди одинаковые простые множители.</b><br>У обоих чисел есть две двойки и одна тройка.</div></div>
+          <div class="step"><div><b>Возьми только общие множители.</b><br>$2,\;2,\;3$.</div></div>
+          <div class="step"><div><b>Перемножь.</b><br>$2\cdot2\cdot3=12$.</div></div>
+        </div>
+        <p class="big center"><span class="func-name">НОД</span>$(36,48)=12$</p>
+      </section>
+
+      <section class="slide">
+        <h2>Практика: НОД</h2>
+        <p class="lead">Найди <span class="func-name">НОД</span>$(24,36)$.</p>
+        <div class="card soft">
+          Можно начать так: $24=2\cdot2\cdot2\cdot3$, &nbsp; $36=2\cdot2\cdot3\cdot3$.
+        </div>
+        <div class="inputrow">
+          <input class="answer" id="a3" inputmode="numeric" placeholder="Введите число">
+          <button class="check" onclick="checkInput('a3','12','fb3')">Проверить</button>
+          <button class="hint" onclick="progressHint('fb3',[
+            'Ищи только общие простые множители.',
+            'У обоих чисел есть две двойки и одна тройка — именно их и бери.',
+            '$2\cdot2\\cdot3=4\\cdot3$. Осталось перемножить.'
+          ])">Подсказка</button>
+        </div>
+        <div class="feedback" id="fb3"></div>
+      </section>
+
+      <section class="slide">
+        <h2>НОК: что означает?</h2>
+        <div class="remember">
+          <b>НОК</b> = <b>наименьшее общее кратное</b>.<br>
+          Это <b>самое маленькое положительное число</b>, которое <b>делится и на первое, и на второе число</b>.
+        </div>
+        <p class="lead">Найдём <span class="func-name">НОК</span>$(4,6)$.</p>
+        <div class="grid2">
+          <div class="card"><h3>Кратные 4</h3><div class="numline"><span class="pill">4</span><span class="pill">8</span><span class="pill hit">12</span><span class="pill">16</span><span class="pill">20</span><span class="pill">24</span></div></div>
+          <div class="card"><h3>Кратные 6</h3><div class="numline"><span class="pill">6</span><span class="pill hit">12</span><span class="pill">18</span><span class="pill">24</span></div></div>
+        </div>
+        <p class="big center">Первая общая встреча — $12$.</p>
+        <p class="big center"><span class="func-name">НОК</span>$(4,6)=12$</p>
+      </section>
+
+      <section class="slide">
+        <h2>Как понять, что задача про НОК?</h2>
+        <div class="grid3">
+          <div class="card soft"><h3>События повторяются</h3><p>Автобусы, сигналы, звонки, вращения.</p></div>
+          <div class="card soft"><h3>Когда снова вместе?</h3><p>Нужно найти первую общую встречу во времени.</p></div>
+          <div class="card soft"><h3>Общее кратное</h3><p>Искомое число должно делиться на каждое из данных.</p></div>
+        </div>
+        <div class="practice">
+          <p class="lead">Один фонарь мигает каждые $6$ с, второй — каждые $8$ с. Через сколько секунд они впервые снова мигнут вместе?</p>
+          <div class="inputrow">
+            <input class="answer" id="a4" inputmode="numeric" placeholder="Секунд">
+            <button class="check" onclick="checkInput('a4','24','fb4')">Проверить</button>
+            <button class="hint" onclick="showHint('fb4','Выпиши несколько кратных 6 и 8. Найди первое одинаковое.')">Подсказка</button>
+          </div>
+          <div class="feedback" id="fb4"></div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <h2>НОК через простые множители</h2>
+        <div class="card soft factor">
+          $12=2\cdot2\cdot3$<br>
+          $18=2\cdot3\cdot3$
+        </div>
+        <div class="steps" style="margin-top:16px">
+          <div class="step"><div><b>Начни с множителей первого числа.</b><br>$12=2\cdot2\cdot3$.</div></div>
+          <div class="step"><div><b>Добавь недостающие множители второго числа.</b><br>Для $18$ не хватает ещё одной тройки.</div></div>
+          <div class="step"><div><b>Перемножь всё.</b><br>$2\cdot2\cdot3\cdot3=36$.</div></div>
+        </div>
+        <p class="big center"><span class="func-name">НОК</span>$(12,18)=36$</p>
+        <div class="remember warning"><b>Частая ошибка:</b> для НОД берём только те простые множители, которые есть у обоих чисел. Для НОК берём все множители первого числа и добавляем недостающие из второго.</div>
+      </section>
+
+      <section class="slide">
+        <h2>Главная шпаргалка: не перепутай</h2>
+        <div class="compare">
+          <div class="card soft">
+            <h3>НОД</h3>
+            <p class="big">Д = Делить</p>
+            <p>Самый <b>большой делитель</b>.</p>
+            <p>В разложении: берём только <b>общие множители</b>.</p>
+          </div>
+          <div class="vs">↔</div>
+          <div class="card soft">
+            <h3>НОК</h3>
+            <p class="big">К = Кратное</p>
+            <p>Самое <b>маленькое кратное</b>.</p>
+            <p>В разложении: берём <b>все нужные множители</b>, без повторного учёта одинаковых.</p>
+          </div>
+        </div>
+        <table class="mini-table" style="margin-top:18px">
+          <tr><th>Вопрос</th><th>НОД</th><th>НОК</th></tr>
+          <tr><td>Делит оба числа?</td><td>Да</td><td>Не обязательно</td></tr>
+          <tr><td>Сам делится на оба числа?</td><td>Не обязательно</td><td>Да</td></tr>
+          <tr><td>Типичная задача</td><td>разделить поровну</td><td>найти общую встречу</td></tr>
+        </table>
+      </section>
+
+      <section class="slide">
+        <h2>Выбери: НОД или НОК?</h2>
+        <p class="lead">1. Нужно разложить $20$ яблок и $30$ груш в одинаковые наборы без остатка, причём наборов должно быть как можно больше.</p>
+        <div class="options" id="q5">
+          <button class="choice-btn" data-correct="1">НОД</button>
+          <button class="choice-btn" data-correct="0">НОК</button>
+        </div>
+        <p class="lead">2. Два автобуса отправляются с остановки каждые $15$ и $20$ минут. Через сколько минут они снова отправятся одновременно?</p>
+        <div class="options" id="q6">
+          <button class="choice-btn" data-correct="0">НОД</button>
+          <button class="choice-btn" data-correct="1">НОК</button>
+        </div>
+        <button class="check" onclick="checkTwoSingles()">Проверить оба</button>
+        <div class="feedback" id="fb5"></div>
+      </section>
+
+      <section class="slide">
+        <h2>Найди ошибку ученика</h2>
+        <p class="lead">Ученик искал <span class="func-name">НОД</span>$(24,36)$:</p>
+        <div class="badline">1) $24=2\cdot2\cdot2\cdot3$</div>
+        <div class="badline">2) $36=2\cdot2\cdot3\cdot3$</div>
+        <div class="badline">3) Для НОД беру все множители из обоих разложений</div>
+        <div class="badline">4) Получаю слишком большое число</div>
+        <p class="lead">На какой строке впервые появилась ошибка?</p>
+        <div class="options" id="q7">
+          <button class="choice-btn" data-correct="0">1</button>
+          <button class="choice-btn" data-correct="0">2</button>
+          <button class="choice-btn" data-correct="1">3</button>
+          <button class="choice-btn" data-correct="0">4</button>
+        </div>
+        <button class="check" onclick="checkSingle('q7','fb7')">Проверить</button>
+        <button class="hint" onclick="showHint('fb7','Для НОД нужны только те простые множители, которые есть у обоих чисел.')">Подсказка</button>
+        <div class="feedback" id="fb7"></div>
+      </section>
+
+      <section class="slide">
+        <h2>Ты — учитель</h2>
+        <div class="card teacher">
+          <p class="lead"><b>Ученик говорит:</b> «НОД и НОК — это почти одно и то же. Я просто умножаю числа».</p>
+          <p class="lead"><b>Твоя задача:</b> выбрать объяснение, которое лучше всего исправляет ошибку.</p>
+        </div>
+        <div class="options" id="q8">
+          <button class="choice-btn" data-correct="0">«Просто выучи названия наизусть».</button>
+          <button class="choice-btn" data-correct="1">«НОД ищет большой общий <u>делитель</u>, а НОК — маленькое общее <u>кратное</u>. Сначала пойми, что ищет задача».</button>
+          <button class="choice-btn" data-correct="0">«Всегда умножай два числа, а потом дели на 2».</button>
+        </div>
+        <button class="check" onclick="checkSingle('q8','fb8')">Проверить</button>
+        <div class="feedback" id="fb8"></div>
+      </section>
+
+      <section class="slide">
+        <h2>Самостоятельно: 3 коротких задания</h2>
+        <div class="grid3">
+          <div class="card">
+            <h3>1</h3>
+            <p>Найди <span class="func-name">НОД</span>$(18,30)$.</p>
+            <input class="answer" id="s1" inputmode="numeric" placeholder="Ответ">
+          </div>
+          <div class="card">
+            <h3>2</h3>
+            <p>Найди <span class="func-name">НОК</span>$(8,12)$.</p>
+            <input class="answer" id="s2" inputmode="numeric" placeholder="Ответ">
+          </div>
+          <div class="card">
+            <h3>3</h3>
+            <p>Какое действие нужно для задачи «два сигнала повторяются каждые 9 и 12 секунд; когда снова вместе»?</p>
+            <select class="answer" id="s3">
+              <option value="">Выберите</option>
+              <option value="nod">НОД</option>
+              <option value="nok">НОК</option>
+            </select>
+          </div>
+        </div>
+        <div class="inputrow">
+          <button class="check" onclick="checkFinal()">Проверить</button>
+          <button class="hint" onclick="progressHint('fb9',[
+            '1) Для НОД ищи общий делитель. 2) Для НОК — первую общую встречу кратных.',
+            'НОД(18,30): общие делители включают 1,2,3,6. НОК(8,12): выпиши 8,16,24... и 12,24...',
+            'В задаче про повторяющиеся сигналы ищем НОК.'
+          ])">Подсказка</button>
+        </div>
+        <div class="feedback" id="fb9"></div>
+      </section>
+
+
+      <section class="slide">
+        <h2>Самостоятельная работа</h2>
+        <p class="lead">Выполни задания самостоятельно. Решения записывай подробно.</p>
+
+        <div class="card">
+          <p><b>№ 1.</b> Разложите на простые множители число 262.</p>
+          <p><b>№ 2.</b> Определите, какие числа простые, а какие составные: 35, 47, 111, 153, 138, 675?</p>
+          <p><b>№ 3.</b> Найдите все делители для числа 24.</p>
+          <p><b>№ 4.</b> Найдите НОД и НОК для чисел:</p>
+          <p style="margin-left:2em">а) 8, 5 и 12;</p>
+          <p style="margin-left:2em">б) 18 и 42.</p>
+          <p><b>№ 5.</b> Докажите, что числа 392 и 675 взаимно простые.</p>
+        </div>
+
+        <div class="remember" style="margin-top:18px">
+          <b>Перед началом:</b> сначала определи, что требуется в каждом задании:
+          разложение на простые множители, проверка числа, поиск делителей, НОД/НОК или доказательство взаимной простоты.
+        </div>
+      </section>
+
+      <section class="slide">
+        <h2>Итог</h2>
+        <div class="score" id="score">0 / 8</div>
+        <p class="lead center">Главное — не скорость, а чтобы ты каждый раз задавал себе правильный вопрос:</p>
+        <div class="grid2" style="margin-top:20px">
+          <div class="card soft center"><p class="big">Нужно <u>делить</u> поровну?</p><p class="big">→ НОД</p></div>
+          <div class="card soft center"><p class="big">Нужна первая общая <u>встреча</u>?</p><p class="big">→ НОК</p></div>
+        </div>
+        <div class="remember" style="margin-top:20px">
+          <b>Одна фраза на память:</b><br>
+          НОД — большой общий <b>делитель</b>. НОК — маленькое общее <b>кратное</b>.
+        </div>
+        <p class="small center" style="margin-top:18px">Можно распечатать презентацию через меню браузера: все слайды будут выведены по одному на страницу.</p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <button class="nav" id="prev">← Назад</button>
+    <button class="nav primary" id="next">Далее →</button>
+  </footer>
+</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let current=0;
+const progress=document.getElementById('progress');
+const counter=document.getElementById('counter');
+const prev=document.getElementById('prev');
+const next=document.getElementById('next');
+const solved=new Set();
+const totalScored=8;
+const hintCount={};
+
+function typeset(node=document.body){
+  if(window.MathJax?.typesetPromise){
+    try{ MathJax.typesetPromise([node]); }catch(e){}
+  }
+}
+function showSlide(i){
+  current=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,k)=>s.classList.toggle('active',k===current));
+  counter.textContent=`${current+1} / ${slides.length}`;
+  progress.style.width=`${((current+1)/slides.length)*100}%`;
+  prev.disabled=current===0;
+  next.textContent=current===slides.length-1?'К началу ↺':'Далее →';
+  slides[current].scrollTop=0;
+  typeset(slides[current]);
+  updateScore();
+}
+prev.onclick=()=>showSlide(current-1);
+next.onclick=()=>showSlide(current===slides.length-1?0:current+1);
+document.addEventListener('keydown',e=>{
+  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if(e.key==='ArrowRight') showSlide(current+1);
+  if(e.key==='ArrowLeft') showSlide(current-1);
+});
+document.querySelectorAll('.choice-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const box=btn.parentElement;
+    if(box.dataset.multi==='true'){
+      btn.classList.toggle('selected');
+    }else{
+      box.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  });
+});
+document.getElementById('q1').dataset.multi='true';
+
+function setFeedback(id,ok,msg){
+  const el=document.getElementById(id);
+  el.className='feedback show '+(ok?'ok':'bad');
+  el.innerHTML=msg;
+  typeset(el);
+}
+function markSolved(key,ok){
+  if(ok) solved.add(key);
+  updateScore();
+}
+function checkSingle(boxId,fbId){
+  const box=document.getElementById(boxId);
+  const selected=box.querySelector('.choice-btn.selected');
+  if(!selected){setFeedback(fbId,false,'Сначала выбери ответ.');return false;}
+  const ok=selected.dataset.correct==='1';
+  setFeedback(fbId,ok,ok?'Верно! Отлично.':'Пока нет. Посмотри на ключевые слова ещё раз.');
+  markSolved(boxId,ok);
+  return ok;
+}
+function checkMulti(boxId,fbId){
+  const box=document.getElementById(boxId);
+  const buttons=[...box.querySelectorAll('.choice-btn')];
+  const selected=buttons.filter(b=>b.classList.contains('selected'));
+  if(!selected.length){setFeedback(fbId,false,'Выбери один или несколько вариантов.');return false;}
+  const ok=buttons.every(b=>(b.dataset.correct==='1')===b.classList.contains('selected'));
+  setFeedback(fbId,ok,ok?'Верно: ты различаешь делитель и кратное.':'Есть ошибка. Проверь каждый вариант отдельно.');
+  markSolved(boxId,ok);
+  return ok;
+}
+function normalize(v){return String(v).trim().replace(',','.').replace(/\s+/g,'');}
+function checkInput(inputId,answer,fbId){
+  const v=normalize(document.getElementById(inputId).value);
+  if(!v){setFeedback(fbId,false,'Введите ответ.');return false;}
+  const ok=v===normalize(answer);
+  setFeedback(fbId,ok,ok?'Верно!':'Пока неверно. Попробуй ещё раз — решение не раскрыто.');
+  markSolved(inputId,ok);
+  return ok;
+}
+function showHint(fbId,msg){
+  const el=document.getElementById(fbId);
+  el.className='feedback show bad';
+  el.innerHTML='💡 '+msg;
+  typeset(el);
+}
+function progressHint(fbId,hints){
+  hintCount[fbId]=(hintCount[fbId]||0)+1;
+  const i=Math.min(hintCount[fbId]-1,hints.length-1);
+  showHint(fbId,hints[i]);
+}
+function checkTwoSingles(){
+  const a=document.querySelector('#q5 .choice-btn.selected');
+  const b=document.querySelector('#q6 .choice-btn.selected');
+  if(!a||!b){setFeedback('fb5',false,'Ответь на оба вопроса.');return;}
+  const ok=a.dataset.correct==='1'&&b.dataset.correct==='1';
+  setFeedback('fb5',ok,ok?'Верно: наборы → НОД, повторяющиеся автобусы → НОК.':'Подумай: «разделить на одинаковые наборы» и «когда снова одновременно» — это разные сигналы.');
+  markSolved('q5q6',ok);
+}
+function checkFinal(){
+  const ok1=normalize(document.getElementById('s1').value)==='6';
+  const ok2=normalize(document.getElementById('s2').value)==='24';
+  const ok3=document.getElementById('s3').value==='nok';
+  const n=[ok1,ok2,ok3].filter(Boolean).length;
+  const ok=n===3;
+  setFeedback('fb9',ok,ok?'Все три задания верны. Отличная работа!':`Верно ${n} из 3. Исправь только те пункты, где есть ошибка.`);
+  markSolved('final',ok);
+}
+function updateScore(){
+  const score=document.getElementById('score');
+  if(score) score.textContent=`${solved.size} / ${totalScored}`;
+}
+showSlide(0);
+window.addEventListener('load',()=>typeset(document.body));
+</script>
+</body>
+</html>

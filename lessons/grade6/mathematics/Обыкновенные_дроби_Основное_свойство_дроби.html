@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Обыкновенные дроби. Основное свойство дроби — 6 класс</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f7f4ea;
+    --surface:#fffdf7;
+    --surface-2:#f1f5e7;
+    --text:#263125;
+    --muted:#697468;
+    --primary:#6c8a52;
+    --primary-2:#89a46d;
+    --primary-soft:#e7eedc;
+    --border:#cbd6bc;
+    --danger:#b55d54;
+    --success:#4e7f53;
+    --shadow:0 8px 24px rgba(45,60,35,.08);
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--bg),#ffffff 68%);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  button,input,textarea{font:inherit}
+  button{cursor:pointer}
+
+  .app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 3px 16px rgba(0,0,0,.04);
+  }
+
+  .topbar-row{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+    padding:10px 14px 0;
+    overflow-x:auto;
+  }
+
+  .topic-tab{
+    min-width:170px;
+    border:1px solid var(--border);
+    border-bottom:3px solid transparent;
+    border-radius:14px 14px 0 0;
+    background:var(--surface);
+    color:var(--text);
+    padding:12px 16px;
+    font-weight:800;
+    text-align:center;
+    transition:.2s ease;
+  }
+  .topic-tab small{
+    display:block;
+    margin-top:5px;
+    font-size:.78rem;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .topic-tab:hover{background:var(--primary-soft)}
+  .topic-tab.active{
+    color:var(--primary);
+    border-color:var(--primary);
+    border-bottom-color:var(--primary);
+    background:var(--primary-soft);
+  }
+
+  .themebar{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    padding:8px 14px 10px;
+    border-top:1px solid color-mix(in srgb,var(--border) 55%, transparent);
+  }
+  .theme-label{
+    align-self:center;
+    font-size:.9rem;
+    color:var(--muted);
+    margin-right:2px;
+  }
+  .theme-btn{
+    width:31px;height:31px;border-radius:50%;
+    border:2px solid #fff;
+    outline:1px solid var(--border);
+    transition:.2s;
+  }
+  .theme-btn:hover{transform:scale(1.1)}
+  .theme-btn.active{outline:3px solid var(--primary)}
+
+  .theme-sage{background:linear-gradient(135deg,#d7cfae 0 50%,#78915c 50%)}
+  .theme-blue{background:linear-gradient(135deg,#dce9f7 0 50%,#376fae 50%)}
+  .theme-rose{background:linear-gradient(135deg,#f4e0df 0 50%,#a95f71 50%)}
+  .theme-night{background:linear-gradient(135deg,#303845 0 50%,#d4aa55 50%)}
+
+  .layout{
+    display:grid;
+    grid-template-columns:280px minmax(0,1fr);
+    gap:18px;
+    padding:18px;
+    width:min(1600px,100%);
+    margin:0 auto;
+    flex:1;
+  }
+
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+
+  .sidebar-card{
+    overflow:hidden;
+  }
+  .sidebar-title{
+    padding:14px 16px;
+    font-weight:900;
+    color:var(--primary);
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,var(--surface),var(--primary-soft));
+  }
+
+  .task-nav{
+    padding:8px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+  }
+  .task-btn{
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:var(--text);
+    padding:12px 12px;
+    text-align:left;
+    font-weight:700;
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .task-btn:hover{background:var(--primary-soft)}
+  .task-btn.active{
+    background:var(--primary);
+    color:white;
+  }
+  .task-num{
+    width:28px;height:28px;border-radius:8px;
+    display:grid;place-items:center;
+    background:color-mix(in srgb,var(--primary) 13%, white);
+    color:var(--primary);
+    font-size:.86rem;
+  }
+  .task-btn.active .task-num{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+  }
+
+  .info{
+    padding:15px 16px;
+    line-height:1.55;
+    font-size:.92rem;
+  }
+  .info strong{color:var(--primary)}
+  .info p{margin:.35rem 0}
+
+  .workspace{
+    padding:20px;
+    min-height:700px;
+  }
+
+  .task-header{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+    margin-bottom:14px;
+  }
+  .task-header h1{
+    margin:0;
+    color:var(--primary);
+    font-size:clamp(1.35rem,2vw,2rem);
+  }
+  .task-kicker{
+    margin:5px 0 0;
+    color:var(--muted);
+  }
+
+  .task-content{
+    border-top:1px solid var(--border);
+    padding-top:18px;
+  }
+
+  .example-box{
+    background:var(--primary-soft);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px;
+    margin:14px 0;
+  }
+
+  .question{
+    font-size:1.13rem;
+    line-height:1.6;
+    margin:12px 0 16px;
+  }
+
+  .answer-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin:18px 0;
+  }
+  .answer-row label{font-weight:800}
+  .answer-input{
+    min-width:220px;
+    flex:1;
+    border:2px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    background:var(--surface);
+    color:var(--text);
+    outline:none;
+  }
+  .answer-input::placeholder{color:var(--muted);opacity:.9}
+  .answer-input:focus{border-color:var(--primary)}
+
+
+  .fraction-answer-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:12px;
+    margin:18px 0;
+  }
+  .fraction-answer-item{
+    display:grid;
+    grid-template-columns:auto auto minmax(90px,1fr);
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:var(--surface-2);
+  }
+  .fraction-answer-label{
+    min-width:48px;
+    text-align:center;
+    font-size:1.18rem;
+    font-weight:800;
+  }
+  .fraction-equals{font-weight:900;color:var(--primary)}
+  .fraction-input{
+    min-width:0;
+    width:100%;
+    padding:9px 10px;
+    text-align:center;
+  }
+
+  .choice-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+    margin:16px 0;
+  }
+  .choice{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    background:var(--surface-2);
+    color:var(--text);
+  }
+  .choice span{color:inherit}
+  .choice input{accent-color:var(--primary)}
+
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    padding-top:18px;
+    margin-top:24px;
+    border-top:1px solid var(--border);
+  }
+  .btn{
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:11px 16px;
+    font-weight:800;
+    background:var(--surface);
+    color:var(--text);
+    transition:.2s;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{
+    margin-left:auto;
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btn-soft{
+    background:var(--primary-soft);
+    color:var(--primary);
+  }
+  .btn-danger{
+    color:var(--danger);
+    background:color-mix(in srgb,var(--danger) 8%, white);
+  }
+
+  .feedback{
+    margin-top:14px;
+    border-radius:12px;
+    padding:12px 14px;
+    display:none;
+    font-weight:800;
+  }
+  .feedback.show{display:block}
+  .feedback.ok{
+    color:var(--success);
+    background:color-mix(in srgb,var(--success) 11%, white);
+    border:1px solid color-mix(in srgb,var(--success) 30%, white);
+  }
+  .feedback.bad{
+    color:var(--danger);
+    background:color-mix(in srgb,var(--danger) 10%, white);
+    border:1px solid color-mix(in srgb,var(--danger) 28%, white);
+  }
+
+  .progress-line{
+    height:7px;
+    border-radius:999px;
+    background:color-mix(in srgb,var(--border) 50%, white);
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .progress-bar{
+    height:100%;
+    width:0%;
+    background:var(--primary);
+    transition:.25s;
+  }
+
+  /* Черновик */
+  .modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.34);
+    display:none;
+    place-items:center;
+    z-index:100;
+    padding:18px;
+  }
+  .modal.open{display:grid}
+  .scratchpad{
+    width:min(900px,96vw);
+    height:min(650px,90vh);
+    background:var(--surface);
+    border-radius:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .scratch-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 14px;
+    background:var(--primary-soft);
+    border-bottom:1px solid var(--border);
+  }
+  .scratch-head strong{color:var(--primary)}
+  .scratch-head .spacer{flex:1}
+  .tool-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:9px;
+    padding:8px 10px;
+    font-weight:700;
+  }
+  #scratchCanvas{
+    flex:1;
+    width:100%;
+    min-height:0;
+    touch-action:none;
+    cursor:crosshair;
+    background-color:#fffef8;
+    background-image:
+      linear-gradient(rgba(100,120,100,.12) 1px, transparent 1px),
+      linear-gradient(90deg,rgba(100,120,100,.12) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+
+  .mobile-task-select{
+    display:none;
+    margin-bottom:12px;
+    width:100%;
+    padding:11px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--surface);
+  }
+
+
+  .lesson-intro{padding:14px 16px;border-left:4px solid var(--primary);background:var(--surface-2);border-radius:12px;line-height:1.55;margin-bottom:16px}
+  .fraction-visual{max-width:520px;margin:14px auto;color:var(--primary)}
+  .equal-models{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:18px;max-width:620px;margin:16px auto;text-align:center}
+  .equal-models>div{border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface-2)}
+  .mini-bar{display:grid;grid-template-columns:repeat(2,1fr);height:54px;border:2px solid var(--primary);border-radius:8px;overflow:hidden;margin-bottom:8px}
+  .mini-bar.four{grid-template-columns:repeat(4,1fr)}
+  .mini-bar span{border-right:1px solid var(--border)} .mini-bar span:last-child{border-right:0}.mini-bar .on{background:var(--primary-soft)}
+  .formula-card{padding:10px 12px;background:var(--primary-soft);border-radius:10px;text-align:center}
+  .notice{padding:12px 14px;border:1px dashed var(--primary);border-radius:12px;background:var(--surface-2);margin:10px 0;line-height:1.5}
+  .source-badge{display:inline-block;font-size:.8rem;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:5px 9px;margin-bottom:6px}
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;padding:10px}
+    .sidebar{display:none}
+    .workspace{padding:15px;min-height:600px}
+    .mobile-task-select{display:block}
+    .btn-primary{margin-left:0}
+    .topic-tab{min-width:145px}
+  }
+
+  /* Печать и PDF */
+  .export-actions{
+    display:flex;
+    gap:8px;
+    margin-right:auto;
+  }
+  .export-btn{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px 12px;
+    background:var(--surface);
+    color:var(--text);
+    font-weight:800;
+    cursor:pointer;
+  }
+  .export-btn:hover{background:var(--primary-soft);color:var(--primary)}
+
+  #printSheet{display:none;}
+  /* Для html2canvas/PDF печатный лист должен реально участвовать в раскладке.
+     На экран он не попадает: во время экспорта располагаем его далеко за пределами окна. */
+  #printSheet.export-render{
+    display:block!important;
+    position:fixed;
+    left:-12000px;
+    top:0;
+    width:210mm;
+    padding:10mm;
+    background:#fff;
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  /* Печатная версия: максимально близко к образцу — без интерфейса,
+     без заголовков подтем, сквозная нумерация, место для решения в клетку. */
+  .print-sheet{
+    width:190mm;
+    margin:0 auto;
+    background:#fff;
+    color:#111;
+    font-family:"Times New Roman",Times,serif;
+    font-size:11.5pt;
+    line-height:1.28;
+  }
+  .print-page{
+    width:190mm;
+    min-height:277mm;
+    background:#fff;
+    break-after:page;
+    page-break-after:always;
+  }
+  .print-page:last-child{
+    break-after:auto;
+    page-break-after:auto;
+  }
+  .print-task{
+    margin:0 0 3.8mm;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .print-question-row{
+    display:grid;
+    grid-template-columns:6.5mm 1fr;
+    column-gap:1.2mm;
+    align-items:start;
+  }
+  .print-num{
+    font-weight:400;
+    text-align:right;
+    padding-right:.5mm;
+  }
+  .print-prompt .question{
+    font-size:11.5pt;
+    line-height:1.28;
+    margin:0;
+  }
+  .print-prompt .example-box{
+    border:0;
+    background:transparent;
+    padding:0;
+    margin:0 0 1.5mm;
+  }
+  .print-prompt p{margin:0 0 1.2mm;}
+  .print-prompt mjx-container[display="true"]{margin:.8mm 0!important;}
+  .print-options{
+    margin:1.5mm 0 0 0;
+    font-size:11pt;
+    line-height:1.25;
+  }
+  .print-options span{
+    display:inline-block;
+    margin:0 5mm 1mm 0;
+  }
+  .print-prompt .choice-grid,.print-prompt .answer-row{display:none!important;}
+  .solution-grid{
+    margin:2.2mm 0 0 6.5mm;
+    border:0.22mm solid #d6d6d6;
+    background:#fff;
+    position:relative;
+    overflow:hidden;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  /* Клетка построена реальными линиями, а не фоновым градиентом.
+     Поэтому она сохраняется и при window.print(), и при html2canvas/html2pdf. */
+  .solution-grid .grid-v,
+  .solution-grid .grid-h{
+    position:absolute;
+    display:block;
+    pointer-events:none;
+    z-index:1;
+  }
+  .solution-grid .grid-v{
+    top:0;
+    bottom:0;
+    width:0;
+    border-left:0.18mm solid #dddddd;
+  }
+  .solution-grid .grid-h{
+    left:0;
+    right:0;
+    height:0;
+    border-top:0.18mm solid #dddddd;
+  }
+  .solution-grid.grid-small{height:25mm;}
+  .solution-grid.grid-medium{height:30mm;}
+  .solution-grid.grid-large{height:35mm;}
+  .solution-grid.grid-xlarge{height:40mm;}
+
+  .pdf-mode{padding:0;}
+
+  .preview-page-wrap{position:relative;margin:0 auto 12mm;}
+  .preview-page-actions{
+    display:flex;justify-content:flex-end;gap:7px;
+    width:190mm;margin:0 auto 5px;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+  }
+  .preview-page-actions .export-btn{font-size:12px;padding:6px 9px;}
+
+
+
+  /* Предпросмотр печати / PDF */
+  .print-preview-modal{
+    position:fixed;
+    inset:0;
+    z-index:250;
+    display:none;
+    grid-template-rows:auto 1fr;
+    background:rgba(20,25,20,.58);
+    backdrop-filter:blur(4px);
+  }
+  .print-preview-modal.open{display:grid;}
+  .print-preview-toolbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 4px 18px rgba(0,0,0,.12);
+  }
+  .print-preview-toolbar strong{color:var(--primary);margin-right:auto;}
+  .print-preview-toolbar .preview-hint{
+    color:var(--muted);
+    font-size:.9rem;
+  }
+  .print-preview-body{
+    overflow:auto;
+    padding:22px;
+  }
+  .print-preview-paper{
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 24px;
+    padding:10mm;
+    background:#fff;
+    box-shadow:0 10px 35px rgba(0,0,0,.24);
+  }
+  .preview-sheet .print-page{
+    width:190mm;
+    min-height:277mm;
+    margin:0 auto;
+    box-shadow:0 0 0 1px #e7e7e7;
+  }
+  .preview-sheet .preview-page-wrap:last-child{margin-bottom:0;}
+  .print-size-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin:1.4mm 0 0 6.5mm;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    font-size:10px;
+    color:#666;
+  }
+  .print-size-row span{margin-right:2px;}
+  .print-size-btn{
+    border:1px solid #cfcfcf;
+    border-radius:6px;
+    background:#fff;
+    color:#444;
+    padding:3px 7px;
+    cursor:pointer;
+    font-size:10px;
+    line-height:1.2;
+  }
+  .print-size-btn.active{
+    background:#e7eedc;
+    border-color:#89a46d;
+    color:#38502d;
+    font-weight:700;
+  }
+  @media (max-width:900px){
+    .print-preview-toolbar{flex-wrap:wrap;}
+    .print-preview-toolbar strong{width:100%;}
+    .print-preview-toolbar .preview-hint{display:none;}
+    .print-preview-body{padding:10px;}
+    .print-preview-paper{transform-origin:top left;}
+  }
+
+  @page{size:A4 portrait;margin:10mm;}
+  @media print{
+    html,body{background:#fff!important;}
+    body *{visibility:hidden!important;}
+    #printSheet,#printSheet *{visibility:visible!important;}
+    #printSheet{
+      display:block!important;
+      position:absolute;
+      left:0;top:0;
+      width:100%;
+    }
+    .print-sheet,.print-page{width:auto;margin:0;}
+    .print-page{min-height:auto;}
+  }
+
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-row" id="topicTabs"></div>
+    <div class="themebar">
+      <div class="export-actions">
+        <button class="export-btn" id="previewBtn" type="button">👁 Предпросмотр</button>
+        <button class="export-btn" id="printBtn" type="button">🖨 Печать</button>
+        <button class="export-btn" id="pdfBtn" type="button">⬇ PDF</button>
+      </div>
+      <span class="theme-label">Тема:</span>
+      <button class="theme-btn theme-sage active" data-theme="sage" title="Бежево-зелёная"></button>
+      <button class="theme-btn theme-blue" data-theme="blue" title="Голубая"></button>
+      <button class="theme-btn theme-rose" data-theme="rose" title="Розово-пудровая"></button>
+      <button class="theme-btn theme-night" data-theme="night" title="Тёмная золотая"></button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card sidebar-card">
+        <div class="sidebar-title">Задания</div>
+        <nav class="task-nav" id="taskNav"></nav>
+      </section>
+
+      <section class="card">
+        <div class="sidebar-title">Подсказка по теме</div>
+        <div class="info" id="topicInfo"></div>
+      </section>
+
+      <section class="card">
+        <div class="sidebar-title">Прогресс</div>
+        <div class="info">
+          <p><strong id="progressText">0 из 0</strong> заданий выполнено</p>
+          <div class="progress-line"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="card workspace">
+      <select class="mobile-task-select" id="mobileTaskSelect"></select>
+
+      <div class="task-header">
+        <div>
+          <h1 id="taskTitle"></h1>
+          <p class="task-kicker" id="taskInstruction"></p>
+        </div>
+      </div>
+
+      <div class="task-content" id="taskContent"></div>
+
+      <div class="actions">
+        <button class="btn btn-danger" id="resetBtn">↻ Сбросить</button>
+        <button class="btn btn-soft" id="scratchBtn">✎ Черновик</button>
+        <button class="btn" id="nextBtn">Следующая задача →</button>
+        <button class="btn btn-primary" id="checkBtn">✓ Проверить</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </section>
+  </main>
+</div>
+
+<div class="print-preview-modal" id="printPreviewModal" aria-hidden="true">
+  <div class="print-preview-toolbar">
+    <strong>Предпросмотр рабочего листа</strong>
+    <span class="preview-hint">Для каждого задания выберите высоту поля в клетку.</span>
+    <button class="export-btn" id="previewPrintBtn" type="button">🖨 Печать</button>
+    <button class="export-btn" id="previewPdfBtn" type="button">⬇ PDF</button>
+    <button class="export-btn" id="closePreviewBtn" type="button">✕ Закрыть</button>
+  </div>
+  <div class="print-preview-body">
+    <div class="print-preview-paper">
+      <div id="printPreview"></div>
+    </div>
+  </div>
+</div>
+
+<div id="printSheet" aria-hidden="true"></div>
+
+<div class="modal" id="scratchModal" aria-hidden="true">
+  <div class="scratchpad">
+    <div class="scratch-head">
+      <strong>Черновик</strong>
+      <button class="tool-btn" id="penBtn">✎ Ручка</button>
+      <button class="tool-btn" id="eraserBtn">⌫ Ластик</button>
+      <button class="tool-btn" id="clearCanvasBtn">Очистить</button>
+      <span class="spacer"></span>
+      <button class="tool-btn" id="closeScratchBtn">✕ Закрыть</button>
+    </div>
+    <canvas id="scratchCanvas"></canvas>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. ДАННЫЕ РАБОЧЕГО ЛИСТА
+   Меняйте названия подтем, задания, ответы и подсказки здесь.
+   Типы заданий в шаблоне:
+   - input  : краткий ответ
+   - choice : один правильный ответ
+   - multi  : несколько правильных ответов
+   ========================================================= */
+
+const workbook = [
+  {
+    id:"t1", code:"1", title:"Обыкновенная дробь",
+    info:`<p><strong>Цель:</strong> понимать запись $\\frac{a}{b}$, различать числитель и знаменатель и видеть дробь как часть целого.</p>
+      <p><strong>Как читать:</strong> знаменатель показывает, на сколько <em>равных</em> частей разделили целое; числитель — сколько таких частей взяли.</p>
+      <p><strong>Важно:</strong> знаменатель не равен нулю.</p>`,
+    tasks:[
+      {
+        title:"1. Смысл дроби", instruction:"Рассмотрите модель и выберите верное описание.", type:"choice",
+        prompt:`<div class="lesson-intro"><strong>Тема занятия:</strong> Обыкновенные дроби. Основное свойство дроби.<br>
+          <strong>Маршрут:</strong> увидеть → понять → преобразовать → сократить → применить самостоятельно.</div>
+          <div class="fraction-visual" aria-label="Три из восьми равных частей закрашены">
+            <svg viewBox="0 0 480 90" role="img"><rect x="4" y="14" width="472" height="58" rx="8" fill="none" stroke="currentColor" stroke-width="2"/>
+              ${Array.from({length:8},(_,i)=>`<rect x="${5+i*59}" y="15" width="58" height="56" fill="${i<3?'var(--primary-soft)':'transparent'}" stroke="var(--border)"/>`).join('')}
+            </svg>
+          </div>
+          <div class="question">Какая дробь соответствует закрашенной части?</div>`,
+        options:["$\\frac{3}{8}$","$\\frac{8}{3}$","$\\frac{5}{8}$"], answer:0,
+        hints:["Сначала посчитайте, на сколько равных частей разделён весь прямоугольник.","Знаменатель — всего частей, числитель — закрашенных."]
+      },
+      {
+        title:"2. Числитель и знаменатель", instruction:"Отметьте все верные утверждения.", type:"multi",
+        prompt:`<div class="question">Для дроби $\\frac{5}{12}$ выберите верные утверждения.</div>`,
+        options:["Числитель равен $5$","Знаменатель равен $12$","Целое разделено на $5$ равных частей","Взято $5$ из $12$ равных частей"], answer:[0,1,3],
+        hints:["Вспомните: нижнее число отвечает за разбиение целого.","Числитель стоит над чертой, знаменатель — под чертой."]
+      },
+      {
+        title:"3. Равные дроби на рисунке", instruction:"Выберите пару дробей, обозначающих одну и ту же часть целого.", type:"choice",
+        prompt:`<div class="equal-models">
+          <div><div class="mini-bar"><span class="on"></span><span></span></div><b>$\\frac{1}{2}$</b></div>
+          <div><div class="mini-bar four"><span class="on"></span><span class="on"></span><span></span><span></span></div><b>$\\frac{2}{4}$</b></div>
+        </div>
+        <div class="question">Почему эти записи могут обозначать одно и то же число?</div>`,
+        options:["Потому что $1+2=3$ и $2+4=6$","Потому что во второй модели каждая половина разделена ещё на 2 равные части","Потому что у дробей разные знаменатели"], answer:1,
+        hints:["Сравните не числа по отдельности, а закрашенную часть целого.","Если каждую долю разделить ещё на одинаковое число частей, величина закрашенной части не меняется."]
+      }
+    ]
+  },
+  {
+    id:"t2", code:"2", title:"Основное свойство дроби",
+    info:`<p><strong>Основное свойство:</strong> если числитель и знаменатель дроби умножить или разделить на одно и то же натуральное число, получится равная ей дробь.</p>
+      <p class="formula-card">$\\displaystyle \\frac{a}{b}=\\frac{a\\cdot n}{b\\cdot n}$, &nbsp; $\\displaystyle \\frac{a}{b}=\\frac{a:n}{b:n}$ — если $a$ и $b$ делятся на $n$.</p>
+      <p><strong>Как распознать:</strong> изменение сверху и снизу должно быть одним и тем же.</p>`,
+    tasks:[
+      {
+        title:"1. Запомни правило", instruction:"Выберите преобразование, выполненное по основному свойству дроби.", type:"choice",
+        prompt:`<div class="example-box"><strong>Что не меняется?</strong> Значение дроби. Меняется только форма записи.</div>
+          <div class="question">Какое равенство верно?</div>`,
+        options:["$\\frac{3}{5}=\\frac{12}{20}$","$\\frac{3}{5}=\\frac{6}{15}$","$\\frac{3}{5}=\\frac{9}{10}$"], answer:0,
+        hints:["Проверьте, во сколько раз изменился числитель.","В верном варианте и 3, и 5 умножены на 4."]
+      },
+      {
+        title:"2. Найдите пропущенный числитель", instruction:"Введите число.", type:"input",
+        prompt:`<div class="question">Заполните пропуск: $$\\frac{3}{7}=\\frac{\\square}{21}.$$</div>
+          <div class="notice"><strong>Как заметить решение:</strong> $7\\to21$ — знаменатель увеличили в 3 раза. Что нужно сделать с числителем?</div>`,
+        answer:["9"], hints:["Сравните знаменатели: $21:7=3$.","Умножьте числитель 3 на тот же множитель 3."]
+      },
+      {
+        title:"3. Найдите пропущенный знаменатель", instruction:"Введите число.", type:"input",
+        prompt:`<div class="question">Заполните пропуск: $$\\frac{10}{15}=\\frac{2}{\\square}.$$</div>`,
+        answer:["3"], hints:["Сравните числители: $10\\to2$.","Числитель разделили на 5, значит знаменатель тоже делим на 5."]
+      },
+      {
+        title:"4. Найдите ошибку", instruction:"Выберите объяснение ошибки.", type:"choice",
+        prompt:`<div class="question">Ученик написал: $$\\frac{4}{7}=\\frac{8}{21}.$$ Почему это неверно?</div>`,
+        options:["Числитель умножили на 2, а знаменатель на 3","Нельзя получать дробь со знаменателем 21","Числитель всегда должен быть меньше знаменателя"], answer:0,
+        hints:["Проверьте отдельно переход $4\\to8$ и $7\\to21$.","В основном свойстве множитель сверху и снизу должен совпадать."]
+      }
+    ]
+  },
+  {
+    id:"t3", code:"3", title:"Сокращение дробей",
+    info:`<p><strong>Сократить дробь</strong> — разделить её числитель и знаменатель на один и тот же общий делитель, больший 1.</p>
+      <p><strong>Алгоритм:</strong> 1) найди общий делитель; 2) раздели оба числа; 3) проверь, можно ли сократить ещё.</p>
+      <p><strong>Простейший вид:</strong> числитель и знаменатель взаимно просты.</p>`,
+    tasks:[
+      {
+        title:"1. Прямое сокращение", instruction:"Введите дробь в простейшем виде.", type:"input",
+        prompt:`<div class="question">Сократите дробь $$\\frac{15}{20}.$$</div>`,
+        answer:["3/4","3 / 4","3:4"], hints:["15 и 20 имеют общий делитель 5.","Разделите и числитель, и знаменатель на 5."]
+      },
+      {
+        title:"2. Из рабочей тетради", instruction:"Приведите дробь к простейшему виду.", type:"input",
+        prompt:`<div class="source-badge">Рабочая тетрадь, тема 8, №4а</div><div class="question">$$\\frac{108}{960}$$</div>`,
+        answer:["9/80","9 / 80","9:80"], hints:["Оба числа делятся на 12.","$108:12=9$, $960:12=80$."]
+      },
+      {
+        title:"3. Ещё одно сокращение", instruction:"Введите дробь в простейшем виде.", type:"input",
+        prompt:`<div class="source-badge">Рабочая тетрадь, тема 8, №4б</div><div class="question">$$\\frac{256}{640}$$</div>`,
+        answer:["2/5","2 / 5","2:5"], hints:["Попробуйте сначала разделить оба числа на 64.","После $\\frac{256}{640}=\\frac{4}{10}$ сократите ещё на 2."]
+      },
+      {
+        title:"4. Восстановите цепочку", instruction:"Выберите верную цепочку сокращений.", type:"choice",
+        prompt:`<div class="question">Какая цепочка полностью верна для дроби $\\frac{48}{72}$?</div>`,
+        options:["$\\frac{48}{72}=\\frac{24}{36}=\\frac{2}{3}$","$\\frac{48}{72}=\\frac{24}{72}=\\frac{1}{3}$","$\\frac{48}{72}=\\frac{8}{9}$"], answer:0,
+        hints:["На каждом шаге делите верх и низ на одно и то же число.","$48:2=24$, $72:2=36$, затем $24:12=2$, $36:12=3$."]
+      }
+    ]
+  },
+  {
+    id:"t4", code:"4", title:"Равные дроби в задачах",
+    info:`<p><strong>Полезная идея:</strong> равные дроби удобно строить, когда нужно получить заданный знаменатель или узнать, сколько мелких долей содержится в более крупной доле.</p>
+      <p><strong>Вопрос к себе:</strong> во сколько раз изменился знаменатель? Во столько же раз должен измениться числитель.</p>`,
+    tasks:[
+      {
+        title:"1. Четыре равные дроби", instruction:"Отметьте все дроби, равные $\\frac{2}{5}$.", type:"multi",
+        prompt:`<div class="source-badge">Идея задания — рабочая тетрадь, тема 8, №6</div><div class="question">Какие дроби обозначают то же число, что и $\\frac{2}{5}$?</div>`,
+        options:["$\\frac{4}{10}$","$\\frac{6}{15}$","$\\frac{8}{20}$","$\\frac{10}{30}$","$\\frac{14}{35}$"], answer:[0,1,2,4],
+        hints:["Сократите каждый вариант до простейшего вида.","В неверном варианте $\\frac{10}{30}=\\frac{1}{3}$."]
+      },
+      {
+        title:"2. Сколько пятнадцатых?", instruction:"Введите ответ отдельно для каждой дроби.", type:"multiInput",
+        prompt:`<div class="source-badge">Рабочая тетрадь, тема 8, №10</div>
+          <div class="question">Приведите каждую дробь к знаменателю $15$ и укажите, сколько пятнадцатых долей в ней содержится.</div>`,
+        fields:[
+          {label:"$\\frac{1}{3}$", answer:["5"]},
+          {label:"$\\frac{1}{5}$", answer:["3"]},
+          {label:"$\\frac{2}{3}$", answer:["10"]},
+          {label:"$\\frac{2}{5}$", answer:["6"]},
+          {label:"$\\frac{3}{5}$", answer:["9"]},
+          {label:"$\\frac{4}{5}$", answer:["12"]}
+        ],
+        hints:["Приведите каждую дробь к знаменателю 15.","Например, $\\frac{1}{3}=\\frac{5}{15}$, значит в $\\frac{1}{3}$ содержится 5 пятнадцатых."]
+      },
+      {
+        title:"3. Дробь равна натуральному числу", instruction:"Введите значение отдельно у каждой дроби.", type:"multiInput",
+        prompt:`<div class="source-badge">Рабочая тетрадь, тема 8, №5</div>
+          <div class="question">Каким натуральным числам равны дроби?</div>`,
+        fields:[
+          {label:"$\\frac{81}{27}$", answer:["3"]},
+          {label:"$\\frac{144}{9}$", answer:["16"]},
+          {label:"$\\frac{121}{11}$", answer:["11"]},
+          {label:"$\\frac{63}{9}$", answer:["7"]}
+        ],
+        hints:["Дробную черту можно понимать как знак деления.","Выполните каждое деление отдельно: числитель : знаменатель."]
+      }
+    ]
+  },
+  {
+    id:"t5", code:"5", title:"Самостоятельная",
+    info:`<p><strong>Работайте без подсказки из теории.</strong> Если возникла ошибка, используйте подсказку после попытки.</p>
+      <p><strong>Проверка:</strong> в каждом преобразовании убедитесь, что с числителем и знаменателем выполнено одно и то же действие.</p>`,
+    tasks:[
+      {
+        title:"1. Заполните пропуск", instruction:"Введите число.", type:"input",
+        prompt:`<div class="question">$$\\frac{5}{8}=\\frac{15}{\\square}.$$</div>`, answer:["24"],
+        hints:["$5\\to15$ — это умножение на 3.","Умножьте 8 на 3."]
+      },
+      {
+        title:"2. Сократите полностью", instruction:"Введите дробь в простейшем виде.", type:"input",
+        prompt:`<div class="question">$$\\frac{84}{126}$$</div>`, answer:["2/3","2 / 3","2:3"],
+        hints:["84 и 126 делятся на 42.","$84:42=2$, $126:42=3$."]
+      },
+      {
+        title:"3. Выберите равные дроби", instruction:"Отметьте все дроби, равные $\\frac{3}{4}$.", type:"multi",
+        prompt:`<div class="question">Проверьте каждый вариант основным свойством дроби.</div>`,
+        options:["$\\frac{6}{8}$","$\\frac{9}{12}$","$\\frac{12}{18}$","$\\frac{15}{20}$"], answer:[0,1,3],
+        hints:["Сократите варианты.","$\\frac{12}{18}=\\frac{2}{3}$, остальные подходящие варианты сокращаются до $\\frac{3}{4}$."]
+      },
+      {
+        title:"4. Мини-доказательство", instruction:"Выберите правильную цепочку рассуждений.", type:"choice",
+        prompt:`<div class="question">Почему $\\frac{14}{21}=\\frac{2}{3}$?</div>`,
+        options:["Потому что 14 и 21 оканчиваются разными цифрами","Потому что числитель и знаменатель разделили на один и тот же общий делитель 7","Потому что знаменатель 21 больше числителя 14"], answer:1,
+        hints:["Нужно сослаться именно на основное свойство дроби.","$14:7=2$ и $21:7=3$."]
+      }
+    ]
+  }
+]
+
+const themes = {
+  sage:{
+    "--bg":"#f7f4ea","--surface":"#fffdf7","--surface-2":"#f1f5e7","--text":"#263125",
+    "--muted":"#697468","--primary":"#6c8a52","--primary-2":"#89a46d","--primary-soft":"#e7eedc",
+    "--border":"#cbd6bc","--danger":"#b55d54","--success":"#4e7f53","--shadow":"0 8px 24px rgba(45,60,35,.08)"
+  },
+  blue:{
+    "--bg":"#edf4fb","--surface":"#ffffff","--surface-2":"#eff6fd","--text":"#1d2c3d",
+    "--muted":"#66788a","--primary":"#3f78b8","--primary-2":"#6b9bd0","--primary-soft":"#e3eef9",
+    "--border":"#c9d9e9","--danger":"#bb5b5b","--success":"#477d65","--shadow":"0 8px 24px rgba(40,70,100,.08)"
+  },
+  rose:{
+    "--bg":"#f8efec","--surface":"#fffafa","--surface-2":"#f7e9e9","--text":"#3b2b30",
+    "--muted":"#806c72","--primary":"#a96270","--primary-2":"#c78692","--primary-soft":"#f1dde1",
+    "--border":"#e2c9cf","--danger":"#a94e4e","--success":"#5d7c5e","--shadow":"0 8px 24px rgba(90,45,60,.08)"
+  },
+  night:{
+    "--bg":"#252b34","--surface":"#323a46","--surface-2":"#3a4350","--text":"#f4efe4",
+    "--muted":"#c6c2b8","--primary":"#d5ac57","--primary-2":"#e4c47e","--primary-soft":"#4a4438",
+    "--border":"#59616d","--danger":"#e18b82","--success":"#9ac18f","--shadow":"0 8px 24px rgba(0,0,0,.22)"
+  }
+};
+
+let state = {
+  topic:0,
+  task:0,
+  completed:{},
+  attempts:{},
+  mistakes:0,
+  theme:localStorage.getItem("mathTheme") || "sage"
+};
+
+const el = id => document.getElementById(id);
+
+function applyTheme(name){
+  const t = themes[name] || themes.sage;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  state.theme = name;
+  localStorage.setItem("mathTheme",name);
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active",b.dataset.theme===name));
+}
+
+function renderTabs(){
+  el("topicTabs").innerHTML = workbook.map((t,i)=>`
+    <button class="topic-tab ${i===state.topic?'active':''}" data-topic="${i}">
+      ${t.code}<small>${t.title}</small>
+    </button>`).join("");
+  document.querySelectorAll(".topic-tab").forEach(btn=>{
+    btn.onclick=()=>{
+      state.topic=Number(btn.dataset.topic);
+      state.task=0;
+      renderAll();
+    };
+  });
+}
+
+function renderTaskNav(){
+  const topic = workbook[state.topic];
+  el("taskNav").innerHTML = topic.tasks.map((t,i)=>`
+    <button class="task-btn ${i===state.task?'active':''}" data-task="${i}">
+      <span class="task-num">${i+1}</span><span>${t.title.replace(/^\d+\.\s*/,'')}</span>
+    </button>`).join("");
+
+  document.querySelectorAll(".task-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      state.task=Number(btn.dataset.task);
+      renderTask();
+      renderTaskNav();
+      renderMobileSelect();
+    };
+  });
+}
+
+function renderMobileSelect(){
+  const topic=workbook[state.topic];
+  el("mobileTaskSelect").innerHTML=topic.tasks.map((t,i)=>`<option value="${i}" ${i===state.task?'selected':''}>${t.title}</option>`).join("");
+}
+
+function renderTask(){
+  const topic=workbook[state.topic];
+  const task=topic.tasks[state.task];
+
+  el("topicInfo").innerHTML = topic.info;
+  el("taskTitle").textContent = task.title;
+  el("taskInstruction").innerHTML = task.instruction;
+  el("feedback").className="feedback";
+  el("feedback").textContent="";
+
+  let html = task.prompt;
+
+  if(task.type==="input"){
+    html += `<div class="answer-row">
+      <label for="studentAnswer">Ответ:</label>
+      <input id="studentAnswer" class="answer-input" autocomplete="off" placeholder="Введите ответ">
+    </div>`;
+  }
+
+  if(task.type==="multiInput"){
+    html += `<div class="fraction-answer-grid">` + task.fields.map((f,i)=>`
+      <div class="fraction-answer-item">
+        <div class="fraction-answer-label">${f.label}</div>
+        <span class="fraction-equals">=</span>
+        <input id="studentAnswer_${i}" class="answer-input fraction-input" autocomplete="off" inputmode="numeric" aria-label="Ответ для ${f.label.replace(/<[^>]*>/g,'')}" placeholder="Ответ">
+      </div>
+    `).join("") + `</div>`;
+  }
+
+  if(task.type==="choice"){
+    html += `<div class="choice-grid">` + task.options.map((o,i)=>`
+      <label class="choice"><input type="radio" name="choice" value="${i}"> <span>${o}</span></label>
+    `).join("") + `</div>`;
+  }
+
+  if(task.type==="multi"){
+    html += `<div class="choice-grid">` + task.options.map((o,i)=>`
+      <label class="choice"><input type="checkbox" name="choice" value="${i}"> <span>${o}</span></label>
+    `).join("") + `</div>`;
+  }
+
+  el("taskContent").innerHTML = html;
+  el("nextBtn").disabled = state.task >= topic.tasks.length-1;
+
+  if(window.MathJax?.typesetPromise){
+    MathJax.typesetPromise([el("topicInfo"), el("taskInstruction"), el("taskContent")]).catch(()=>{});
+  }
+}
+
+function normalize(s){
+  return String(s).trim().toLowerCase().replace(/\s+/g," ");
+}
+
+function checkCurrent(){
+  const topic=workbook[state.topic];
+  const task=topic.tasks[state.task];
+  const key=topic.id+"_"+state.task;
+  let correct=false;
+
+  if(task.type==="input"){
+    const val=normalize(el("studentAnswer")?.value||"").replace(/\\frac\{(\\d+)\}\{(\\d+)\}/g,"$1/$2");
+    correct=task.answer.some(a=>normalize(a)===val);
+  }
+
+  if(task.type==="multiInput"){
+    correct=task.fields.every((f,i)=>{
+      const val=normalize(el(`studentAnswer_${i}`)?.value||"").replace(/\\frac\{(\\d+)\}\{(\\d+)\}/g,"$1/$2");
+      return f.answer.some(a=>normalize(a)===val);
+    });
+  }
+
+  if(task.type==="choice"){
+    const selected=document.querySelector('input[name="choice"]:checked');
+    correct=!!selected && Number(selected.value)===task.answer;
+  }
+
+  if(task.type==="multi"){
+    const selected=[...document.querySelectorAll('input[name="choice"]:checked')].map(x=>Number(x.value)).sort((a,b)=>a-b);
+    correct=JSON.stringify(selected)===JSON.stringify([...task.answer].sort((a,b)=>a-b));
+  }
+
+  state.attempts[key]=(state.attempts[key]||0)+1;
+  const fb=el("feedback");
+  fb.className="feedback show " + (correct?"ok":"bad");
+  if(correct){
+    fb.innerHTML=state.attempts[key]===1 ? "Верно ✓ Отлично: правило применено точно." : "Верно ✓ Теперь закрепите, какое одинаковое действие было выполнено сверху и снизу.";
+    state.completed[key]=true;
+    updateProgress();
+  } else {
+    state.mistakes++;
+    const hints=task.hints||[];
+    const attempt=state.attempts[key];
+    let hint="Проверьте решение и попробуйте ещё раз.";
+    if(hints.length){ hint=hints[Math.min(attempt-1,hints.length-1)]; }
+    fb.innerHTML=`Пока нет. <span style="font-weight:600">${hint}</span>`;
+  }
+}
+function resetCurrent(){
+  const task=workbook[state.topic].tasks[state.task];
+  if(task.type==="input" && el("studentAnswer")) el("studentAnswer").value="";
+  if(task.type==="multiInput") task.fields.forEach((_,i)=>{ const inp=el(`studentAnswer_${i}`); if(inp) inp.value=""; });
+  document.querySelectorAll('input[name="choice"]').forEach(x=>x.checked=false);
+  el("feedback").className="feedback";
+  el("feedback").textContent="";
+}
+
+function nextTask(){
+  const max=workbook[state.topic].tasks.length-1;
+  if(state.task<max){
+    state.task++;
+    renderTaskNav();
+    renderTask();
+    renderMobileSelect();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+}
+
+function updateProgress(){
+  let total=0, done=0;
+  workbook.forEach(t=>t.tasks.forEach((_,i)=>{
+    total++;
+    if(state.completed[t.id+"_"+i]) done++;
+  }));
+  el("progressText").textContent=`${done} из ${total}`;
+  el("progressBar").style.width=(total?done/total*100:0)+"%";
+}
+
+function renderAll(){
+  renderTabs();
+  renderTaskNav();
+  renderMobileSelect();
+  renderTask();
+  updateProgress();
+}
+
+/* Черновик на canvas */
+const modal=el("scratchModal");
+const canvas=el("scratchCanvas");
+const ctx=canvas.getContext("2d");
+let drawing=false,lastX=0,lastY=0,mode="pen";
+
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const old=ctx.getImageData(0,0,canvas.width||1,canvas.height||1);
+  canvas.width=Math.max(1,Math.floor(rect.width*dpr));
+  canvas.height=Math.max(1,Math.floor(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+}
+
+function point(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener("pointerdown",e=>{
+  drawing=true;
+  canvas.setPointerCapture(e.pointerId);
+  const p=point(e); lastX=p.x; lastY=p.y;
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!drawing)return;
+  const p=point(e);
+  ctx.save();
+  if(mode==="eraser"){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.lineWidth=18;
+  } else {
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle="#283126";
+    ctx.lineWidth=2.5;
+  }
+  ctx.beginPath();
+  ctx.moveTo(lastX,lastY);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+  ctx.restore();
+  lastX=p.x;lastY=p.y;
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>canvas.addEventListener(ev,()=>drawing=false));
+
+el("scratchBtn").onclick=()=>{
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  setTimeout(resizeCanvas,50);
+};
+el("closeScratchBtn").onclick=()=>{
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+};
+modal.addEventListener("click",e=>{if(e.target===modal) el("closeScratchBtn").click()});
+el("penBtn").onclick=()=>mode="pen";
+el("eraserBtn").onclick=()=>mode="eraser";
+el("clearCanvasBtn").onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+window.addEventListener("resize",()=>{ if(modal.classList.contains("open")) resizeCanvas(); });
+
+/* Печать и PDF: печатная версия в стиле образца */
+const solutionSizeLabels={
+  "grid-small":"Маленькое",
+  "grid-medium":"Среднее",
+  "grid-large":"Большое",
+  "grid-xlarge":"Очень большое"
+};
+const solutionSizeOrder=["grid-small","grid-medium","grid-large","grid-xlarge"];
+const printGridOverrides={};
+
+function printableOptions(task){
+  if(!Array.isArray(task.options) || !task.options.length) return "";
+  return `<div class="print-options">${task.options.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+}
+
+/* Высота поля решения подбирается автоматически.
+   При необходимости пользователь меняет её в предпросмотре. */
+function solutionGridClass(task){
+  const plain=(task.prompt||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const displayMath=((task.prompt||"").match(/\$\$/g)||[]).length/2;
+  const title=(task.title||"").toLowerCase();
+  const instruction=(task.instruction||"").toLowerCase();
+
+  let score=0;
+  if(plain.length>170) score++;
+  if(plain.length>300) score++;
+  if(displayMath>=2) score++;
+  if(/решите|доказ|восстанов|найдите ошиб|самостоятель/.test(title+" "+instruction)) score++;
+
+  if(score>=4) return "grid-xlarge";
+  if(score>=2) return "grid-large";
+  if(score===1) return "grid-medium";
+  return "grid-small";
+}
+
+function allPrintableTasks(){
+  const tasks=[];
+  workbook.forEach((topic,topicIndex)=>topic.tasks.forEach((task,taskIndex)=>{
+    tasks.push({task, key:`${topic.id}_${taskIndex}`, topicIndex, taskIndex});
+  }));
+  return tasks;
+}
+
+function sizeControls(key,current){
+  return `<div class="print-size-row" data-size-key="${key}">
+    <span>Поле:</span>
+    ${solutionSizeOrder.map(size=>`<button type="button" class="print-size-btn ${size===current?'active':''}" data-size="${size}">${solutionSizeLabels[size]}</button>`).join("")}
+  </div>`;
+}
+
+/* Реальные линии клетки с шагом 5 мм.
+   Фоновые CSS-градиенты браузеры часто не печатают, если отключена
+   «Печать фоновой графики». Эти линии являются обычными DOM-элементами. */
+function solutionGridLines(){
+  const vertical=Array.from({length:40},(_,i)=>`<i class="grid-v" style="left:${(i+1)*5}mm"></i>`).join("");
+  const horizontal=Array.from({length:10},(_,i)=>`<i class="grid-h" style="top:${(i+1)*5}mm"></i>`).join("");
+  return vertical+horizontal;
+}
+
+function printTaskMarkup(item,globalNumber,{preview=false}={}){
+  const {task,key}=item;
+  const gridClass=printGridOverrides[key] || solutionGridClass(task);
+  return `<section class="print-task" data-task-key="${key}">
+    <div class="print-question-row">
+      <div class="print-num">${globalNumber}.</div>
+      <div class="print-prompt">${task.prompt}${printableOptions(task)}</div>
+    </div>
+    ${preview?sizeControls(key,gridClass):''}
+    <div class="solution-grid ${gridClass}" data-grid-key="${key}" aria-label="Место для решения">${solutionGridLines()}</div>
+  </section>`;
+}
+
+function mmPixels(mm){
+  const probe=document.createElement("div");
+  probe.style.cssText=`position:absolute;visibility:hidden;width:1mm;height:${mm}mm;`;
+  document.body.appendChild(probe);
+  const px=probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+/* Раскладка больше не привязана к фиксированным 5 заданиям.
+   Сначала браузер измеряет реальную высоту каждого задания вместе с выбранным
+   полем решения и отрендеренными формулами MathJax, затем на A4 помещается
+   максимально возможное число ЦЕЛЫХ заданий. */
+async function buildPaginatedMarkup({preview=false,onlyPage=null}={}){
+  const tasks=allPrintableTasks();
+  const measure=document.createElement("div");
+  measure.className="print-sheet";
+  measure.style.cssText="position:fixed;left:-12000px;top:0;visibility:hidden;width:190mm;background:#fff;";
+  measure.innerHTML=tasks.map((item,i)=>printTaskMarkup(item,i+1,{preview})).join("");
+  document.body.appendChild(measure);
+  await typesetPrintNode(measure);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const pageHeight=mmPixels(277);
+  const pages=[];
+  let current=[];
+  let used=0;
+  [...measure.querySelectorAll(".print-task")].forEach((node,i)=>{
+    const cs=getComputedStyle(node);
+    const h=node.getBoundingClientRect().height + parseFloat(cs.marginTop||0) + parseFloat(cs.marginBottom||0);
+    if(current.length && used+h>pageHeight){
+      pages.push(current);
+      current=[];
+      used=0;
+    }
+    current.push(i);
+    used+=h;
+  });
+  if(current.length) pages.push(current);
+  measure.remove();
+
+  const selected=onlyPage==null ? pages : (pages[onlyPage] ? [pages[onlyPage]] : []);
+  let html=`<div class="print-sheet ${preview?'preview-sheet':''}">`;
+  selected.forEach((indexes,localPageIndex)=>{
+    const sourcePageIndex=onlyPage==null ? localPageIndex : onlyPage;
+    if(preview){
+      html += `<div class="preview-page-wrap" data-preview-page="${sourcePageIndex}">
+        <div class="preview-page-actions">
+          <button type="button" class="export-btn print-one-page" data-page="${sourcePageIndex}">🖨 Печать страницы ${sourcePageIndex+1}</button>
+          <button type="button" class="export-btn pdf-one-page" data-page="${sourcePageIndex}">⬇ PDF страницы ${sourcePageIndex+1}</button>
+        </div>`;
+    }
+    html += `<div class="print-page" data-page-index="${sourcePageIndex}">`;
+    indexes.forEach(taskIndex=>{ html += printTaskMarkup(tasks[taskIndex],taskIndex+1,{preview}); });
+    html += `</div>`;
+    if(preview) html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+async function buildPrintableSheet(onlyPage=null){
+  const root=el("printSheet");
+  root.innerHTML=await buildPaginatedMarkup({preview:false,onlyPage});
+  return root.querySelector(".print-sheet");
+}
+
+async function typesetPrintNode(node){
+  if(window.MathJax?.startup?.promise){
+    try{ await MathJax.startup.promise; }catch(e){}
+  }
+  if(window.MathJax?.typesetPromise && node){
+    try{
+      if(MathJax.typesetClear) MathJax.typesetClear([node]);
+      await MathJax.typesetPromise([node]);
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }catch(e){ console.warn("MathJax print render:",e); }
+  }
+}
+
+async function preparePrintableMath(onlyPage=null){
+  const sheet=await buildPrintableSheet(onlyPage);
+  await typesetPrintNode(sheet);
+  return sheet;
+}
+
+async function openPrintPreview(){
+  const previewRoot=el("printPreview");
+  previewRoot.innerHTML=await buildPaginatedMarkup({preview:true});
+  await typesetPrintNode(previewRoot);
+
+  previewRoot.querySelectorAll(".print-size-row").forEach(row=>{
+    row.addEventListener("click",e=>{
+      const btn=e.target.closest(".print-size-btn");
+      if(!btn) return;
+      const key=row.dataset.sizeKey;
+      const size=btn.dataset.size;
+      printGridOverrides[key]=size;
+      row.querySelectorAll(".print-size-btn").forEach(b=>b.classList.toggle("active",b===btn));
+      const grid=previewRoot.querySelector(`.solution-grid[data-grid-key="${key}"]`);
+      if(grid){
+        solutionSizeOrder.forEach(c=>grid.classList.remove(c));
+        grid.classList.add(size);
+      }
+    });
+  });
+
+  previewRoot.querySelectorAll(".print-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await printWorkbook(page);
+    };
+  });
+  previewRoot.querySelectorAll(".pdf-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await exportWorkbookPdf(page);
+    };
+  });
+
+  const modal=el("printPreviewModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+
+function closePrintPreview(){
+  const modal=el("printPreviewModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+async function printWorkbook(onlyPage=null){
+  await preparePrintableMath(onlyPage);
+  window.print();
+}
+
+async function exportWorkbookPdf(onlyPage=null){
+  const root=el("printSheet");
+  root.classList.add("export-render");
+  try{
+    const sheet=await preparePrintableMath(onlyPage);
+    if(typeof html2pdf==="undefined"){
+      alert("Модуль PDF ещё загружается. Повторите попытку через пару секунд.");
+      return;
+    }
+
+    /* MathJax 3 здесь уже превратил TeX в обычные inline-SVG.
+       Держим узел видимым для html2canvas до завершения снимка и ждём шрифты. */
+    if(document.fonts?.ready) await document.fonts.ready;
+    await typesetPrintNode(sheet);
+    await new Promise(resolve=>setTimeout(resolve,60));
+
+    sheet.classList.add("pdf-mode");
+    const base=(document.title || "Рабочий лист").replace(/[\\/:*?"<>|]+/g,"_");
+    const filename=onlyPage==null ? `${base}.pdf` : `${base}_страница_${onlyPage+1}.pdf`;
+    const options={
+      margin:[10,10,10,10],
+      filename,
+      image:{type:"png",quality:1},
+      html2canvas:{
+        scale:2.2,
+        useCORS:true,
+        allowTaint:false,
+        backgroundColor:"#ffffff",
+        scrollX:0,scrollY:0,
+        logging:false
+      },
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["css","legacy"],after:[".print-page:not(:last-child)"],avoid:[".print-task","mjx-container"]}
+    };
+    try{
+      await html2pdf().set(options).from(sheet).save();
+    }finally{
+      sheet.classList.remove("pdf-mode");
+    }
+  }finally{
+    root.classList.remove("export-render");
+  }
+}
+
+el("previewBtn").onclick=openPrintPreview;
+el("printBtn").onclick=openPrintPreview;
+el("pdfBtn").onclick=openPrintPreview;
+el("closePreviewBtn").onclick=closePrintPreview;
+el("previewPrintBtn").onclick=async()=>{ closePrintPreview(); await printWorkbook(); };
+el("previewPdfBtn").onclick=async()=>{ closePrintPreview(); await exportWorkbookPdf(); };
+el("printPreviewModal").addEventListener("click",e=>{ if(e.target===el("printPreviewModal")) closePrintPreview(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && el("printPreviewModal").classList.contains("open")) closePrintPreview(); });
+
+/* Кнопки */
+el("checkBtn").onclick=checkCurrent;
+el("resetBtn").onclick=resetCurrent;
+el("nextBtn").onclick=nextTask;
+el("mobileTaskSelect").onchange=e=>{
+  state.task=Number(e.target.value);
+  renderTaskNav();
+  renderTask();
+};
+
+document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));
+
+applyTheme(state.theme);
+renderAll();
+</script>
+</body>
+</html>
