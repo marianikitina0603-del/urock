@@ -466,3 +466,14 @@ summary::-webkit-details-marker{display:none}
   .home-card-grid.grades,.home-card-grid.exams{grid-template-columns:repeat(2,minmax(0,1fr))}
   .home-page .class-card.compact{min-height:92px}
 }
+
+.home-card-grid.exams{grid-template-columns:repeat(3,minmax(0,1fr))}
+.home-card-grid.utilities{grid-template-columns:repeat(2,minmax(0,1fr));max-width:58%}
+.home-row-title.utility-title{margin-top:2px}
+@media(max-width:900px){
+  .home-card-grid.exams{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .home-card-grid.utilities{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none}
+}
+@media(max-width:600px){
+  .home-card-grid.exams,.home-card-grid.utilities{grid-template-columns:1fr}
+}
