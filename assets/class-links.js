@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
     grid.innerHTML='';count.textContent='Материалов: '+visible.length;
     if(!visible.length){grid.innerHTML='<div class="empty-state">Ничего не найдено. Попробуйте другой фильтр или более короткий запрос.</div>';return;}
-    visible.forEach(item=>{const card=document.createElement('a');card.className='lesson-card';card.href=item.href;card.target='_blank';card.rel='noopener';card.innerHTML='<span class="badge">'+item.type+'</span><h3></h3><div class="meta"></div>';card.querySelector('h3').textContent=item.title;card.querySelector('.meta').textContent=isOge?(item.num?'Задание №'+item.num+' · ':'')+item.category:item.category;
+    visible.forEach(item=>{const card=document.createElement('a');const typeClass={'Урок':'type-lesson','Тренажёр':'type-trainer','Повторение':'type-review','Диагностика':'type-diagnostic','Игра':'type-game'}[item.type]||'type-lesson';card.className='lesson-card '+typeClass;card.href=item.href;card.target='_blank';card.rel='noopener';card.innerHTML='<span class="badge">'+item.type+'</span><h3></h3><div class="meta"></div>';card.querySelector('h3').textContent=item.title;card.querySelector('.meta').textContent=isOge?(item.num?'Задание №'+item.num+' · ':'')+item.category:item.category;
       const fav=document.createElement('button');fav.type='button';fav.className='fav-btn'+(favs.some(x=>x.href===item.href)?' on':'');fav.textContent=favs.some(x=>x.href===item.href)?'★':'☆';fav.title='В избранное';fav.onclick=e=>{e.preventDefault();e.stopPropagation();toggleFav(item,fav)};card.appendChild(fav);card.addEventListener('click',()=>addRecent(item));grid.appendChild(card)});
   }
   search.addEventListener('input',render);render();
