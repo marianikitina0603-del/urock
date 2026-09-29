@@ -30,7 +30,7 @@
       <strong>🕘 Недавние</strong>
       <ul id="recentList" class="quick-list"></ul>
     </div>
-    <a class="quick-card compact quick-link" href="game/game1/index.html">
+    <a class="quick-card compact quick-link" href="game/index.html">
       <strong>🎮 Игры</strong>
       <p>Квесты и игровые занятия</p>
     </a>
@@ -67,14 +67,14 @@
     </div>
     <div class="home-card-grid utilities">
       <a class="class-card compact utility-card" href="informatics/index.html"><span>💻</span><strong>Информатика</strong></a>
-      <a class="class-card compact utility-card" href="game/game1/index.html"><span>🎮</span><strong>Игры</strong></a>
+      <a class="class-card compact utility-card" href="game/index.html"><span>🎮</span><strong>Игры</strong></a>
     </div>
   </section>
 </main>
 
 <script>
 (()=>{
-  const pages=[['5 класс','classes/5.html'],['6 класс','classes/6.html'],['7 класс','classes/7.html'],['8 класс','classes/8-v2.html'],['9 класс','classes/9-v2.html'],['10 класс','classes/10.html'],['11 класс','classes/11.html'],['Информатика','informatics/index.html'],['ОГЭ','exams/oge-v2.html'],['ЕГЭ база','exams/ege-base.html'],['ЕГЭ профиль','exams/ege-profile.html']];
+  const pages=[['5 класс','classes/5.html'],['6 класс','classes/6.html'],['7 класс','classes/7.html'],['8 класс','classes/8-v2.html'],['9 класс','classes/9-v2.html'],['10 класс','classes/10.html'],['11 класс','classes/11.html'],['Информатика','informatics/index.html'],['Игры','game/index.html'],['ОГЭ','exams/oge-v2.html'],['ЕГЭ база','exams/ege-base.html'],['ЕГЭ профиль','exams/ege-profile.html']];
   const input=document.getElementById('siteSearch'),results=document.getElementById('searchResults'),status=document.getElementById('searchStatus');
   const norm=s=>(s||'').toLowerCase().replace(/ё/g,'е').replace(/→/g,'').replace(/\s+/g,' ').trim();
   let index=[];
