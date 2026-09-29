@@ -271,3 +271,81 @@ summary::-webkit-details-marker{display:none}
 @media(max-width:440px){
   .class-grid{grid-template-columns:1fr}
 }
+
+
+/* Цвет карточки определяется типом материала */
+.lesson-card.type-lesson{
+  background:linear-gradient(145deg,#2f7865,#174b40);
+  color:var(--text)
+}
+.lesson-card.type-lesson .badge{
+  background:rgba(233,224,200,.12);
+  color:#f3dfc6;
+  border-color:rgba(243,223,198,.15)
+}
+.lesson-card.type-lesson .meta{color:rgba(245,233,216,.72)}
+.lesson-card.type-lesson .fav-btn{
+  background:rgba(10,54,45,.35);
+  color:var(--sand-soft);
+  border-color:rgba(241,223,201,.22)
+}
+
+.lesson-card.type-trainer{
+  background:linear-gradient(145deg,#9a6244,#663827);
+  color:#fff2e4
+}
+.lesson-card.type-trainer .badge{
+  background:rgba(248,220,190,.14);
+  color:#ffe1bf;
+  border-color:rgba(255,225,191,.16)
+}
+.lesson-card.type-trainer .meta{color:rgba(255,237,218,.72)}
+.lesson-card.type-trainer .fav-btn{
+  background:rgba(76,38,25,.35);
+  color:#ffe1bf;
+  border-color:rgba(255,225,191,.20)
+}
+
+.lesson-card.type-review{
+  background:linear-gradient(145deg,#a6bc86,#78945f);
+  color:#213126
+}
+.lesson-card.type-review .badge{
+  background:rgba(31,73,53,.12);
+  color:#294f3c;
+  border-color:rgba(31,73,53,.12)
+}
+.lesson-card.type-review .meta{color:rgba(33,49,38,.68)}
+.lesson-card.type-review .fav-btn{
+  background:rgba(255,248,230,.48);
+  color:#365540;
+  border-color:rgba(38,79,58,.16)
+}
+
+/* Дополнительные типы остаются в той же природной палитре */
+.lesson-card.type-diagnostic{
+  background:linear-gradient(145deg,#d9c0a2,#b78e68);
+  color:var(--text-dark)
+}
+.lesson-card.type-diagnostic .badge{
+  background:rgba(93,55,40,.10);
+  color:#654631;
+  border-color:rgba(93,55,40,.08)
+}
+.lesson-card.type-diagnostic .meta{color:rgba(48,37,29,.66)}
+.lesson-card.type-diagnostic .fav-btn{
+  background:rgba(255,248,238,.50);
+  color:#60432f;
+  border-color:rgba(93,55,40,.16)
+}
+
+.lesson-card.type-game{
+  background:linear-gradient(145deg,#4c7054,#2e4e3a);
+  color:#fff4e5
+}
+.lesson-card.type-game .badge{
+  background:rgba(226,194,155,.16);
+  color:#f6d5aa;
+  border-color:rgba(246,213,170,.16)
+}
+.lesson-card.type-game .meta{color:rgba(255,240,220,.70)}
