@@ -349,3 +349,120 @@ summary::-webkit-details-marker{display:none}
   border-color:rgba(246,213,170,.16)
 }
 .lesson-card.type-game .meta{color:rgba(255,240,220,.70)}
+
+
+/* Компактная главная: на десктопе вся библиотека помещается в один экран */
+.home-page{overflow-y:auto}
+.home-shell{
+  min-height:100vh;
+  padding:20px 0 24px;
+  display:flex;
+  flex-direction:column;
+  gap:14px
+}
+.home-hero{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);
+  align-items:center;
+  gap:28px;
+  padding:22px 28px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:28px;
+  background:
+    radial-gradient(circle at 88% 18%,rgba(226,194,155,.16),transparent 25%),
+    linear-gradient(135deg,rgba(63,139,119,.97),rgba(25,88,74,.97));
+  box-shadow:var(--shadow)
+}
+.home-hero h1{font-size:clamp(34px,4.2vw,54px);margin:10px 0 7px}
+.home-hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.4}
+.home-search{margin:0;max-width:none;position:relative}
+.home-search input{padding:13px 16px;font-size:15px;border-radius:15px}
+.home-search .search-status{margin-top:6px;font-size:12px}
+.home-search .search-results{
+  position:absolute;
+  z-index:50;
+  top:58px;
+  left:0;
+  right:0;
+  max-height:420px;
+  overflow:auto;
+  margin:0
+}
+
+.home-quick{
+  display:grid;
+  grid-template-columns:1fr 1fr .72fr;
+  gap:12px
+}
+.quick-card.compact{
+  min-height:82px;
+  max-height:104px;
+  padding:13px 16px;
+  border-radius:19px;
+  overflow:hidden
+}
+.quick-card.compact strong{font-size:15px}
+.quick-card.compact p{font-size:12px;margin-top:5px}
+.quick-card.compact .quick-list{margin-top:5px}
+.quick-card.compact .quick-list a{padding:4px 0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-empty{color:var(--muted);padding-top:6px;font-size:12px}
+.quick-link{text-decoration:none}
+
+.home-catalog{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-height:0
+}
+.home-row-title{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 2px
+}
+.home-row-title.second{margin-top:2px}
+.home-row-title h2{margin:0;color:var(--sand-soft);font-size:19px;letter-spacing:-.02em}
+.home-row-title span{color:var(--muted);font-size:12px}
+
+.home-card-grid{
+  display:grid;
+  gap:10px
+}
+.home-card-grid.grades{grid-template-columns:repeat(7,minmax(0,1fr))}
+.home-card-grid.exams{grid-template-columns:repeat(5,minmax(0,1fr))}
+.home-page .class-card.compact{
+  min-height:96px;
+  padding:10px 8px;
+  border-radius:20px
+}
+.home-page .class-card.compact span{font-size:30px}
+.home-page .class-card.compact strong{font-size:14px;margin-top:5px}
+.home-page .exam-card span{font-size:25px}
+.home-page .utility-card span{font-size:27px}
+.home-page .class-card.compact:hover{transform:translateY(-3px)}
+
+@media(min-width:901px) and (min-height:760px){
+  .home-page{overflow:hidden}
+  .home-shell{height:100vh;min-height:0}
+}
+@media(min-width:901px) and (max-height:759px){
+  .home-page{overflow-y:auto}
+}
+@media(max-width:900px){
+  .home-shell{padding-top:16px}
+  .home-hero{grid-template-columns:1fr;padding:22px}
+  .home-search{width:100%}
+  .home-quick{grid-template-columns:1fr 1fr}
+  .home-quick .quick-link{grid-column:1/-1}
+  .home-card-grid.grades{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .home-card-grid.exams{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .home-page .class-card.compact{min-height:104px}
+}
+@media(max-width:600px){
+  .home-quick{grid-template-columns:1fr}
+  .home-quick .quick-link{grid-column:auto}
+  .home-card-grid.grades,.home-card-grid.exams{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-page .class-card.compact{min-height:92px}
+}
