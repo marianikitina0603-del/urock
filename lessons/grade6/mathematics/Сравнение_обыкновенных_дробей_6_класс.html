@@ -1222,7 +1222,1791 @@ function adaptTask(raw){
   if(t.type==="signs" && Array.isArray(t.pairs)){
     const pairs=t.pairs;
     t.type="fill";
-    t.prompt=(t.prompt||"")+ '<div class="fraction-sign-grid">' + pairs.map((p,i)=>`<div class="fraction-sign-row"><span>${p[0]}$</span>{{${i}}}<span>${p[1]}$</span></div>`).join("") + '</div>';
+    t.prompt=(t.prompt||"")+ '<div class="fraction-sign-grid">' + pairs.map((p,i)=>'<div class="fraction-sign-row"><span>
+    t.answer=pairs.map(p=>[p[2]]);
+  }
+  if(t.type==="match" && Array.isArray(t.rows)){
+    const rows=t.rows;
+    t.type="matching";
+    t.left=rows.map(r=>r[0]);
+    t.right=[...(t.options||[])];
+    t.answer=rows.map(r=>r[1]);
+  }
+  if(!t.prompt && t.question!=null) t.prompt=`<div class="question">${t.question}</div>`;
+  if(!t.prompt) t.prompt="";
+  if(!t.instruction) t.instruction="";
+  if(!t.title) t.title="Задание";
+  if(t.type==="matching" && Array.isArray(t.pairs)){
+    t.left=t.pairs.map(p=>p.left);
+    t.right=t.pairs.map(p=>p.right);
+    if(!Array.isArray(t.answer)) t.answer=t.pairs.map((_,i)=>i);
+  }
+  return t;
+}
+
+function baseTask(){ return adaptTask(workbook[state.topic].tasks[state.task]); }
+function activeTask(){
+  const base=baseTask();
+  const idx=Number(state.variantIndex[currentTaskKey()]||0);
+  if(idx<=0 || !Array.isArray(base.variants) || !base.variants[idx-1]) return base;
+  return adaptTask({...base,...base.variants[idx-1],variants:base.variants});
+}
+
+function applyTheme(name){
+  const t = themes[name] || themes.sage;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  state.theme = name;
+  localStorage.setItem("mathTheme",name);
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active",b.dataset.theme===name));
+}
+
+function renderTabs(){
+  el("topicTabs").innerHTML = workbook.map((t,i)=>`
+    <button class="topic-tab ${i===state.topic?'active':''}" data-topic="${i}">
+      ${t.code||''}<small>${t.title}</small>
+    </button>`).join("");
+  document.querySelectorAll(".topic-tab").forEach(btn=>btn.onclick=()=>{
+    state.topic=Number(btn.dataset.topic); state.task=0; saveSessionState(); renderAll();
+  });
+  typesetDynamic(el("topicTabs"));
+}
+
+function taskStatusClass(key){
+  if(state.completed[key]) return " is-done";
+  if(state.checked[key]===false) return " is-wrong";
+  if(state.answers[key]!=null && JSON.stringify(state.answers[key])!=="[]" && JSON.stringify(state.answers[key])!=="{}") return " is-filled";
+  return "";
+}
+
+function renderTaskNav(){
+  const topic = workbook[state.topic];
+  el("taskNav").innerHTML = topic.tasks.map((raw,i)=>{
+    const t=adaptTask(raw), key=`${topic.id}_${i}`;
+    return `<button class="task-btn ${i===state.task?'active':''}${taskStatusClass(key)}" data-task="${i}">
+      <span class="task-num">${state.completed[key]?'✓':i+1}</span><span>${t.title.replace(/^\d+\.\s*/,'')}</span>
+    </button>`;
+  }).join("");
+  document.querySelectorAll(".task-btn").forEach(btn=>btn.onclick=()=>{
+    state.task=Number(btn.dataset.task); saveSessionState(); renderTask(); renderTaskNav(); renderMobileSelect();
+  });
+  typesetDynamic(el("taskNav"));
+}
+
+function renderMobileSelect(){
+  const topic=workbook[state.topic];
+  el("mobileTaskSelect").innerHTML=topic.tasks.map((t,i)=>`<option value="${i}" ${i===state.task?'selected':''}>${adaptTask(t).title.replace(/<[^>]+>/g,'')}</option>`).join("");
+}
+
+function escapeAttr(v){ return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function taskMetaMarkup(task){
+  const chips=[];
+  if(task.skill) chips.push(`<span class="meta-chip">Навык: ${task.skill}</span>`);
+  if(task.difficulty) chips.push(`<span class="meta-chip">Сложность: ${'●'.repeat(Math.max(1,Math.min(5,Number(task.difficulty))))}</span>`);
+  (Array.isArray(task.tags)?task.tags:[]).forEach(tag=>chips.push(`<span class="meta-chip">#${tag}</span>`));
+  return chips.length?`<div class="task-meta">${chips.join('')}</div>`:'';
+}
+
+function imageMarkup(task,key){
+  if(!task.image) return '';
+  const img=typeof task.image==='string'?{src:task.image}:task.image;
+  if(!img?.src) return '';
+  let width=img.width||task.imageWidth||'560px'; if(typeof width==='number') width=width+'px';
+  const draw=img.draw!==false;
+  return `<div class="image-toolbar" ${draw?'':'hidden'}>${draw?inkToolbarMarkup():''}</div>
+    <div class="task-image-wrap" style="width:min(${escapeAttr(width)},100%)" data-image-key="${key}">
+      <img class="task-image" src="${escapeAttr(img.src)}" alt="${escapeAttr(img.alt||'Рисунок к заданию')}">
+      ${draw?'<canvas class="image-draw-canvas" aria-label="Рисование по изображению"></canvas>':''}
+    </div>`;
+}
+
+function mathKeyboardMarkup(){
+  const digits=[
+    ['7','7'],['8','8'],['9','9'],
+    ['4','4'],['5','5'],['6','6'],
+    ['1','1'],['2','2'],['3','3'],
+    ['0','0','key-zero'],[',',','],['.','.']
+  ];
+  const ops=[
+    ['+','+'],['−','-'],['×','*'],['÷','/'],['=','='],
+    ['(', '('],[')', ')'],[';',';'],['π','pi'],['√','SQRT'],
+    ['x','x'],['y','y'],['x²','^2'],['xⁿ','^'],['±','+-'],
+    ['←','LEFT','key-action'],['→','RIGHT','key-action'],['⌫','BACKSPACE','key-action'],
+    ['Очистить','CLEAR','key-danger key-wide']
+  ];
+  const buttons=arr=>arr.map(([label,value,cls=''])=>`<button type="button" class="math-key ${cls}" data-key="${escapeAttr(value)}">${label}</button>`).join('');
+  return `<div class="math-keyboard" data-math-keyboard>
+    <div class="math-keyboard-head"><strong>Клавиатура</strong><span style="color:var(--muted)">Вставка в позицию курсора</span></div>
+    <div class="math-keyboard-body">
+      <div class="math-keyboard-digits" aria-label="Цифры">${buttons(digits)}</div>
+      <div class="math-keyboard-ops" aria-label="Математические действия">${buttons(ops)}</div>
+    </div>
+  </div>`;
+}
+
+function mathInputMarkup(value=''){
+  return `<div class="answer-row">
+    <label for="studentAnswer">Ответ:</label>
+    <div class="math-answer-box ${value?'has-value':''}">
+      <input id="studentAnswer" class="answer-input math-source" autocomplete="off" inputmode="none" placeholder="Например: 9pi/2, sqrt(5), -1/2" value="${escapeAttr(value)}">
+      <div class="math-answer-render" aria-hidden="true"></div>
+    </div>
+  </div>${mathKeyboardMarkup()}`;
+}
+
+function inputToTex(raw){
+  let s=String(raw||'').trim();
+  if(!s) return '';
+  s=s.replace(/π/g,'pi').replace(/\*/g,'\\cdot ');
+  s=s.replace(/sqrt\(([^()]+)\)/gi,'\\sqrt{$1}');
+  s=s.replace(/pi/gi,'\\pi ');
+  const simple=s.match(/^([+-]?(?:\d+(?:[.,]\d+)?|\d*\\pi(?:\s*\^\s*\d+)?))\s*\/\s*([+-]?(?:\d+(?:[.,]\d+)?|\d*\\pi(?:\s*\^\s*\d+)?))$/i);
+  if(simple) s=`\\frac{${simple[1]}}{${simple[2]}}`;
+  s=s.replace(/\^\s*([+-]?\d+)/g,'^{$1}').replace(/,/g,'{,}');
+  return s;
+}
+
+function updateMathField(input){
+  if(!input) return;
+  const box=input.closest('.math-answer-box, .math-inline-answer');
+  if(!box) return;
+  const target=box.querySelector('.math-answer-render, .math-inline-render');
+  if(!target) return;
+  const tex=inputToTex(input.value);
+  box.classList.toggle('has-value',Boolean(input.value));
+  target.innerHTML=tex?`\\(${tex}\\)`:'';
+  typesetDynamic(target);
+}
+
+function orderMarkup(task,saved){
+  const items=Array.isArray(task.items)?task.items:[];
+  let order=Array.isArray(saved)&&saved.length===items.length?saved.map(Number):items.map((_,i)=>i);
+  return `<div class="order-list" id="orderList">${order.map((idx,pos)=>`
+    <div class="order-item" draggable="true" data-index="${idx}">
+      <span class="order-handle">☰</span><span>${items[idx]}</span>
+      <span class="order-move"><button type="button" data-move="up" aria-label="Вверх">↑</button><button type="button" data-move="down" aria-label="Вниз">↓</button></span>
+    </div>`).join('')}</div>`;
+}
+
+function matchingMarkup(task,saved){
+  const left=task.left||[], right=task.right||[];
+  const map=(saved&&typeof saved==='object'&&!Array.isArray(saved))?saved:{};
+  return `<div class="matching-grid" id="matchingGrid">${left.map((l,i)=>`
+    <div class="matching-left">${l}</div>
+    <div class="match-options" data-left="${i}">${right.map((r,j)=>`<button type="button" class="btn ${Number(map[i])===j?'btn-soft':''}" data-right="${j}">${r}</button>`).join(' ')}</div>`).join('')}</div>`;
+}
+
+function fillMarkup(task,saved){
+  const vals=Array.isArray(saved)?saved:[];
+  const inlineField=i=>`<span class="math-inline-answer ${vals[Number(i)]?'has-value':''}"><input class="fill-input math-source" inputmode="none" data-blank="${i}" value="${escapeAttr(vals[Number(i)]||'')}" aria-label="Пропуск ${Number(i)+1}"><span class="math-inline-render" aria-hidden="true"></span></span>`;
+  const prompt=(task.prompt||'').replace(/\{\{(\d+)\}\}/g,(_,i)=>inlineField(i));
+  if(prompt!==task.prompt) return prompt+mathKeyboardMarkup();
+  const count=Array.isArray(task.answer)?task.answer.length:Number(task.blanks||1);
+  return task.prompt+`<div class="answer-row">${Array.from({length:count},(_,i)=>`<label>Поле ${i+1}: ${inlineField(i)}</label>`).join(' ')}</div>`+mathKeyboardMarkup();
+}
+
+function errorMarkup(task,saved){
+  return `<div class="error-lines" id="errorLines">${(task.lines||[]).map((line,i)=>`<button type="button" class="error-line ${Number(saved)===i?'selected':''}" data-error-index="${i}">${line}</button>`).join('')}</div>`;
+}
+
+function oporderMarkup(task,saved){
+  const parts=Array.isArray(task.expressionParts)?task.expressionParts:[];
+  const picks=Array.isArray(saved)?saved:[];
+  let orderMap={}; picks.forEach((op,i)=>orderMap[String(op)]=i+1);
+  return `<div class="oporder-widget"><div class="oporder-expression">${parts.map(part=>{
+    if(part && typeof part==='object' && part.op!=null){
+      const id=String(part.id??part.op), n=orderMap[id]||'';
+      return `<button type="button" class="oporder-pick ${n?'chosen':''}" data-oporder-id="${escapeAttr(id)}">${part.op}<span class="oporder-badge">${n}</span></button>`;
+    }
+    return `<span>${typeof part==='object'?(part.text??''):part}</span>`;
+  }).join('')}</div><div style="margin-top:10px"><button type="button" class="btn btn-soft" id="oporderReset">Сбросить порядок</button></div></div>`;
+}
+
+function columnMarkup(task,saved){
+  const top=String(task.top??''), bottom=String(task.bottom??''), op=task.operator||'+';
+  const count=Math.max(Number(task.columns)||0, top.length, bottom.length, Array.isArray(task.digits)?task.digits.length:0, 1);
+  const sv=(saved&&typeof saved==='object')?saved:{};
+  const digits=Array.isArray(sv.digits)?sv.digits:[];
+  const carry=Array.isArray(sv.carry)?sv.carry:[];
+  const pad=(str)=>Array(count-str.length).fill('').concat([...str]);
+  const a=pad(top), b=pad(bottom);
+  return `<div class="column-widget"><div class="column-interactive" style="--column-count:${count}">
+    <div class="col-label">${escapeAttr(task.carryLabel||'пометки')}</div>${Array.from({length:count},(_,i)=>`<input class="carry-box" inputmode="numeric" maxlength="${Number(task.carryMaxLength||2)}" data-col-carry="${i}" value="${escapeAttr(carry[i]||'')}">`).join('')}
+    <div></div>${a.map(x=>`<div class="digit-fixed">${x}</div>`).join('')}
+    <div class="col-sign">${op}</div>${b.map(x=>`<div class="digit-fixed">${x}</div>`).join('')}
+    <div class="col-line"></div>
+    <div></div>${Array.from({length:count},(_,i)=>`<input class="digit-box" inputmode="numeric" maxlength="1" data-col-digit="${i}" value="${escapeAttr(digits[i]||'')}">`).join('')}
+  </div>${task.columnNote?`<div class="column-note">${task.columnNote}</div>`:''}</div>`;
+}
+
+function hintMarkup(task){
+  if(!task.hint) return '';
+  return `<details class="task-hint"><summary>Подсказка</summary><div>${task.hint}</div></details>`;
+}
+
+function renderTask(){
+  const topic=workbook[state.topic];
+  const task=activeTask();
+  const key=currentTaskKey();
+  const savedAnswer=state.answers[key];
+
+  el("topicInfo").innerHTML = `<p>${topic.info||''}</p>`;
+  el("taskTitle").innerHTML = task.title;
+  el("taskInstruction").innerHTML = task.instruction;
+  el("feedback").className="feedback"; el("feedback").textContent="";
+
+  let html=taskMetaMarkup(task);
+  if(task.type==='fill') html += fillMarkup(task,savedAnswer);
+  else html += task.prompt;
+  html += imageMarkup(task,key);
+
+  if(task.type==="input") html += mathInputMarkup(typeof savedAnswer==='string'?savedAnswer:'');
+  if(task.type==="text") html += `<div class="answer-row" style="display:block"><label for="studentAnswer">Ваше объяснение:</label><textarea id="studentAnswer" class="answer-textarea" autocomplete="off" placeholder="Напишите рассуждение своими словами">${escapeAttr(typeof savedAnswer==='string'?savedAnswer:'')}</textarea></div>`;
+  if(task.type==="choice") html += `<div class="choice-grid">${(task.options||[]).map((o,i)=>`<label class="choice"><input type="radio" name="choice" value="${i}" ${Number(savedAnswer)===i?'checked':''}> <span>${o}</span></label>`).join('')}</div>`;
+  if(task.type==="multi"){
+    const selected=Array.isArray(savedAnswer)?savedAnswer.map(Number):[];
+    html += `<div class="choice-grid">${(task.options||[]).map((o,i)=>`<label class="choice"><input type="checkbox" name="choice" value="${i}" ${selected.includes(i)?'checked':''}> <span>${o}</span></label>`).join('')}</div>`;
+  }
+  if(task.type==='order') html += orderMarkup(task,savedAnswer);
+  if(task.type==='matching') html += matchingMarkup(task,savedAnswer);
+  if(task.type==='error') html += errorMarkup(task,savedAnswer);
+  if(task.type==='oporder') html += oporderMarkup(task,savedAnswer);
+  if(task.type==='column') html += columnMarkup(task,savedAnswer);
+  html += hintMarkup(task);
+
+  el("taskContent").innerHTML = html;
+  el("nextBtn").disabled = state.task >= topic.tasks.length-1;
+  bindTaskInputs(task,key);
+  bindTaskImages(key);
+  setupTaskInkCanvas(key);
+
+  if(state.checked[key]!==undefined){
+    showFeedback(state.checked[key],state.checked[key]?"Верно ✓":"Ответ сохранён как неверный — можно исправить и проверить снова.");
+  }
+  typesetDynamic([el("topicInfo"),el("taskTitle"),el("taskInstruction"),el("taskContent")]);
+}
+
+function saveAnswer(key,value){ state.answers[key]=value; delete state.checked[key]; saveSessionState(); updateCurrentNavStatus(key); }
+function updateCurrentNavStatus(key){
+  const btn=document.querySelector(`.task-btn[data-task="${state.task}"]`); if(!btn)return;
+  btn.classList.remove('is-done','is-wrong','is-filled');
+  const cls=taskStatusClass(key).trim(); if(cls) btn.classList.add(cls);
+}
+
+let activeMathInput=null;
+
+function setActiveMathInput(input){
+  if(!input) return;
+  document.querySelectorAll('.math-source.keyboard-target').forEach(x=>x.classList.remove('keyboard-target'));
+  activeMathInput=input;
+  input.classList.add('keyboard-target');
+}
+
+function insertMathKey(input,key){
+  if(!input) return;
+  const start=Number.isFinite(input.selectionStart)?input.selectionStart:input.value.length;
+  const end=Number.isFinite(input.selectionEnd)?input.selectionEnd:start;
+  let value=input.value;
+  let nextPos=start;
+  if(key==='CLEAR'){ value=''; nextPos=0; }
+  else if(key==='BACKSPACE'){
+    if(start!==end){ value=value.slice(0,start)+value.slice(end); nextPos=start; }
+    else if(start>0){ value=value.slice(0,start-1)+value.slice(end); nextPos=start-1; }
+  }else if(key==='LEFT'){ nextPos=Math.max(0,start-1); }
+  else if(key==='RIGHT'){ nextPos=Math.min(value.length,end+1); }
+  else{
+    let insert=key;
+    let cursorOffset=insert.length;
+    if(key==='SQRT'){ insert='sqrt()'; cursorOffset=5; }
+    value=value.slice(0,start)+insert+value.slice(end);
+    nextPos=start+cursorOffset;
+  }
+  input.value=value;
+  input.focus({preventScroll:true});
+  try{ input.setSelectionRange(nextPos,nextPos); }catch(e){}
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+}
+
+function bindMathKeyboard(){
+  const sources=[...document.querySelectorAll('#taskContent .math-source')];
+  sources.forEach(input=>{
+    input.addEventListener('focus',()=>setActiveMathInput(input));
+    input.addEventListener('pointerdown',()=>setActiveMathInput(input));
+  });
+  if(sources.length) setActiveMathInput(sources[0]);
+  document.querySelectorAll('#taskContent [data-math-keyboard] .math-key').forEach(btn=>{
+    btn.addEventListener('pointerdown',e=>e.preventDefault());
+    btn.addEventListener('click',()=>insertMathKey(activeMathInput,btn.dataset.key));
+  });
+}
+
+function bindTaskInputs(task,key){
+  const answerInput=el('studentAnswer');
+  if(answerInput){
+    if(answerInput.tagName!=='TEXTAREA') updateMathField(answerInput);
+    answerInput.addEventListener('input',e=>{saveAnswer(key,e.target.value);if(answerInput.tagName!=='TEXTAREA') updateMathField(answerInput);});
+  }
+  document.querySelectorAll('input[name="choice"]').forEach(input=>input.addEventListener('change',()=>{
+    if(task.type==='choice'){
+      const selected=document.querySelector('input[name="choice"]:checked'); saveAnswer(key,selected?Number(selected.value):null);
+    }else{
+      saveAnswer(key,[...document.querySelectorAll('input[name="choice"]:checked')].map(x=>Number(x.value)));
+    }
+  }));
+  document.querySelectorAll('.fill-input').forEach(input=>{
+    updateMathField(input);
+    input.addEventListener('input',()=>{
+      const vals=[]; document.querySelectorAll('.fill-input').forEach(x=>vals[Number(x.dataset.blank)]=x.value);
+      saveAnswer(key,vals);
+      updateMathField(input);
+    });
+  });
+  document.querySelectorAll('.error-line').forEach(btn=>btn.onclick=()=>{
+    document.querySelectorAll('.error-line').forEach(x=>x.classList.toggle('selected',x===btn)); saveAnswer(key,Number(btn.dataset.errorIndex));
+  });
+  document.querySelectorAll('.match-options').forEach(group=>group.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
+    const map=(state.answers[key]&&typeof state.answers[key]==='object'&&!Array.isArray(state.answers[key]))?{...state.answers[key]}:{};
+    map[Number(group.dataset.left)]=Number(btn.dataset.right); saveAnswer(key,map);
+    group.querySelectorAll('button').forEach(x=>x.classList.toggle('btn-soft',x===btn));
+  }));
+  document.querySelectorAll('.oporder-pick').forEach(btn=>btn.onclick=()=>{
+    if(btn.classList.contains('chosen')) return;
+    const current=Array.isArray(state.answers[key])?[...state.answers[key]]:[];
+    current.push(btn.dataset.oporderId); saveAnswer(key,current);
+    btn.classList.add('chosen'); const badge=btn.querySelector('.oporder-badge'); if(badge) badge.textContent=current.length;
+  });
+  const opReset=el('oporderReset'); if(opReset) opReset.onclick=()=>{saveAnswer(key,[]);document.querySelectorAll('.oporder-pick').forEach(b=>{b.classList.remove('chosen');const x=b.querySelector('.oporder-badge');if(x)x.textContent='';});};
+  document.querySelectorAll('.digit-box,.carry-box').forEach(input=>input.addEventListener('input',()=>{
+    input.value=input.value.replace(/\D/g,'').slice(0,Number(input.maxLength)||2);
+    const value={digits:[...document.querySelectorAll('.digit-box')].map(x=>x.value.trim()),carry:[...document.querySelectorAll('.carry-box')].map(x=>x.value.trim())};
+    saveAnswer(key,value);
+  }));
+  bindOrderList(key);
+  bindMathKeyboard();
+}
+
+function bindOrderList(key){
+  const list=el('orderList'); if(!list) return;
+  const save=()=>saveAnswer(key,[...list.querySelectorAll('.order-item')].map(x=>Number(x.dataset.index)));
+  let dragged=null;
+  list.querySelectorAll('.order-item').forEach(item=>{
+    item.addEventListener('dragstart',()=>dragged=item);
+    item.addEventListener('dragover',e=>{e.preventDefault(); if(!dragged||dragged===item)return; const r=item.getBoundingClientRect(); list.insertBefore(dragged,e.clientY<r.top+r.height/2?item:item.nextSibling);});
+    item.addEventListener('drop',e=>{e.preventDefault();save();});
+    item.querySelectorAll('[data-move]').forEach(btn=>btn.onclick=()=>{
+      if(btn.dataset.move==='up'&&item.previousElementSibling) list.insertBefore(item,item.previousElementSibling);
+      if(btn.dataset.move==='down'&&item.nextElementSibling) list.insertBefore(item.nextElementSibling,item);
+      save();
+    });
+  });
+}
+
+function normalize(s){ return String(s).trim().toLowerCase().replace(/\s+/g," ").replace(/−/g,'-'); }
+function answerMatches(given,expected){
+  if(Array.isArray(expected)) return expected.some(x=>normalize(x)===normalize(given));
+  return normalize(given)===normalize(expected);}
+
+function checkCurrent(){
+  const task=activeTask(), base=baseTask(), key=currentTaskKey();
+  let correct=false;
+  const saved=state.answers[key];
+  if(task.type==='input') correct=(Array.isArray(task.answer)?task.answer:[task.answer]).filter(x=>x!=null).some(a=>normalize(a)===normalize(saved||''));
+  if(task.type==='text'){
+    const val=normalize(saved||'');
+    correct=(task.keywords||[]).every(k=>val.includes(normalize(k)));
+  }
+  if(task.type==='choice') correct=Number(saved)===Number(task.answer);
+  if(task.type==='multi') correct=JSON.stringify([...(saved||[])].map(Number).sort((a,b)=>a-b))===JSON.stringify([...(task.answer||[])].map(Number).sort((a,b)=>a-b));
+  if(task.type==='order'){
+    const exp=(task.answer||task.correctOrder||[]).map(Number); correct=JSON.stringify(saved||[])===JSON.stringify(exp);
+  }
+  if(task.type==='matching'){
+    const exp=task.answer||Array.from({length:(task.left||[]).length},(_,i)=>i);
+    correct=exp.every((v,i)=>Number(saved?.[i])===Number(v));
+  }
+  if(task.type==='fill'){
+    const exp=task.answer||[]; correct=exp.every((v,i)=>answerMatches((saved||[])[i]||'',v));
+  }
+  if(task.type==='error') correct=Number(saved)===Number(task.answer??task.errorIndex);
+  if(task.type==='oporder') correct=JSON.stringify((saved||[]).map(String))===JSON.stringify((task.answer||task.correctOrder||[]).map(String));
+  if(task.type==='column'){
+    const norm=a=>(a||[]).map(v=>String(v??'').trim()).map(v=>v==='0'?'':v);
+    const digitsOK=JSON.stringify(norm(saved?.digits))===JSON.stringify(norm(task.digits||task.answer||[]));
+    const carryOK=!Array.isArray(task.carry) || JSON.stringify(norm(saved?.carry))===JSON.stringify(norm(task.carry));
+    correct=digitsOK&&carryOK;
+  }
+
+  state.attempts[key]=(state.attempts[key]||0)+1;
+  state.checked[key]=!!correct;
+  if(correct) state.completed[key]=true;
+  saveSessionState(); updateProgress(); renderTaskNav();
+
+  if(correct){
+    const extra=task.type==='text'&&task.sample?`<div class="sample-answer"><strong>Возможная формулировка:</strong> ${task.sample}</div>`:"";
+    showFeedback(true,"Верно ✓"+extra); return;
+  }
+  const idx=Number(state.variantIndex[key]||0);
+  if(Array.isArray(base.variants) && idx<base.variants.length){
+    state.variantIndex[key]=idx+1; delete state.answers[key]; delete state.checked[key]; saveSessionState(); renderTask();
+    showFeedback(false,"Есть ошибка. Открыт аналогичный пример того же типа — попробуйте ещё раз.");
+    const fb=el('feedback'); fb.classList.add('show','bad');
+    return;
+  }
+  showFeedback(false,"Неверно. Проверьте решение и попробуйте ещё раз.");
+}
+
+function showFeedback(ok,text){ const fb=el('feedback'); fb.className='feedback show '+(ok?'ok':'bad'); fb.innerHTML=text; typesetDynamic(fb); }
+
+function resetCurrent(){
+  const key=currentTaskKey();
+  delete state.answers[key]; delete state.completed[key]; delete state.checked[key]; delete state.attempts[key]; delete state.variantIndex[key];
+  delete inkMemory.task[key]; delete inkMemory.image[key];
+  saveSessionState(); updateProgress(); renderTask(); renderTaskNav();
+}
+
+function nextTask(){
+  const max=workbook[state.topic].tasks.length-1;
+  if(state.task<max){ state.task++; saveSessionState(); renderTaskNav(); renderTask(); renderMobileSelect(); window.scrollTo({top:0,behavior:"smooth"}); }
+}
+
+function updateProgress(){
+  let total=0, done=0;
+  workbook.forEach(t=>t.tasks.forEach((_,i)=>{ total++; if(state.completed[t.id+"_"+i]) done++; }));
+  el("progressText").textContent=`${done} из ${total}`;
+  el("progressBar").style.width=(total?done/total*100:0)+"%";
+}
+
+function renderAll(){ renderTabs(); renderTaskNav(); renderMobileSelect(); renderTask(); updateProgress(); }
+
+/* Работа с изображениями: увеличение и пометки */
+const viewer=el('imageViewer'),viewerImg=el('imageViewerImg');
+el('imageViewerClose').onclick=()=>{viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');};
+viewer.onclick=e=>{if(e.target===viewer)el('imageViewerClose').click();};
+
+let inkSettings={color:'#202020',width:2.5,mode:'pen'};
+function inkToolbarMarkup(){
+  return `<strong>Ручка:</strong>
+    <button class="ink-color ink-black active" data-ink-color="#202020" type="button" title="Чёрный"></button>
+    <button class="ink-color ink-blue" data-ink-color="#2258aa" type="button" title="Синий"></button>
+    <button class="ink-color ink-red" data-ink-color="#b64040" type="button" title="Красный"></button>
+    <button class="ink-color ink-green" data-ink-color="#39804a" type="button" title="Зелёный"></button>
+    <select class="ink-width" aria-label="Толщина"><option value="1.5">Тонкая</option><option value="2.5" selected>Средняя</option><option value="5">Толстая</option></select>
+    <button class="tool-btn ink-pen" type="button">✎ Ручка</button><button class="tool-btn ink-eraser" type="button">⌫ Ластик</button><button class="tool-btn ink-clear" type="button">Очистить</button>`;
+}
+function bindInkToolbar(root,onClear){
+  if(!root)return; root.innerHTML=inkToolbarMarkup();
+  root.querySelectorAll('[data-ink-color]').forEach(b=>b.onclick=()=>{inkSettings.color=b.dataset.inkColor;root.querySelectorAll('[data-ink-color]').forEach(x=>x.classList.toggle('active',x===b));});
+  root.querySelector('.ink-width').onchange=e=>inkSettings.width=Number(e.target.value);
+  root.querySelector('.ink-pen').onclick=()=>inkSettings.mode='pen'; root.querySelector('.ink-eraser').onclick=()=>inkSettings.mode='eraser'; root.querySelector('.ink-clear').onclick=onClear;
+}
+
+function setupDrawCanvas(canvas,restoreData,onSave){
+  if(!canvas)return;
+  const parent=canvas.parentElement;
+  const resize=()=>{
+    const rect=parent.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+    canvas.width=Math.max(1,Math.round(rect.width*dpr)); canvas.height=Math.max(1,Math.round(rect.height*dpr));
+    canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+    const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.lineCap='round';c.lineJoin='round';
+    if(restoreData){const img=new Image();img.onload=()=>c.drawImage(img,0,0,rect.width,rect.height);img.src=restoreData;}
+  };
+  resize();
+  let drawing=false,last={x:0,y:0};
+  const point=e=>{const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+  canvas.onpointerdown=e=>{drawing=true;canvas.setPointerCapture(e.pointerId);last=point(e);};
+  canvas.onpointermove=e=>{if(!drawing)return;const p=point(e),c=canvas.getContext('2d');c.save();c.globalCompositeOperation=inkSettings.mode==='eraser'?'destination-out':'source-over';c.strokeStyle=inkSettings.color;c.lineWidth=inkSettings.mode==='eraser'?18:inkSettings.width;c.beginPath();c.moveTo(last.x,last.y);c.lineTo(p.x,p.y);c.stroke();c.restore();last=p;};
+  const stop=()=>{if(!drawing)return;drawing=false;try{onSave?.(canvas.toDataURL('image/png'));}catch(e){}};
+  canvas.onpointerup=stop;canvas.onpointercancel=stop;canvas.onpointerleave=stop;
+}
+
+function bindTaskImages(key){
+  document.querySelectorAll('.task-image').forEach(img=>img.onclick=()=>{viewerImg.src=img.src;viewer.classList.add('open');viewer.setAttribute('aria-hidden','false');});
+  document.querySelectorAll('.image-draw-canvas').forEach(canvas=>{
+    const wrap=canvas.closest('.task-image-wrap'),img=wrap.querySelector('img');
+    const toolbar=wrap.previousElementSibling?.classList.contains('image-toolbar')?wrap.previousElementSibling:null;
+    bindInkToolbar(toolbar,()=>{canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);delete inkMemory.image[key];});
+    const init=()=>setupDrawCanvas(canvas,inkMemory.image[key],data=>inkMemory.image[key]=data);
+    if(img.complete)init();else img.addEventListener('load',init,{once:true});
+  });
+}
+
+function setupTaskInkCanvas(key){
+  const canvas=el('taskInkCanvas'),toolbar=el('taskInkToolbar'),btn=el('drawTaskBtn');
+  canvas.classList.remove('enabled');toolbar.hidden=true;btn.classList.remove('active');
+  setupDrawCanvas(canvas,inkMemory.task[key],data=>inkMemory.task[key]=data);
+  btn.onclick=()=>{
+    const enabled=!canvas.classList.contains('enabled');canvas.classList.toggle('enabled',enabled);toolbar.hidden=!enabled;btn.classList.toggle('active',enabled);
+    if(enabled) bindInkToolbar(toolbar,()=>{canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);delete inkMemory.task[key];});
+  };
+}
+
+/* Черновик на canvas */
+const modal=el("scratchModal");
+const canvas=el("scratchCanvas");
+const ctx=canvas.getContext("2d");
+let drawing=false,lastX=0,lastY=0,mode="pen";
+
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const old=ctx.getImageData(0,0,canvas.width||1,canvas.height||1);
+  canvas.width=Math.max(1,Math.floor(rect.width*dpr));
+  canvas.height=Math.max(1,Math.floor(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+}
+
+function point(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener("pointerdown",e=>{
+  drawing=true;
+  canvas.setPointerCapture(e.pointerId);
+  const p=point(e); lastX=p.x; lastY=p.y;
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!drawing)return;
+  const p=point(e);
+  ctx.save();
+  if(mode==="eraser"){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.lineWidth=18;
+  } else {
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle=inkSettings.color;
+    ctx.lineWidth=inkSettings.width;
+  }
+  ctx.beginPath();
+  ctx.moveTo(lastX,lastY);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+  ctx.restore();
+  lastX=p.x;lastY=p.y;
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>canvas.addEventListener(ev,()=>drawing=false));
+
+el("scratchBtn").onclick=()=>{
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  setTimeout(resizeCanvas,50);
+};
+el("closeScratchBtn").onclick=()=>{
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+};
+modal.addEventListener("click",e=>{if(e.target===modal) el("closeScratchBtn").click()});
+el("penBtn").onclick=()=>{mode="pen";inkSettings.mode="pen";};
+el("eraserBtn").onclick=()=>{mode="eraser";inkSettings.mode="eraser";};
+document.querySelectorAll("[data-scratch-color]").forEach(b=>b.onclick=()=>{
+  inkSettings.color=b.dataset.scratchColor;
+  document.querySelectorAll("[data-scratch-color]").forEach(x=>x.classList.toggle("active",x===b));
+});
+el("scratchWidth").onchange=e=>inkSettings.width=Number(e.target.value);
+el("clearCanvasBtn").onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+window.addEventListener("resize",()=>{ if(modal.classList.contains("open")) resizeCanvas(); });
+
+/* Печать и PDF: печатная версия в стиле образца */
+const solutionSizeLabels={
+  "grid-small":"Маленькое",
+  "grid-medium":"Среднее",
+  "grid-large":"Большое",
+  "grid-xlarge":"Очень большое"
+};
+const solutionSizeOrder=["grid-small","grid-medium","grid-large","grid-xlarge"];
+const printGridOverrides={};
+
+function printableOptions(rawTask){
+  const task=adaptTask(rawTask);
+  if(task.type==='order' && Array.isArray(task.items)) return `<div class="print-options">${task.items.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+  if(task.type==='matching' && Array.isArray(task.left)) return `<div class="print-options">${task.left.map((o,i)=>`<span>${i+1}) ${o} — ______</span>`).join("<br>")}</div>`;
+  if(task.type==='error' && Array.isArray(task.lines)) return `<div class="print-options">${task.lines.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("<br>")}</div>`;
+  if(task.type==='oporder') return `<div class="print-options">Порядок действий: ______________________________</div>`;
+  if(task.type==='column') return `<div class="print-options">Выполните вычисление столбиком: ${task.top||''} ${task.operator||''} ${task.bottom||''}</div>`;
+  if(!Array.isArray(task.options) || !task.options.length) return "";
+  return `<div class="print-options">${task.options.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+}
+
+function normalizedPrintGrid(value){
+  if(value===false || value==='none') return false;
+  const map={small:'grid-small',medium:'grid-medium',large:'grid-large',xlarge:'grid-xlarge'};
+  return map[value] || value;
+}
+
+/* Высота поля решения подбирается автоматически, но task.printGrid имеет приоритет:
+   false — без клетки; small/medium/large/xlarge — фиксированный размер. */
+function solutionGridClass(rawTask){
+  const task=adaptTask(rawTask);
+  const configured=normalizedPrintGrid(task.printGrid);
+  if(configured===false) return false;
+  if(typeof configured==='string' && /^grid-(small|medium|large|xlarge)$/.test(configured)) return configured;
+  const plain=(task.prompt||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const displayMath=((task.prompt||"").match(/\$\$/g)||[]).length/2;
+  const title=(task.title||"").toLowerCase();
+  const instruction=(task.instruction||"").toLowerCase();
+  let score=0;
+  if(plain.length>170) score++;
+  if(plain.length>300) score++;
+  if(displayMath>=2) score++;
+  if(/решите|доказ|восстанов|найдите ошиб|самостоятель/.test(title+" "+instruction)) score++;
+  if(score>=4) return "grid-xlarge";
+  if(score>=2) return "grid-large";
+  if(score===1) return "grid-medium";
+  return "grid-small";
+}
+
+function allPrintableTasks(){
+  const tasks=[];
+  workbook.forEach((topic,topicIndex)=>topic.tasks.forEach((raw,taskIndex)=>{
+    tasks.push({task:adaptTask(raw), key:`${topic.id}_${taskIndex}`, topicIndex, taskIndex});
+  }));
+  return tasks;
+}
+
+function sizeControls(key,current){
+  if(current===false) return `<div class="print-size-row" data-size-key="${key}"><span>Поле: отключено в настройках задания</span></div>`;
+  return `<div class="print-size-row" data-size-key="${key}">
+    <span>Поле:</span>
+    ${solutionSizeOrder.map(size=>`<button type="button" class="print-size-btn ${size===current?'active':''}" data-size="${size}">${solutionSizeLabels[size]}</button>`).join("")}
+  </div>`;
+}
+
+/* Реальные линии клетки с шагом 5 мм. */
+function solutionGridLines(){
+  const vertical=Array.from({length:40},(_,i)=>`<i class="grid-v" style="left:${(i+1)*5}mm"></i>`).join("");
+  const horizontal=Array.from({length:10},(_,i)=>`<i class="grid-h" style="top:${(i+1)*5}mm"></i>`).join("");
+  return vertical+horizontal;
+}
+
+function printablePrompt(task){
+  let prompt=task.prompt||'';
+  if(task.type==='fill') prompt=prompt.replace(/\{\{\d+\}\}/g,'__________');
+  const img=task.image ? (typeof task.image==='string'?{src:task.image}:task.image) : null;
+  if(img?.src) prompt += `<div style="text-align:center;margin:2mm 0"><img src="${escapeAttr(img.src)}" alt="${escapeAttr(img.alt||'Рисунок')}" style="max-width:120mm;max-height:75mm;object-fit:contain"></div>`;
+  return prompt;
+}
+
+function printTaskMarkup(item,globalNumber,{preview=false}={}){
+  const {task,key}=item;
+  const auto=solutionGridClass(task);
+  const gridClass=auto===false?false:(printGridOverrides[key] || auto);
+  return `<section class="print-task" data-task-key="${key}">
+    <div class="print-question-row">
+      <div class="print-num">${globalNumber}.</div>
+      <div class="print-prompt">${printablePrompt(task)}${printableOptions(task)}</div>
+    </div>
+    ${preview?sizeControls(key,gridClass):''}
+    ${gridClass===false?'':`<div class="solution-grid ${gridClass}" data-grid-key="${key}" aria-label="Место для решения">${solutionGridLines()}</div>`}
+  </section>`;
+}
+
+function mmPixels(mm){
+  const probe=document.createElement("div");
+  probe.style.cssText=`position:absolute;visibility:hidden;width:1mm;height:${mm}mm;`;
+  document.body.appendChild(probe);
+  const px=probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+/* Раскладка больше не привязана к фиксированным 5 заданиям.
+   Сначала браузер измеряет реальную высоту каждого задания вместе с выбранным
+   полем решения и отрендеренными формулами MathJax, затем на A4 помещается
+   максимально возможное число ЦЕЛЫХ заданий. */
+async function buildPaginatedMarkup({preview=false,onlyPage=null}={}){
+  const tasks=allPrintableTasks();
+  const measure=document.createElement("div");
+  measure.className="print-sheet";
+  measure.style.cssText="position:fixed;left:-12000px;top:0;visibility:hidden;width:190mm;background:#fff;";
+  measure.innerHTML=tasks.map((item,i)=>printTaskMarkup(item,i+1,{preview})).join("");
+  document.body.appendChild(measure);
+  await typesetPrintNode(measure);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const pageHeight=mmPixels(277);
+  const pages=[];
+  let current=[];
+  let used=0;
+  [...measure.querySelectorAll(".print-task")].forEach((node,i)=>{
+    const cs=getComputedStyle(node);
+    const h=node.getBoundingClientRect().height + parseFloat(cs.marginTop||0) + parseFloat(cs.marginBottom||0);
+    if(current.length && used+h>pageHeight){
+      pages.push(current);
+      current=[];
+      used=0;
+    }
+    current.push(i);
+    used+=h;
+  });
+  if(current.length) pages.push(current);
+  measure.remove();
+
+  const selected=onlyPage==null ? pages : (pages[onlyPage] ? [pages[onlyPage]] : []);
+  let html=`<div class="print-sheet ${preview?'preview-sheet':''}">`;
+  selected.forEach((indexes,localPageIndex)=>{
+    const sourcePageIndex=onlyPage==null ? localPageIndex : onlyPage;
+    if(preview){
+      html += `<div class="preview-page-wrap" data-preview-page="${sourcePageIndex}">
+        <div class="preview-page-actions">
+          <button type="button" class="export-btn print-one-page" data-page="${sourcePageIndex}">🖨 Печать страницы ${sourcePageIndex+1}</button>
+          <button type="button" class="export-btn pdf-one-page" data-page="${sourcePageIndex}">⬇ PDF страницы ${sourcePageIndex+1}</button>
+        </div>`;
+    }
+    html += `<div class="print-page" data-page-index="${sourcePageIndex}">`;
+    indexes.forEach(taskIndex=>{ html += printTaskMarkup(tasks[taskIndex],taskIndex+1,{preview}); });
+    html += `</div>`;
+    if(preview) html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+async function buildPrintableSheet(onlyPage=null){
+  const root=el("printSheet");
+  root.innerHTML=await buildPaginatedMarkup({preview:false,onlyPage});
+  return root.querySelector(".print-sheet");
+}
+
+async function typesetPrintNode(node){
+  if(window.MathJax?.startup?.promise){
+    try{ await MathJax.startup.promise; }catch(e){}
+  }
+  if(window.MathJax?.typesetPromise && node){
+    try{
+      if(MathJax.typesetClear) MathJax.typesetClear([node]);
+      await MathJax.typesetPromise([node]);
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }catch(e){ console.warn("MathJax print render:",e); }
+  }
+}
+
+async function preparePrintableMath(onlyPage=null){
+  const sheet=await buildPrintableSheet(onlyPage);
+  await typesetPrintNode(sheet);
+  return sheet;
+}
+
+async function openPrintPreview(){
+  const previewRoot=el("printPreview");
+  previewRoot.innerHTML=await buildPaginatedMarkup({preview:true});
+  await typesetPrintNode(previewRoot);
+
+  previewRoot.querySelectorAll(".print-size-row").forEach(row=>{
+    row.addEventListener("click",e=>{
+      const btn=e.target.closest(".print-size-btn");
+      if(!btn) return;
+      const key=row.dataset.sizeKey;
+      const size=btn.dataset.size;
+      printGridOverrides[key]=size;
+      row.querySelectorAll(".print-size-btn").forEach(b=>b.classList.toggle("active",b===btn));
+      const grid=previewRoot.querySelector(`.solution-grid[data-grid-key="${key}"]`);
+      if(grid){
+        solutionSizeOrder.forEach(c=>grid.classList.remove(c));
+        grid.classList.add(size);
+      }
+    });
+  });
+
+  previewRoot.querySelectorAll(".print-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await printWorkbook(page);
+    };
+  });
+  previewRoot.querySelectorAll(".pdf-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await exportWorkbookPdf(page);
+    };
+  });
+
+  const modal=el("printPreviewModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+
+function closePrintPreview(){
+  const modal=el("printPreviewModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+async function printWorkbook(onlyPage=null){
+  await preparePrintableMath(onlyPage);
+  window.print();
+}
+
+async function exportWorkbookPdf(onlyPage=null){
+  const root=el("printSheet");
+  root.classList.add("export-render");
+  try{
+    const sheet=await preparePrintableMath(onlyPage);
+    if(typeof html2pdf==="undefined"){
+      alert("Модуль PDF ещё загружается. Повторите попытку через пару секунд.");
+      return;
+    }
+
+    /* MathJax 3 здесь уже превратил TeX в обычные inline-SVG.
+       Держим узел видимым для html2canvas до завершения снимка и ждём шрифты. */
+    if(document.fonts?.ready) await document.fonts.ready;
+    await typesetPrintNode(sheet);
+    await new Promise(resolve=>setTimeout(resolve,60));
+
+    sheet.classList.add("pdf-mode");
+    const base=(document.title || "Рабочий лист").replace(/[\\/:*?"<>|]+/g,"_");
+    const filename=onlyPage==null ? `${base}.pdf` : `${base}_страница_${onlyPage+1}.pdf`;
+    const options={
+      margin:[10,10,10,10],
+      filename,
+      image:{type:"png",quality:1},
+      html2canvas:{
+        scale:2.2,
+        useCORS:true,
+        allowTaint:false,
+        backgroundColor:"#ffffff",
+        scrollX:0,scrollY:0,
+        logging:false
+      },
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["css","legacy"],after:[".print-page:not(:last-child)"],avoid:[".print-task","mjx-container"]}
+    };
+    try{
+      await html2pdf().set(options).from(sheet).save();
+    }finally{
+      sheet.classList.remove("pdf-mode");
+    }
+  }finally{
+    root.classList.remove("export-render");
+  }
+}
+
+el("previewBtn").onclick=openPrintPreview;
+el("printBtn").onclick=openPrintPreview;
+el("pdfBtn").onclick=openPrintPreview;
+el("closePreviewBtn").onclick=closePrintPreview;
+el("previewPrintBtn").onclick=async()=>{ closePrintPreview(); await printWorkbook(); };
+el("previewPdfBtn").onclick=async()=>{ closePrintPreview(); await exportWorkbookPdf(); };
+el("printPreviewModal").addEventListener("click",e=>{ if(e.target===el("printPreviewModal")) closePrintPreview(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && el("printPreviewModal").classList.contains("open")) closePrintPreview(); });
+
+/* Кнопки */
+el("checkBtn").onclick=checkCurrent;
+el("resetBtn").onclick=resetCurrent;
+el("nextBtn").onclick=nextTask;
+el("mobileTaskSelect").onchange=e=>{
+  state.task=Number(e.target.value);
+  saveSessionState();
+  renderTaskNav();
+  renderTask();
+};
+
+document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));
+
+if(!workbook[state.topic]) state.topic=0;
+if(!workbook[state.topic]?.tasks[state.task]) state.task=0;
+saveSessionState();applyTheme(state.theme);
+renderAll();
+</script>
+</body>
+</html>+p[0]+'$</span>{{'+i+'}}<span>
+    t.answer=pairs.map(p=>[p[2]]);
+  }
+  if(t.type==="match" && Array.isArray(t.rows)){
+    const rows=t.rows;
+    t.type="matching";
+    t.left=rows.map(r=>r[0]);
+    t.right=[...(t.options||[])];
+    t.answer=rows.map(r=>r[1]);
+  }
+  if(!t.prompt && t.question!=null) t.prompt=`<div class="question">${t.question}</div>`;
+  if(!t.prompt) t.prompt="";
+  if(!t.instruction) t.instruction="";
+  if(!t.title) t.title="Задание";
+  if(t.type==="matching" && Array.isArray(t.pairs)){
+    t.left=t.pairs.map(p=>p.left);
+    t.right=t.pairs.map(p=>p.right);
+    if(!Array.isArray(t.answer)) t.answer=t.pairs.map((_,i)=>i);
+  }
+  return t;
+}
+
+function baseTask(){ return adaptTask(workbook[state.topic].tasks[state.task]); }
+function activeTask(){
+  const base=baseTask();
+  const idx=Number(state.variantIndex[currentTaskKey()]||0);
+  if(idx<=0 || !Array.isArray(base.variants) || !base.variants[idx-1]) return base;
+  return adaptTask({...base,...base.variants[idx-1],variants:base.variants});
+}
+
+function applyTheme(name){
+  const t = themes[name] || themes.sage;
+  Object.entries(t).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+  state.theme = name;
+  localStorage.setItem("mathTheme",name);
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active",b.dataset.theme===name));
+}
+
+function renderTabs(){
+  el("topicTabs").innerHTML = workbook.map((t,i)=>`
+    <button class="topic-tab ${i===state.topic?'active':''}" data-topic="${i}">
+      ${t.code||''}<small>${t.title}</small>
+    </button>`).join("");
+  document.querySelectorAll(".topic-tab").forEach(btn=>btn.onclick=()=>{
+    state.topic=Number(btn.dataset.topic); state.task=0; saveSessionState(); renderAll();
+  });
+  typesetDynamic(el("topicTabs"));
+}
+
+function taskStatusClass(key){
+  if(state.completed[key]) return " is-done";
+  if(state.checked[key]===false) return " is-wrong";
+  if(state.answers[key]!=null && JSON.stringify(state.answers[key])!=="[]" && JSON.stringify(state.answers[key])!=="{}") return " is-filled";
+  return "";
+}
+
+function renderTaskNav(){
+  const topic = workbook[state.topic];
+  el("taskNav").innerHTML = topic.tasks.map((raw,i)=>{
+    const t=adaptTask(raw), key=`${topic.id}_${i}`;
+    return `<button class="task-btn ${i===state.task?'active':''}${taskStatusClass(key)}" data-task="${i}">
+      <span class="task-num">${state.completed[key]?'✓':i+1}</span><span>${t.title.replace(/^\d+\.\s*/,'')}</span>
+    </button>`;
+  }).join("");
+  document.querySelectorAll(".task-btn").forEach(btn=>btn.onclick=()=>{
+    state.task=Number(btn.dataset.task); saveSessionState(); renderTask(); renderTaskNav(); renderMobileSelect();
+  });
+  typesetDynamic(el("taskNav"));
+}
+
+function renderMobileSelect(){
+  const topic=workbook[state.topic];
+  el("mobileTaskSelect").innerHTML=topic.tasks.map((t,i)=>`<option value="${i}" ${i===state.task?'selected':''}>${adaptTask(t).title.replace(/<[^>]+>/g,'')}</option>`).join("");
+}
+
+function escapeAttr(v){ return String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function taskMetaMarkup(task){
+  const chips=[];
+  if(task.skill) chips.push(`<span class="meta-chip">Навык: ${task.skill}</span>`);
+  if(task.difficulty) chips.push(`<span class="meta-chip">Сложность: ${'●'.repeat(Math.max(1,Math.min(5,Number(task.difficulty))))}</span>`);
+  (Array.isArray(task.tags)?task.tags:[]).forEach(tag=>chips.push(`<span class="meta-chip">#${tag}</span>`));
+  return chips.length?`<div class="task-meta">${chips.join('')}</div>`:'';
+}
+
+function imageMarkup(task,key){
+  if(!task.image) return '';
+  const img=typeof task.image==='string'?{src:task.image}:task.image;
+  if(!img?.src) return '';
+  let width=img.width||task.imageWidth||'560px'; if(typeof width==='number') width=width+'px';
+  const draw=img.draw!==false;
+  return `<div class="image-toolbar" ${draw?'':'hidden'}>${draw?inkToolbarMarkup():''}</div>
+    <div class="task-image-wrap" style="width:min(${escapeAttr(width)},100%)" data-image-key="${key}">
+      <img class="task-image" src="${escapeAttr(img.src)}" alt="${escapeAttr(img.alt||'Рисунок к заданию')}">
+      ${draw?'<canvas class="image-draw-canvas" aria-label="Рисование по изображению"></canvas>':''}
+    </div>`;
+}
+
+function mathKeyboardMarkup(){
+  const digits=[
+    ['7','7'],['8','8'],['9','9'],
+    ['4','4'],['5','5'],['6','6'],
+    ['1','1'],['2','2'],['3','3'],
+    ['0','0','key-zero'],[',',','],['.','.']
+  ];
+  const ops=[
+    ['+','+'],['−','-'],['×','*'],['÷','/'],['=','='],
+    ['(', '('],[')', ')'],[';',';'],['π','pi'],['√','SQRT'],
+    ['x','x'],['y','y'],['x²','^2'],['xⁿ','^'],['±','+-'],
+    ['←','LEFT','key-action'],['→','RIGHT','key-action'],['⌫','BACKSPACE','key-action'],
+    ['Очистить','CLEAR','key-danger key-wide']
+  ];
+  const buttons=arr=>arr.map(([label,value,cls=''])=>`<button type="button" class="math-key ${cls}" data-key="${escapeAttr(value)}">${label}</button>`).join('');
+  return `<div class="math-keyboard" data-math-keyboard>
+    <div class="math-keyboard-head"><strong>Клавиатура</strong><span style="color:var(--muted)">Вставка в позицию курсора</span></div>
+    <div class="math-keyboard-body">
+      <div class="math-keyboard-digits" aria-label="Цифры">${buttons(digits)}</div>
+      <div class="math-keyboard-ops" aria-label="Математические действия">${buttons(ops)}</div>
+    </div>
+  </div>`;
+}
+
+function mathInputMarkup(value=''){
+  return `<div class="answer-row">
+    <label for="studentAnswer">Ответ:</label>
+    <div class="math-answer-box ${value?'has-value':''}">
+      <input id="studentAnswer" class="answer-input math-source" autocomplete="off" inputmode="none" placeholder="Например: 9pi/2, sqrt(5), -1/2" value="${escapeAttr(value)}">
+      <div class="math-answer-render" aria-hidden="true"></div>
+    </div>
+  </div>${mathKeyboardMarkup()}`;
+}
+
+function inputToTex(raw){
+  let s=String(raw||'').trim();
+  if(!s) return '';
+  s=s.replace(/π/g,'pi').replace(/\*/g,'\\cdot ');
+  s=s.replace(/sqrt\(([^()]+)\)/gi,'\\sqrt{$1}');
+  s=s.replace(/pi/gi,'\\pi ');
+  const simple=s.match(/^([+-]?(?:\d+(?:[.,]\d+)?|\d*\\pi(?:\s*\^\s*\d+)?))\s*\/\s*([+-]?(?:\d+(?:[.,]\d+)?|\d*\\pi(?:\s*\^\s*\d+)?))$/i);
+  if(simple) s=`\\frac{${simple[1]}}{${simple[2]}}`;
+  s=s.replace(/\^\s*([+-]?\d+)/g,'^{$1}').replace(/,/g,'{,}');
+  return s;
+}
+
+function updateMathField(input){
+  if(!input) return;
+  const box=input.closest('.math-answer-box, .math-inline-answer');
+  if(!box) return;
+  const target=box.querySelector('.math-answer-render, .math-inline-render');
+  if(!target) return;
+  const tex=inputToTex(input.value);
+  box.classList.toggle('has-value',Boolean(input.value));
+  target.innerHTML=tex?`\\(${tex}\\)`:'';
+  typesetDynamic(target);
+}
+
+function orderMarkup(task,saved){
+  const items=Array.isArray(task.items)?task.items:[];
+  let order=Array.isArray(saved)&&saved.length===items.length?saved.map(Number):items.map((_,i)=>i);
+  return `<div class="order-list" id="orderList">${order.map((idx,pos)=>`
+    <div class="order-item" draggable="true" data-index="${idx}">
+      <span class="order-handle">☰</span><span>${items[idx]}</span>
+      <span class="order-move"><button type="button" data-move="up" aria-label="Вверх">↑</button><button type="button" data-move="down" aria-label="Вниз">↓</button></span>
+    </div>`).join('')}</div>`;
+}
+
+function matchingMarkup(task,saved){
+  const left=task.left||[], right=task.right||[];
+  const map=(saved&&typeof saved==='object'&&!Array.isArray(saved))?saved:{};
+  return `<div class="matching-grid" id="matchingGrid">${left.map((l,i)=>`
+    <div class="matching-left">${l}</div>
+    <div class="match-options" data-left="${i}">${right.map((r,j)=>`<button type="button" class="btn ${Number(map[i])===j?'btn-soft':''}" data-right="${j}">${r}</button>`).join(' ')}</div>`).join('')}</div>`;
+}
+
+function fillMarkup(task,saved){
+  const vals=Array.isArray(saved)?saved:[];
+  const inlineField=i=>`<span class="math-inline-answer ${vals[Number(i)]?'has-value':''}"><input class="fill-input math-source" inputmode="none" data-blank="${i}" value="${escapeAttr(vals[Number(i)]||'')}" aria-label="Пропуск ${Number(i)+1}"><span class="math-inline-render" aria-hidden="true"></span></span>`;
+  const prompt=(task.prompt||'').replace(/\{\{(\d+)\}\}/g,(_,i)=>inlineField(i));
+  if(prompt!==task.prompt) return prompt+mathKeyboardMarkup();
+  const count=Array.isArray(task.answer)?task.answer.length:Number(task.blanks||1);
+  return task.prompt+`<div class="answer-row">${Array.from({length:count},(_,i)=>`<label>Поле ${i+1}: ${inlineField(i)}</label>`).join(' ')}</div>`+mathKeyboardMarkup();
+}
+
+function errorMarkup(task,saved){
+  return `<div class="error-lines" id="errorLines">${(task.lines||[]).map((line,i)=>`<button type="button" class="error-line ${Number(saved)===i?'selected':''}" data-error-index="${i}">${line}</button>`).join('')}</div>`;
+}
+
+function oporderMarkup(task,saved){
+  const parts=Array.isArray(task.expressionParts)?task.expressionParts:[];
+  const picks=Array.isArray(saved)?saved:[];
+  let orderMap={}; picks.forEach((op,i)=>orderMap[String(op)]=i+1);
+  return `<div class="oporder-widget"><div class="oporder-expression">${parts.map(part=>{
+    if(part && typeof part==='object' && part.op!=null){
+      const id=String(part.id??part.op), n=orderMap[id]||'';
+      return `<button type="button" class="oporder-pick ${n?'chosen':''}" data-oporder-id="${escapeAttr(id)}">${part.op}<span class="oporder-badge">${n}</span></button>`;
+    }
+    return `<span>${typeof part==='object'?(part.text??''):part}</span>`;
+  }).join('')}</div><div style="margin-top:10px"><button type="button" class="btn btn-soft" id="oporderReset">Сбросить порядок</button></div></div>`;
+}
+
+function columnMarkup(task,saved){
+  const top=String(task.top??''), bottom=String(task.bottom??''), op=task.operator||'+';
+  const count=Math.max(Number(task.columns)||0, top.length, bottom.length, Array.isArray(task.digits)?task.digits.length:0, 1);
+  const sv=(saved&&typeof saved==='object')?saved:{};
+  const digits=Array.isArray(sv.digits)?sv.digits:[];
+  const carry=Array.isArray(sv.carry)?sv.carry:[];
+  const pad=(str)=>Array(count-str.length).fill('').concat([...str]);
+  const a=pad(top), b=pad(bottom);
+  return `<div class="column-widget"><div class="column-interactive" style="--column-count:${count}">
+    <div class="col-label">${escapeAttr(task.carryLabel||'пометки')}</div>${Array.from({length:count},(_,i)=>`<input class="carry-box" inputmode="numeric" maxlength="${Number(task.carryMaxLength||2)}" data-col-carry="${i}" value="${escapeAttr(carry[i]||'')}">`).join('')}
+    <div></div>${a.map(x=>`<div class="digit-fixed">${x}</div>`).join('')}
+    <div class="col-sign">${op}</div>${b.map(x=>`<div class="digit-fixed">${x}</div>`).join('')}
+    <div class="col-line"></div>
+    <div></div>${Array.from({length:count},(_,i)=>`<input class="digit-box" inputmode="numeric" maxlength="1" data-col-digit="${i}" value="${escapeAttr(digits[i]||'')}">`).join('')}
+  </div>${task.columnNote?`<div class="column-note">${task.columnNote}</div>`:''}</div>`;
+}
+
+function hintMarkup(task){
+  if(!task.hint) return '';
+  return `<details class="task-hint"><summary>Подсказка</summary><div>${task.hint}</div></details>`;
+}
+
+function renderTask(){
+  const topic=workbook[state.topic];
+  const task=activeTask();
+  const key=currentTaskKey();
+  const savedAnswer=state.answers[key];
+
+  el("topicInfo").innerHTML = `<p>${topic.info||''}</p>`;
+  el("taskTitle").innerHTML = task.title;
+  el("taskInstruction").innerHTML = task.instruction;
+  el("feedback").className="feedback"; el("feedback").textContent="";
+
+  let html=taskMetaMarkup(task);
+  if(task.type==='fill') html += fillMarkup(task,savedAnswer);
+  else html += task.prompt;
+  html += imageMarkup(task,key);
+
+  if(task.type==="input") html += mathInputMarkup(typeof savedAnswer==='string'?savedAnswer:'');
+  if(task.type==="text") html += `<div class="answer-row" style="display:block"><label for="studentAnswer">Ваше объяснение:</label><textarea id="studentAnswer" class="answer-textarea" autocomplete="off" placeholder="Напишите рассуждение своими словами">${escapeAttr(typeof savedAnswer==='string'?savedAnswer:'')}</textarea></div>`;
+  if(task.type==="choice") html += `<div class="choice-grid">${(task.options||[]).map((o,i)=>`<label class="choice"><input type="radio" name="choice" value="${i}" ${Number(savedAnswer)===i?'checked':''}> <span>${o}</span></label>`).join('')}</div>`;
+  if(task.type==="multi"){
+    const selected=Array.isArray(savedAnswer)?savedAnswer.map(Number):[];
+    html += `<div class="choice-grid">${(task.options||[]).map((o,i)=>`<label class="choice"><input type="checkbox" name="choice" value="${i}" ${selected.includes(i)?'checked':''}> <span>${o}</span></label>`).join('')}</div>`;
+  }
+  if(task.type==='order') html += orderMarkup(task,savedAnswer);
+  if(task.type==='matching') html += matchingMarkup(task,savedAnswer);
+  if(task.type==='error') html += errorMarkup(task,savedAnswer);
+  if(task.type==='oporder') html += oporderMarkup(task,savedAnswer);
+  if(task.type==='column') html += columnMarkup(task,savedAnswer);
+  html += hintMarkup(task);
+
+  el("taskContent").innerHTML = html;
+  el("nextBtn").disabled = state.task >= topic.tasks.length-1;
+  bindTaskInputs(task,key);
+  bindTaskImages(key);
+  setupTaskInkCanvas(key);
+
+  if(state.checked[key]!==undefined){
+    showFeedback(state.checked[key],state.checked[key]?"Верно ✓":"Ответ сохранён как неверный — можно исправить и проверить снова.");
+  }
+  typesetDynamic([el("topicInfo"),el("taskTitle"),el("taskInstruction"),el("taskContent")]);
+}
+
+function saveAnswer(key,value){ state.answers[key]=value; delete state.checked[key]; saveSessionState(); updateCurrentNavStatus(key); }
+function updateCurrentNavStatus(key){
+  const btn=document.querySelector(`.task-btn[data-task="${state.task}"]`); if(!btn)return;
+  btn.classList.remove('is-done','is-wrong','is-filled');
+  const cls=taskStatusClass(key).trim(); if(cls) btn.classList.add(cls);
+}
+
+let activeMathInput=null;
+
+function setActiveMathInput(input){
+  if(!input) return;
+  document.querySelectorAll('.math-source.keyboard-target').forEach(x=>x.classList.remove('keyboard-target'));
+  activeMathInput=input;
+  input.classList.add('keyboard-target');
+}
+
+function insertMathKey(input,key){
+  if(!input) return;
+  const start=Number.isFinite(input.selectionStart)?input.selectionStart:input.value.length;
+  const end=Number.isFinite(input.selectionEnd)?input.selectionEnd:start;
+  let value=input.value;
+  let nextPos=start;
+  if(key==='CLEAR'){ value=''; nextPos=0; }
+  else if(key==='BACKSPACE'){
+    if(start!==end){ value=value.slice(0,start)+value.slice(end); nextPos=start; }
+    else if(start>0){ value=value.slice(0,start-1)+value.slice(end); nextPos=start-1; }
+  }else if(key==='LEFT'){ nextPos=Math.max(0,start-1); }
+  else if(key==='RIGHT'){ nextPos=Math.min(value.length,end+1); }
+  else{
+    let insert=key;
+    let cursorOffset=insert.length;
+    if(key==='SQRT'){ insert='sqrt()'; cursorOffset=5; }
+    value=value.slice(0,start)+insert+value.slice(end);
+    nextPos=start+cursorOffset;
+  }
+  input.value=value;
+  input.focus({preventScroll:true});
+  try{ input.setSelectionRange(nextPos,nextPos); }catch(e){}
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+}
+
+function bindMathKeyboard(){
+  const sources=[...document.querySelectorAll('#taskContent .math-source')];
+  sources.forEach(input=>{
+    input.addEventListener('focus',()=>setActiveMathInput(input));
+    input.addEventListener('pointerdown',()=>setActiveMathInput(input));
+  });
+  if(sources.length) setActiveMathInput(sources[0]);
+  document.querySelectorAll('#taskContent [data-math-keyboard] .math-key').forEach(btn=>{
+    btn.addEventListener('pointerdown',e=>e.preventDefault());
+    btn.addEventListener('click',()=>insertMathKey(activeMathInput,btn.dataset.key));
+  });
+}
+
+function bindTaskInputs(task,key){
+  const answerInput=el('studentAnswer');
+  if(answerInput){
+    if(answerInput.tagName!=='TEXTAREA') updateMathField(answerInput);
+    answerInput.addEventListener('input',e=>{saveAnswer(key,e.target.value);if(answerInput.tagName!=='TEXTAREA') updateMathField(answerInput);});
+  }
+  document.querySelectorAll('input[name="choice"]').forEach(input=>input.addEventListener('change',()=>{
+    if(task.type==='choice'){
+      const selected=document.querySelector('input[name="choice"]:checked'); saveAnswer(key,selected?Number(selected.value):null);
+    }else{
+      saveAnswer(key,[...document.querySelectorAll('input[name="choice"]:checked')].map(x=>Number(x.value)));
+    }
+  }));
+  document.querySelectorAll('.fill-input').forEach(input=>{
+    updateMathField(input);
+    input.addEventListener('input',()=>{
+      const vals=[]; document.querySelectorAll('.fill-input').forEach(x=>vals[Number(x.dataset.blank)]=x.value);
+      saveAnswer(key,vals);
+      updateMathField(input);
+    });
+  });
+  document.querySelectorAll('.error-line').forEach(btn=>btn.onclick=()=>{
+    document.querySelectorAll('.error-line').forEach(x=>x.classList.toggle('selected',x===btn)); saveAnswer(key,Number(btn.dataset.errorIndex));
+  });
+  document.querySelectorAll('.match-options').forEach(group=>group.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
+    const map=(state.answers[key]&&typeof state.answers[key]==='object'&&!Array.isArray(state.answers[key]))?{...state.answers[key]}:{};
+    map[Number(group.dataset.left)]=Number(btn.dataset.right); saveAnswer(key,map);
+    group.querySelectorAll('button').forEach(x=>x.classList.toggle('btn-soft',x===btn));
+  }));
+  document.querySelectorAll('.oporder-pick').forEach(btn=>btn.onclick=()=>{
+    if(btn.classList.contains('chosen')) return;
+    const current=Array.isArray(state.answers[key])?[...state.answers[key]]:[];
+    current.push(btn.dataset.oporderId); saveAnswer(key,current);
+    btn.classList.add('chosen'); const badge=btn.querySelector('.oporder-badge'); if(badge) badge.textContent=current.length;
+  });
+  const opReset=el('oporderReset'); if(opReset) opReset.onclick=()=>{saveAnswer(key,[]);document.querySelectorAll('.oporder-pick').forEach(b=>{b.classList.remove('chosen');const x=b.querySelector('.oporder-badge');if(x)x.textContent='';});};
+  document.querySelectorAll('.digit-box,.carry-box').forEach(input=>input.addEventListener('input',()=>{
+    input.value=input.value.replace(/\D/g,'').slice(0,Number(input.maxLength)||2);
+    const value={digits:[...document.querySelectorAll('.digit-box')].map(x=>x.value.trim()),carry:[...document.querySelectorAll('.carry-box')].map(x=>x.value.trim())};
+    saveAnswer(key,value);
+  }));
+  bindOrderList(key);
+  bindMathKeyboard();
+}
+
+function bindOrderList(key){
+  const list=el('orderList'); if(!list) return;
+  const save=()=>saveAnswer(key,[...list.querySelectorAll('.order-item')].map(x=>Number(x.dataset.index)));
+  let dragged=null;
+  list.querySelectorAll('.order-item').forEach(item=>{
+    item.addEventListener('dragstart',()=>dragged=item);
+    item.addEventListener('dragover',e=>{e.preventDefault(); if(!dragged||dragged===item)return; const r=item.getBoundingClientRect(); list.insertBefore(dragged,e.clientY<r.top+r.height/2?item:item.nextSibling);});
+    item.addEventListener('drop',e=>{e.preventDefault();save();});
+    item.querySelectorAll('[data-move]').forEach(btn=>btn.onclick=()=>{
+      if(btn.dataset.move==='up'&&item.previousElementSibling) list.insertBefore(item,item.previousElementSibling);
+      if(btn.dataset.move==='down'&&item.nextElementSibling) list.insertBefore(item.nextElementSibling,item);
+      save();
+    });
+  });
+}
+
+function normalize(s){ return String(s).trim().toLowerCase().replace(/\s+/g," ").replace(/−/g,'-'); }
+function answerMatches(given,expected){
+  if(Array.isArray(expected)) return expected.some(x=>normalize(x)===normalize(given));
+  return normalize(given)===normalize(expected);}
+
+function checkCurrent(){
+  const task=activeTask(), base=baseTask(), key=currentTaskKey();
+  let correct=false;
+  const saved=state.answers[key];
+  if(task.type==='input') correct=(Array.isArray(task.answer)?task.answer:[task.answer]).filter(x=>x!=null).some(a=>normalize(a)===normalize(saved||''));
+  if(task.type==='text'){
+    const val=normalize(saved||'');
+    correct=(task.keywords||[]).every(k=>val.includes(normalize(k)));
+  }
+  if(task.type==='choice') correct=Number(saved)===Number(task.answer);
+  if(task.type==='multi') correct=JSON.stringify([...(saved||[])].map(Number).sort((a,b)=>a-b))===JSON.stringify([...(task.answer||[])].map(Number).sort((a,b)=>a-b));
+  if(task.type==='order'){
+    const exp=(task.answer||task.correctOrder||[]).map(Number); correct=JSON.stringify(saved||[])===JSON.stringify(exp);
+  }
+  if(task.type==='matching'){
+    const exp=task.answer||Array.from({length:(task.left||[]).length},(_,i)=>i);
+    correct=exp.every((v,i)=>Number(saved?.[i])===Number(v));
+  }
+  if(task.type==='fill'){
+    const exp=task.answer||[]; correct=exp.every((v,i)=>answerMatches((saved||[])[i]||'',v));
+  }
+  if(task.type==='error') correct=Number(saved)===Number(task.answer??task.errorIndex);
+  if(task.type==='oporder') correct=JSON.stringify((saved||[]).map(String))===JSON.stringify((task.answer||task.correctOrder||[]).map(String));
+  if(task.type==='column'){
+    const norm=a=>(a||[]).map(v=>String(v??'').trim()).map(v=>v==='0'?'':v);
+    const digitsOK=JSON.stringify(norm(saved?.digits))===JSON.stringify(norm(task.digits||task.answer||[]));
+    const carryOK=!Array.isArray(task.carry) || JSON.stringify(norm(saved?.carry))===JSON.stringify(norm(task.carry));
+    correct=digitsOK&&carryOK;
+  }
+
+  state.attempts[key]=(state.attempts[key]||0)+1;
+  state.checked[key]=!!correct;
+  if(correct) state.completed[key]=true;
+  saveSessionState(); updateProgress(); renderTaskNav();
+
+  if(correct){
+    const extra=task.type==='text'&&task.sample?`<div class="sample-answer"><strong>Возможная формулировка:</strong> ${task.sample}</div>`:"";
+    showFeedback(true,"Верно ✓"+extra); return;
+  }
+  const idx=Number(state.variantIndex[key]||0);
+  if(Array.isArray(base.variants) && idx<base.variants.length){
+    state.variantIndex[key]=idx+1; delete state.answers[key]; delete state.checked[key]; saveSessionState(); renderTask();
+    showFeedback(false,"Есть ошибка. Открыт аналогичный пример того же типа — попробуйте ещё раз.");
+    const fb=el('feedback'); fb.classList.add('show','bad');
+    return;
+  }
+  showFeedback(false,"Неверно. Проверьте решение и попробуйте ещё раз.");
+}
+
+function showFeedback(ok,text){ const fb=el('feedback'); fb.className='feedback show '+(ok?'ok':'bad'); fb.innerHTML=text; typesetDynamic(fb); }
+
+function resetCurrent(){
+  const key=currentTaskKey();
+  delete state.answers[key]; delete state.completed[key]; delete state.checked[key]; delete state.attempts[key]; delete state.variantIndex[key];
+  delete inkMemory.task[key]; delete inkMemory.image[key];
+  saveSessionState(); updateProgress(); renderTask(); renderTaskNav();
+}
+
+function nextTask(){
+  const max=workbook[state.topic].tasks.length-1;
+  if(state.task<max){ state.task++; saveSessionState(); renderTaskNav(); renderTask(); renderMobileSelect(); window.scrollTo({top:0,behavior:"smooth"}); }
+}
+
+function updateProgress(){
+  let total=0, done=0;
+  workbook.forEach(t=>t.tasks.forEach((_,i)=>{ total++; if(state.completed[t.id+"_"+i]) done++; }));
+  el("progressText").textContent=`${done} из ${total}`;
+  el("progressBar").style.width=(total?done/total*100:0)+"%";
+}
+
+function renderAll(){ renderTabs(); renderTaskNav(); renderMobileSelect(); renderTask(); updateProgress(); }
+
+/* Работа с изображениями: увеличение и пометки */
+const viewer=el('imageViewer'),viewerImg=el('imageViewerImg');
+el('imageViewerClose').onclick=()=>{viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');};
+viewer.onclick=e=>{if(e.target===viewer)el('imageViewerClose').click();};
+
+let inkSettings={color:'#202020',width:2.5,mode:'pen'};
+function inkToolbarMarkup(){
+  return `<strong>Ручка:</strong>
+    <button class="ink-color ink-black active" data-ink-color="#202020" type="button" title="Чёрный"></button>
+    <button class="ink-color ink-blue" data-ink-color="#2258aa" type="button" title="Синий"></button>
+    <button class="ink-color ink-red" data-ink-color="#b64040" type="button" title="Красный"></button>
+    <button class="ink-color ink-green" data-ink-color="#39804a" type="button" title="Зелёный"></button>
+    <select class="ink-width" aria-label="Толщина"><option value="1.5">Тонкая</option><option value="2.5" selected>Средняя</option><option value="5">Толстая</option></select>
+    <button class="tool-btn ink-pen" type="button">✎ Ручка</button><button class="tool-btn ink-eraser" type="button">⌫ Ластик</button><button class="tool-btn ink-clear" type="button">Очистить</button>`;
+}
+function bindInkToolbar(root,onClear){
+  if(!root)return; root.innerHTML=inkToolbarMarkup();
+  root.querySelectorAll('[data-ink-color]').forEach(b=>b.onclick=()=>{inkSettings.color=b.dataset.inkColor;root.querySelectorAll('[data-ink-color]').forEach(x=>x.classList.toggle('active',x===b));});
+  root.querySelector('.ink-width').onchange=e=>inkSettings.width=Number(e.target.value);
+  root.querySelector('.ink-pen').onclick=()=>inkSettings.mode='pen'; root.querySelector('.ink-eraser').onclick=()=>inkSettings.mode='eraser'; root.querySelector('.ink-clear').onclick=onClear;
+}
+
+function setupDrawCanvas(canvas,restoreData,onSave){
+  if(!canvas)return;
+  const parent=canvas.parentElement;
+  const resize=()=>{
+    const rect=parent.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+    canvas.width=Math.max(1,Math.round(rect.width*dpr)); canvas.height=Math.max(1,Math.round(rect.height*dpr));
+    canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
+    const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.lineCap='round';c.lineJoin='round';
+    if(restoreData){const img=new Image();img.onload=()=>c.drawImage(img,0,0,rect.width,rect.height);img.src=restoreData;}
+  };
+  resize();
+  let drawing=false,last={x:0,y:0};
+  const point=e=>{const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+  canvas.onpointerdown=e=>{drawing=true;canvas.setPointerCapture(e.pointerId);last=point(e);};
+  canvas.onpointermove=e=>{if(!drawing)return;const p=point(e),c=canvas.getContext('2d');c.save();c.globalCompositeOperation=inkSettings.mode==='eraser'?'destination-out':'source-over';c.strokeStyle=inkSettings.color;c.lineWidth=inkSettings.mode==='eraser'?18:inkSettings.width;c.beginPath();c.moveTo(last.x,last.y);c.lineTo(p.x,p.y);c.stroke();c.restore();last=p;};
+  const stop=()=>{if(!drawing)return;drawing=false;try{onSave?.(canvas.toDataURL('image/png'));}catch(e){}};
+  canvas.onpointerup=stop;canvas.onpointercancel=stop;canvas.onpointerleave=stop;
+}
+
+function bindTaskImages(key){
+  document.querySelectorAll('.task-image').forEach(img=>img.onclick=()=>{viewerImg.src=img.src;viewer.classList.add('open');viewer.setAttribute('aria-hidden','false');});
+  document.querySelectorAll('.image-draw-canvas').forEach(canvas=>{
+    const wrap=canvas.closest('.task-image-wrap'),img=wrap.querySelector('img');
+    const toolbar=wrap.previousElementSibling?.classList.contains('image-toolbar')?wrap.previousElementSibling:null;
+    bindInkToolbar(toolbar,()=>{canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);delete inkMemory.image[key];});
+    const init=()=>setupDrawCanvas(canvas,inkMemory.image[key],data=>inkMemory.image[key]=data);
+    if(img.complete)init();else img.addEventListener('load',init,{once:true});
+  });
+}
+
+function setupTaskInkCanvas(key){
+  const canvas=el('taskInkCanvas'),toolbar=el('taskInkToolbar'),btn=el('drawTaskBtn');
+  canvas.classList.remove('enabled');toolbar.hidden=true;btn.classList.remove('active');
+  setupDrawCanvas(canvas,inkMemory.task[key],data=>inkMemory.task[key]=data);
+  btn.onclick=()=>{
+    const enabled=!canvas.classList.contains('enabled');canvas.classList.toggle('enabled',enabled);toolbar.hidden=!enabled;btn.classList.toggle('active',enabled);
+    if(enabled) bindInkToolbar(toolbar,()=>{canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);delete inkMemory.task[key];});
+  };
+}
+
+/* Черновик на canvas */
+const modal=el("scratchModal");
+const canvas=el("scratchCanvas");
+const ctx=canvas.getContext("2d");
+let drawing=false,lastX=0,lastY=0,mode="pen";
+
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  const old=ctx.getImageData(0,0,canvas.width||1,canvas.height||1);
+  canvas.width=Math.max(1,Math.floor(rect.width*dpr));
+  canvas.height=Math.max(1,Math.floor(rect.height*dpr));
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineCap="round";
+  ctx.lineJoin="round";
+}
+
+function point(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+canvas.addEventListener("pointerdown",e=>{
+  drawing=true;
+  canvas.setPointerCapture(e.pointerId);
+  const p=point(e); lastX=p.x; lastY=p.y;
+});
+canvas.addEventListener("pointermove",e=>{
+  if(!drawing)return;
+  const p=point(e);
+  ctx.save();
+  if(mode==="eraser"){
+    ctx.globalCompositeOperation="destination-out";
+    ctx.lineWidth=18;
+  } else {
+    ctx.globalCompositeOperation="source-over";
+    ctx.strokeStyle=inkSettings.color;
+    ctx.lineWidth=inkSettings.width;
+  }
+  ctx.beginPath();
+  ctx.moveTo(lastX,lastY);
+  ctx.lineTo(p.x,p.y);
+  ctx.stroke();
+  ctx.restore();
+  lastX=p.x;lastY=p.y;
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>canvas.addEventListener(ev,()=>drawing=false));
+
+el("scratchBtn").onclick=()=>{
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  setTimeout(resizeCanvas,50);
+};
+el("closeScratchBtn").onclick=()=>{
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+};
+modal.addEventListener("click",e=>{if(e.target===modal) el("closeScratchBtn").click()});
+el("penBtn").onclick=()=>{mode="pen";inkSettings.mode="pen";};
+el("eraserBtn").onclick=()=>{mode="eraser";inkSettings.mode="eraser";};
+document.querySelectorAll("[data-scratch-color]").forEach(b=>b.onclick=()=>{
+  inkSettings.color=b.dataset.scratchColor;
+  document.querySelectorAll("[data-scratch-color]").forEach(x=>x.classList.toggle("active",x===b));
+});
+el("scratchWidth").onchange=e=>inkSettings.width=Number(e.target.value);
+el("clearCanvasBtn").onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+window.addEventListener("resize",()=>{ if(modal.classList.contains("open")) resizeCanvas(); });
+
+/* Печать и PDF: печатная версия в стиле образца */
+const solutionSizeLabels={
+  "grid-small":"Маленькое",
+  "grid-medium":"Среднее",
+  "grid-large":"Большое",
+  "grid-xlarge":"Очень большое"
+};
+const solutionSizeOrder=["grid-small","grid-medium","grid-large","grid-xlarge"];
+const printGridOverrides={};
+
+function printableOptions(rawTask){
+  const task=adaptTask(rawTask);
+  if(task.type==='order' && Array.isArray(task.items)) return `<div class="print-options">${task.items.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+  if(task.type==='matching' && Array.isArray(task.left)) return `<div class="print-options">${task.left.map((o,i)=>`<span>${i+1}) ${o} — ______</span>`).join("<br>")}</div>`;
+  if(task.type==='error' && Array.isArray(task.lines)) return `<div class="print-options">${task.lines.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("<br>")}</div>`;
+  if(task.type==='oporder') return `<div class="print-options">Порядок действий: ______________________________</div>`;
+  if(task.type==='column') return `<div class="print-options">Выполните вычисление столбиком: ${task.top||''} ${task.operator||''} ${task.bottom||''}</div>`;
+  if(!Array.isArray(task.options) || !task.options.length) return "";
+  return `<div class="print-options">${task.options.map((o,i)=>`<span>${i+1}) ${o}</span>`).join("")}</div>`;
+}
+
+function normalizedPrintGrid(value){
+  if(value===false || value==='none') return false;
+  const map={small:'grid-small',medium:'grid-medium',large:'grid-large',xlarge:'grid-xlarge'};
+  return map[value] || value;
+}
+
+/* Высота поля решения подбирается автоматически, но task.printGrid имеет приоритет:
+   false — без клетки; small/medium/large/xlarge — фиксированный размер. */
+function solutionGridClass(rawTask){
+  const task=adaptTask(rawTask);
+  const configured=normalizedPrintGrid(task.printGrid);
+  if(configured===false) return false;
+  if(typeof configured==='string' && /^grid-(small|medium|large|xlarge)$/.test(configured)) return configured;
+  const plain=(task.prompt||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();
+  const displayMath=((task.prompt||"").match(/\$\$/g)||[]).length/2;
+  const title=(task.title||"").toLowerCase();
+  const instruction=(task.instruction||"").toLowerCase();
+  let score=0;
+  if(plain.length>170) score++;
+  if(plain.length>300) score++;
+  if(displayMath>=2) score++;
+  if(/решите|доказ|восстанов|найдите ошиб|самостоятель/.test(title+" "+instruction)) score++;
+  if(score>=4) return "grid-xlarge";
+  if(score>=2) return "grid-large";
+  if(score===1) return "grid-medium";
+  return "grid-small";
+}
+
+function allPrintableTasks(){
+  const tasks=[];
+  workbook.forEach((topic,topicIndex)=>topic.tasks.forEach((raw,taskIndex)=>{
+    tasks.push({task:adaptTask(raw), key:`${topic.id}_${taskIndex}`, topicIndex, taskIndex});
+  }));
+  return tasks;
+}
+
+function sizeControls(key,current){
+  if(current===false) return `<div class="print-size-row" data-size-key="${key}"><span>Поле: отключено в настройках задания</span></div>`;
+  return `<div class="print-size-row" data-size-key="${key}">
+    <span>Поле:</span>
+    ${solutionSizeOrder.map(size=>`<button type="button" class="print-size-btn ${size===current?'active':''}" data-size="${size}">${solutionSizeLabels[size]}</button>`).join("")}
+  </div>`;
+}
+
+/* Реальные линии клетки с шагом 5 мм. */
+function solutionGridLines(){
+  const vertical=Array.from({length:40},(_,i)=>`<i class="grid-v" style="left:${(i+1)*5}mm"></i>`).join("");
+  const horizontal=Array.from({length:10},(_,i)=>`<i class="grid-h" style="top:${(i+1)*5}mm"></i>`).join("");
+  return vertical+horizontal;
+}
+
+function printablePrompt(task){
+  let prompt=task.prompt||'';
+  if(task.type==='fill') prompt=prompt.replace(/\{\{\d+\}\}/g,'__________');
+  const img=task.image ? (typeof task.image==='string'?{src:task.image}:task.image) : null;
+  if(img?.src) prompt += `<div style="text-align:center;margin:2mm 0"><img src="${escapeAttr(img.src)}" alt="${escapeAttr(img.alt||'Рисунок')}" style="max-width:120mm;max-height:75mm;object-fit:contain"></div>`;
+  return prompt;
+}
+
+function printTaskMarkup(item,globalNumber,{preview=false}={}){
+  const {task,key}=item;
+  const auto=solutionGridClass(task);
+  const gridClass=auto===false?false:(printGridOverrides[key] || auto);
+  return `<section class="print-task" data-task-key="${key}">
+    <div class="print-question-row">
+      <div class="print-num">${globalNumber}.</div>
+      <div class="print-prompt">${printablePrompt(task)}${printableOptions(task)}</div>
+    </div>
+    ${preview?sizeControls(key,gridClass):''}
+    ${gridClass===false?'':`<div class="solution-grid ${gridClass}" data-grid-key="${key}" aria-label="Место для решения">${solutionGridLines()}</div>`}
+  </section>`;
+}
+
+function mmPixels(mm){
+  const probe=document.createElement("div");
+  probe.style.cssText=`position:absolute;visibility:hidden;width:1mm;height:${mm}mm;`;
+  document.body.appendChild(probe);
+  const px=probe.getBoundingClientRect().height;
+  probe.remove();
+  return px;
+}
+
+/* Раскладка больше не привязана к фиксированным 5 заданиям.
+   Сначала браузер измеряет реальную высоту каждого задания вместе с выбранным
+   полем решения и отрендеренными формулами MathJax, затем на A4 помещается
+   максимально возможное число ЦЕЛЫХ заданий. */
+async function buildPaginatedMarkup({preview=false,onlyPage=null}={}){
+  const tasks=allPrintableTasks();
+  const measure=document.createElement("div");
+  measure.className="print-sheet";
+  measure.style.cssText="position:fixed;left:-12000px;top:0;visibility:hidden;width:190mm;background:#fff;";
+  measure.innerHTML=tasks.map((item,i)=>printTaskMarkup(item,i+1,{preview})).join("");
+  document.body.appendChild(measure);
+  await typesetPrintNode(measure);
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const pageHeight=mmPixels(277);
+  const pages=[];
+  let current=[];
+  let used=0;
+  [...measure.querySelectorAll(".print-task")].forEach((node,i)=>{
+    const cs=getComputedStyle(node);
+    const h=node.getBoundingClientRect().height + parseFloat(cs.marginTop||0) + parseFloat(cs.marginBottom||0);
+    if(current.length && used+h>pageHeight){
+      pages.push(current);
+      current=[];
+      used=0;
+    }
+    current.push(i);
+    used+=h;
+  });
+  if(current.length) pages.push(current);
+  measure.remove();
+
+  const selected=onlyPage==null ? pages : (pages[onlyPage] ? [pages[onlyPage]] : []);
+  let html=`<div class="print-sheet ${preview?'preview-sheet':''}">`;
+  selected.forEach((indexes,localPageIndex)=>{
+    const sourcePageIndex=onlyPage==null ? localPageIndex : onlyPage;
+    if(preview){
+      html += `<div class="preview-page-wrap" data-preview-page="${sourcePageIndex}">
+        <div class="preview-page-actions">
+          <button type="button" class="export-btn print-one-page" data-page="${sourcePageIndex}">🖨 Печать страницы ${sourcePageIndex+1}</button>
+          <button type="button" class="export-btn pdf-one-page" data-page="${sourcePageIndex}">⬇ PDF страницы ${sourcePageIndex+1}</button>
+        </div>`;
+    }
+    html += `<div class="print-page" data-page-index="${sourcePageIndex}">`;
+    indexes.forEach(taskIndex=>{ html += printTaskMarkup(tasks[taskIndex],taskIndex+1,{preview}); });
+    html += `</div>`;
+    if(preview) html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+async function buildPrintableSheet(onlyPage=null){
+  const root=el("printSheet");
+  root.innerHTML=await buildPaginatedMarkup({preview:false,onlyPage});
+  return root.querySelector(".print-sheet");
+}
+
+async function typesetPrintNode(node){
+  if(window.MathJax?.startup?.promise){
+    try{ await MathJax.startup.promise; }catch(e){}
+  }
+  if(window.MathJax?.typesetPromise && node){
+    try{
+      if(MathJax.typesetClear) MathJax.typesetClear([node]);
+      await MathJax.typesetPromise([node]);
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    }catch(e){ console.warn("MathJax print render:",e); }
+  }
+}
+
+async function preparePrintableMath(onlyPage=null){
+  const sheet=await buildPrintableSheet(onlyPage);
+  await typesetPrintNode(sheet);
+  return sheet;
+}
+
+async function openPrintPreview(){
+  const previewRoot=el("printPreview");
+  previewRoot.innerHTML=await buildPaginatedMarkup({preview:true});
+  await typesetPrintNode(previewRoot);
+
+  previewRoot.querySelectorAll(".print-size-row").forEach(row=>{
+    row.addEventListener("click",e=>{
+      const btn=e.target.closest(".print-size-btn");
+      if(!btn) return;
+      const key=row.dataset.sizeKey;
+      const size=btn.dataset.size;
+      printGridOverrides[key]=size;
+      row.querySelectorAll(".print-size-btn").forEach(b=>b.classList.toggle("active",b===btn));
+      const grid=previewRoot.querySelector(`.solution-grid[data-grid-key="${key}"]`);
+      if(grid){
+        solutionSizeOrder.forEach(c=>grid.classList.remove(c));
+        grid.classList.add(size);
+      }
+    });
+  });
+
+  previewRoot.querySelectorAll(".print-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await printWorkbook(page);
+    };
+  });
+  previewRoot.querySelectorAll(".pdf-one-page").forEach(btn=>{
+    btn.onclick=async()=>{
+      const page=Number(btn.dataset.page);
+      closePrintPreview();
+      await exportWorkbookPdf(page);
+    };
+  });
+
+  const modal=el("printPreviewModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+
+function closePrintPreview(){
+  const modal=el("printPreviewModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+async function printWorkbook(onlyPage=null){
+  await preparePrintableMath(onlyPage);
+  window.print();
+}
+
+async function exportWorkbookPdf(onlyPage=null){
+  const root=el("printSheet");
+  root.classList.add("export-render");
+  try{
+    const sheet=await preparePrintableMath(onlyPage);
+    if(typeof html2pdf==="undefined"){
+      alert("Модуль PDF ещё загружается. Повторите попытку через пару секунд.");
+      return;
+    }
+
+    /* MathJax 3 здесь уже превратил TeX в обычные inline-SVG.
+       Держим узел видимым для html2canvas до завершения снимка и ждём шрифты. */
+    if(document.fonts?.ready) await document.fonts.ready;
+    await typesetPrintNode(sheet);
+    await new Promise(resolve=>setTimeout(resolve,60));
+
+    sheet.classList.add("pdf-mode");
+    const base=(document.title || "Рабочий лист").replace(/[\\/:*?"<>|]+/g,"_");
+    const filename=onlyPage==null ? `${base}.pdf` : `${base}_страница_${onlyPage+1}.pdf`;
+    const options={
+      margin:[10,10,10,10],
+      filename,
+      image:{type:"png",quality:1},
+      html2canvas:{
+        scale:2.2,
+        useCORS:true,
+        allowTaint:false,
+        backgroundColor:"#ffffff",
+        scrollX:0,scrollY:0,
+        logging:false
+      },
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["css","legacy"],after:[".print-page:not(:last-child)"],avoid:[".print-task","mjx-container"]}
+    };
+    try{
+      await html2pdf().set(options).from(sheet).save();
+    }finally{
+      sheet.classList.remove("pdf-mode");
+    }
+  }finally{
+    root.classList.remove("export-render");
+  }
+}
+
+el("previewBtn").onclick=openPrintPreview;
+el("printBtn").onclick=openPrintPreview;
+el("pdfBtn").onclick=openPrintPreview;
+el("closePreviewBtn").onclick=closePrintPreview;
+el("previewPrintBtn").onclick=async()=>{ closePrintPreview(); await printWorkbook(); };
+el("previewPdfBtn").onclick=async()=>{ closePrintPreview(); await exportWorkbookPdf(); };
+el("printPreviewModal").addEventListener("click",e=>{ if(e.target===el("printPreviewModal")) closePrintPreview(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && el("printPreviewModal").classList.contains("open")) closePrintPreview(); });
+
+/* Кнопки */
+el("checkBtn").onclick=checkCurrent;
+el("resetBtn").onclick=resetCurrent;
+el("nextBtn").onclick=nextTask;
+el("mobileTaskSelect").onchange=e=>{
+  state.task=Number(e.target.value);
+  saveSessionState();
+  renderTaskNav();
+  renderTask();
+};
+
+document.querySelectorAll(".theme-btn").forEach(b=>b.onclick=()=>applyTheme(b.dataset.theme));
+
+if(!workbook[state.topic]) state.topic=0;
+if(!workbook[state.topic]?.tasks[state.task]) state.task=0;
+saveSessionState();applyTheme(state.theme);
+renderAll();
+</script>
+</body>
+</html>+p[1]+'$</span></div>').join("") + '</div>';
     t.answer=pairs.map(p=>[p[2]]);
   }
   if(t.type==="match" && Array.isArray(t.rows)){
