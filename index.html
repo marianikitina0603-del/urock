@@ -1,9 +1,111 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Библиотека уроков</title><link rel="stylesheet" href="assets/styles.css"></head><body><main class="shell">
-<section class="hero"><span class="eyebrow">Библиотека HTML-уроков</span><h1>Библиотека уроков</h1><p>Уроки, тренажёры, диагностика и математические игры для 5–11 классов и подготовки к экзаменам.</p></section>
-<section class="search-box"><input id="siteSearch" type="search" placeholder="Найти тему, номер ОГЭ, класс или тренажёр…" autocomplete="off"><div id="searchStatus" class="search-status">Поиск по всей библиотеке.</div><div id="searchResults" class="search-results" aria-live="polite"></div></section>
-<section class="section"><div class="section-head"><div><h2>Быстрый доступ</h2><p>Последние и сохранённые материалы</p></div></div><div class="quick-grid"><div class="quick-card"><strong>⭐ Избранное</strong><ul id="favList" class="quick-list"></ul></div><div class="quick-card"><strong>🕘 Недавние</strong><ul id="recentList" class="quick-list"></ul></div><a class="quick-card" href="game/game1/index.html" style="text-decoration:none"><strong>🎮 Игры</strong><p>Игровые занятия и математические квесты</p></a></div></section>
-<section class="section"><div class="section-head"><div><h2>Математика по классам</h2><p>Основная школа</p></div></div><div class="class-grid"><a class="class-card" href="classes/5.html"><span>5</span><strong>класс</strong></a><a class="class-card" href="classes/6.html"><span>6</span><strong>класс</strong></a><a class="class-card" href="classes/7.html"><span>7</span><strong>класс</strong></a><a class="class-card" href="classes/8-v2.html"><span>8</span><strong>класс</strong></a><a class="class-card" href="classes/9-v2.html"><span>9</span><strong>класс</strong></a></div></section>
-<section class="section"><div class="section-head"><div><h2>Старшая школа</h2><p>10–11 классы</p></div></div><div class="class-grid"><a class="class-card" href="classes/10.html"><span>10</span><strong>класс</strong></a><a class="class-card" href="classes/11.html"><span>11</span><strong>класс</strong></a></div></section>
-<section class="section"><div class="section-head"><div><h2>Экзамены</h2><p>Подготовка по темам и номерам заданий</p></div></div><div class="class-grid"><a class="class-card" href="exams/oge-v2.html"><span>ОГЭ</span><strong>Математика</strong><small>№6–20 · тренажёры · диагностика</small></a><a class="class-card" href="exams/ege-base.html"><span>ЕГЭ</span><strong>Базовый уровень</strong></a><a class="class-card" href="exams/ege-profile.html"><span>ЕГЭ</span><strong>Профильный уровень</strong></a></div></section>
-<section class="section"><div class="section-head"><div><h2>Другие материалы</h2></div></div><div class="class-grid"><a class="class-card" href="informatics/index.html"><span>💻</span><strong>Информатика</strong></a><a class="class-card" href="game/game1/index.html"><span>🎮</span><strong>Математические игры</strong></a></div></section>
-</main><script>(()=>{const pages=[['5 класс','classes/5.html'],['6 класс','classes/6.html'],['7 класс','classes/7.html'],['8 класс','classes/8-v2.html'],['9 класс','classes/9-v2.html'],['10 класс','classes/10.html'],['11 класс','classes/11.html'],['Информатика','informatics/index.html'],['ОГЭ','exams/oge-v2.html'],['ЕГЭ база','exams/ege-base.html'],['ЕГЭ профиль','exams/ege-profile.html']];const input=document.getElementById('siteSearch'),results=document.getElementById('searchResults'),status=document.getElementById('searchStatus');const norm=s=>(s||'').toLowerCase().replace(/ё/g,'е').replace(/→/g,'').replace(/\s+/g,' ').trim();let index=[];const base=new URL('.',location.href);Promise.all(pages.map(async([source,url])=>{try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)return;const doc=new DOMParser().parseFromString(await r.text(),'text/html');doc.querySelectorAll('.lesson-list a[href]').forEach(a=>{const title=a.textContent.replace(/→/g,'').trim(),href=a.getAttribute('href');if(title&&href)index.push({title,href:new URL(href,new URL(url,base)).href,source})})}catch(e){}})).then(()=>{status.textContent='Поиск готов: тема, класс, ОГЭ/ЕГЭ или название материала.';run()});function run(){const q=norm(input.value);if(!q){results.classList.remove('show');return}const w=q.split(' ').filter(Boolean),found=index.filter(x=>w.every(t=>norm(x.title+' '+x.source).includes(t))).slice(0,30);results.classList.add('show');results.innerHTML=found.length?'<h2>Найдено: '+found.length+'</h2>'+found.map(x=>'<a class="search-result" href="'+x.href+'" target="_blank" rel="noopener"><span><strong>'+esc(x.title)+'</strong><small>'+esc(x.source)+'</small></span><span>→</span></a>').join(''):'<div class="empty-state">Ничего не найдено.</div>'}function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}input.addEventListener('input',run);function fill(id,key){const el=document.getElementById(id);let a=[];try{a=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}el.innerHTML=a.length?a.slice(0,4).map(x=>'<li><a href="'+x.href+'" target="_blank" rel="noopener">'+esc(x.title)+'</a></li>').join(''):'<li style="color:var(--muted);padding-top:8px">Пока пусто</li>'}fill('favList','urock:favorites');fill('recentList','urock:recent')})();</script></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Библиотека уроков</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="home-page">
+<main class="shell home-shell">
+  <section class="home-hero">
+    <div class="home-hero-copy">
+      <span class="eyebrow">Библиотека HTML-уроков</span>
+      <h1>Библиотека уроков</h1>
+      <p>Уроки, тренажёры, диагностика и игры для 5–11 классов.</p>
+    </div>
+    <section class="search-box home-search" aria-label="Поиск по библиотеке">
+      <input id="siteSearch" type="search" placeholder="Найти тему, номер ОГЭ, класс…" autocomplete="off">
+      <div id="searchStatus" class="search-status">Поиск по всей библиотеке</div>
+      <div id="searchResults" class="search-results" aria-live="polite"></div>
+    </section>
+  </section>
+
+  <section class="home-quick">
+    <div class="quick-card compact">
+      <strong>⭐ Избранное</strong>
+      <ul id="favList" class="quick-list"></ul>
+    </div>
+    <div class="quick-card compact">
+      <strong>🕘 Недавние</strong>
+      <ul id="recentList" class="quick-list"></ul>
+    </div>
+    <a class="quick-card compact quick-link" href="game/game1/index.html">
+      <strong>🎮 Игры</strong>
+      <p>Квесты и игровые занятия</p>
+    </a>
+  </section>
+
+  <section class="home-catalog">
+    <div class="home-row-title">
+      <h2>Классы</h2>
+      <span>5–11</span>
+    </div>
+    <div class="home-card-grid grades">
+      <a class="class-card compact" href="classes/5.html"><span>5</span><strong>класс</strong></a>
+      <a class="class-card compact" href="classes/6.html"><span>6</span><strong>класс</strong></a>
+      <a class="class-card compact" href="classes/7.html"><span>7</span><strong>класс</strong></a>
+      <a class="class-card compact" href="classes/8-v2.html"><span>8</span><strong>класс</strong></a>
+      <a class="class-card compact" href="classes/9-v2.html"><span>9</span><strong>класс</strong></a>
+      <a class="class-card compact" href="classes/10.html"><span>10</span><strong>класс</strong></a>
+      <a class="class-card compact" href="classes/11.html"><span>11</span><strong>класс</strong></a>
+    </div>
+
+    <div class="home-row-title second">
+      <h2>Экзамены и другое</h2>
+      <span>быстрый переход</span>
+    </div>
+    <div class="home-card-grid exams">
+      <a class="class-card compact exam-card" href="exams/oge-v2.html"><span>ОГЭ</span><strong>Математика</strong></a>
+      <a class="class-card compact exam-card" href="exams/ege-base.html"><span>ЕГЭ</span><strong>База</strong></a>
+      <a class="class-card compact exam-card" href="exams/ege-profile.html"><span>ЕГЭ</span><strong>Профиль</strong></a>
+      <a class="class-card compact utility-card" href="informatics/index.html"><span>💻</span><strong>Информатика</strong></a>
+      <a class="class-card compact utility-card" href="game/game1/index.html"><span>🎮</span><strong>Игры</strong></a>
+    </div>
+  </section>
+</main>
+
+<script>
+(()=>{
+  const pages=[['5 класс','classes/5.html'],['6 класс','classes/6.html'],['7 класс','classes/7.html'],['8 класс','classes/8-v2.html'],['9 класс','classes/9-v2.html'],['10 класс','classes/10.html'],['11 класс','classes/11.html'],['Информатика','informatics/index.html'],['ОГЭ','exams/oge-v2.html'],['ЕГЭ база','exams/ege-base.html'],['ЕГЭ профиль','exams/ege-profile.html']];
+  const input=document.getElementById('siteSearch'),results=document.getElementById('searchResults'),status=document.getElementById('searchStatus');
+  const norm=s=>(s||'').toLowerCase().replace(/ё/g,'е').replace(/→/g,'').replace(/\s+/g,' ').trim();
+  let index=[];
+  const base=new URL('.',location.href);
+  Promise.all(pages.map(async([source,url])=>{
+    try{
+      const r=await fetch(url,{cache:'no-store'}); if(!r.ok)return;
+      const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+      doc.querySelectorAll('.lesson-list a[href]').forEach(a=>{
+        const title=a.textContent.replace(/→/g,'').trim(),href=a.getAttribute('href');
+        if(title&&href)index.push({title,href:new URL(href,new URL(url,base)).href,source});
+      });
+    }catch(e){}
+  })).then(()=>{status.textContent='Поиск готов';run()});
+
+  function run(){
+    const q=norm(input.value);
+    if(!q){results.classList.remove('show');results.innerHTML='';return}
+    const w=q.split(' ').filter(Boolean);
+    const found=index.filter(x=>w.every(t=>norm(x.title+' '+x.source).includes(t))).slice(0,20);
+    results.classList.add('show');
+    results.innerHTML=found.length
+      ?'<h2>Найдено: '+found.length+'</h2>'+found.map(x=>'<a class="search-result" href="'+x.href+'" target="_blank" rel="noopener"><span><strong>'+esc(x.title)+'</strong><small>'+esc(x.source)+'</small></span><span>→</span></a>').join('')
+      :'<div class="empty-state">Ничего не найдено.</div>';
+  }
+  function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  input.addEventListener('input',run);
+
+  function fill(id,key){
+    const el=document.getElementById(id); let a=[];
+    try{a=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
+    el.innerHTML=a.length
+      ?a.slice(0,2).map(x=>'<li><a href="'+x.href+'" target="_blank" rel="noopener">'+esc(x.title)+'</a></li>').join('')
+      :'<li class="quick-empty">Пока пусто</li>';
+  }
+  fill('favList','urock:favorites');
+  fill('recentList','urock:recent');
+})();
+</script>
+</body>
+</html>
