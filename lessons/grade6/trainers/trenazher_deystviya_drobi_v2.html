@@ -158,7 +158,7 @@ const examples = [
   steps:[
     {task:String.raw`-13{,}6+5{,}1`, ans:"-8.5", hint:"У чисел разные знаки: вычти модули и оставь знак числа с большим модулем."},
     {task:String.raw`1\frac{3}{17}`, ans:String(20/17), hint:"1 3/17 = (17+3)/17 = 20/17.", label:"Переведи в неправильную дробь"},
-    {task:(v)=>String.raw`${fmt(v[0])}\cdot${fmt(v[1])}`, ans:"-10", hint:"Можно представить -8,5 как -17/2 — сокращение получится сразу."},
+    {task:(v)=>String.raw`${operand(v[0])}\cdot${operand(v[1])}`, ans:"-10", hint:"Можно представить -8,5 как -17/2 — сокращение получится сразу."},
     {task:String.raw`2\frac{7}{23}-1\frac{45}{46}`, ans:String(15/46), hint:"Удобно привести к знаменателю 46: 2 7/23 = 2 14/46."},
     {task:String.raw`1\frac{7}{23}`, ans:String(30/23), hint:"1 7/23 = 30/23.", label:"Переведи делитель в неправильную дробь"},
     {task:(v)=>String.raw`${fmt(v[3])}:${fmt(v[4])}`, ans:"0.25", hint:"Деление на дробь замени умножением на обратную."},
@@ -175,7 +175,7 @@ const examples = [
     {task:(v)=>String.raw`${fmt(v[0])}+${fmt(v[1])}`, ans:"-3", hint:"Это числитель большой дроби."},
     {task:String.raw`5\frac{5}{6}\cdot2\frac{4}{7}`, ans:"15", hint:"5 5/6 = 35/6, 2 4/7 = 18/7. Сначала сократи множители."},
     {task:(v)=>String.raw`9-${fmt(v[3])}`, ans:"-6", hint:"Это знаменатель большой дроби."},
-    {task:(v)=>String.raw`${fmt(v[2])}:${fmt(v[4])}`, ans:"0.5", hint:"Минус делим на минус — получаем плюс."}
+    {task:(v)=>String.raw`${operand(v[2])}:${operand(v[4])}`, ans:"0.5", hint:"Минус делим на минус — получаем плюс."}
   ]
 }
 ];
@@ -202,6 +202,10 @@ function fmt(x){
   const f=decimalToFraction(n);
   const sign=f.n<0 ? "-" : "";
   return `${sign}\\frac{${Math.abs(f.n)}}{${f.d}}`;
+}
+function operand(x){
+  const value=fmt(x);
+  return Number(x)<0 ? `\\left(${value}\\right)` : value;
 }
 function replaceLatexFractions(s){
   while(s.includes("\\frac")){
@@ -235,15 +239,14 @@ function parseVal(raw){
      .replace(/\\,/g,"")
      .replace(/\{,\}/g,".")
      .replace(/,/g,".")
-     .replace(/−/g,"-")
-     .replace(/\\operatorname\{[^}]*\}/g,"")
-     .replace(/\\text\{[^}]*\}/g,"");
+     .replace(/−/g,"-");
   // Смешанное число из MathLive: 1\frac{3}{17} или -2\frac{2}{11}
   let mm=s.match(/^(-?\d+)\s*\\frac\{(-?\d+(?:\.\d+)?)\}\{(-?\d+(?:\.\d+)?)\}$/);
   if(mm){
     const w=Number(mm[1]), n=Number(mm[2]), d=Number(mm[3]);
     if(!d) return NaN;
-    return w<0 ? w-Math.abs(n/d) : w+n/d;
+    if(n<0 || d<=0) return NaN;
+    return mm[1].startsWith("-") ? -(Math.abs(w)+n/d) : w+n/d;
   }
   s=replaceLatexFractions(s);
   s=s.replace(/\{/g,"(").replace(/\}/g,")")
@@ -252,12 +255,54 @@ function parseVal(raw){
      .replace(/\s+/g,"");
   if(!/^[0-9+\-*/().]+$/.test(s)) return NaN;
   try{
-    const v=Function('"use strict";return ('+s+')')();
-    return Number.isFinite(v)?v:NaN;
+    // Разбираем только арифметику: ввод ученика не исполняется как JavaScript.
+    let pos=0;
+    function primary(){
+      if(s[pos]==="+" || s[pos]==="-"){
+        const sign=s[pos++]==="-" ? -1 : 1;
+        return sign*primary();
+      }
+      if(s[pos]==="("){
+        pos++;
+        const value=sum();
+        if(s[pos++]!==")") throw new Error("Скобка не закрыта");
+        return value;
+      }
+      const match=s.slice(pos).match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+      if(!match) throw new Error("Ожидается число");
+      pos+=match[0].length;
+      return Number(match[0]);
+    }
+    function product(){
+      let value=primary();
+      while(s[pos]==="*" || s[pos]==="/"){
+        const op=s[pos++], right=primary();
+        if(op==="/" && right===0) throw new Error("Деление на ноль");
+        value=op==="*" ? value*right : value/right;
+      }
+      return value;
+    }
+    function sum(){
+      let value=product();
+      while(s[pos]==="+" || s[pos]==="-"){
+        const op=s[pos++], right=product();
+        value=op==="+" ? value+right : value-right;
+      }
+      return value;
+    }
+    const v=sum();
+    return pos===s.length && Number.isFinite(v)?v:NaN;
   }catch(e){ return NaN; }
 }
 function eq(a,b){return Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<1e-7}
-function typeset(el){ if(window.MathJax?.typesetPromise) MathJax.typesetPromise([el]); }
+let typesetQueue=Promise.resolve();
+function typeset(el){
+  if(!el || !window.MathJax?.typesetPromise) return;
+  typesetQueue=typesetQueue
+    .then(()=>window.MathJax.startup?.promise)
+    .then(()=>MathJax.typesetPromise([el]))
+    .catch(error=>console.error('Не удалось отобразить формулы',error));
+}
 
 const pagesEl=document.getElementById('pages'), navEl=document.getElementById('nav');
 
@@ -299,7 +344,7 @@ examples.forEach((ex,ei)=>{
       <div class="stepHead"><div class="num">${si+1}</div><h3>${st.label||'Выполни действие'}</h3></div>
       <div class="task"></div>
       <div class="answerRow">
-        <math-field virtual-keyboard-mode="off" placeholder="Например: 0,5 или 1/2"></math-field>
+        <math-field math-virtual-keyboard-policy="manual" placeholder="Например: 0,5 или 1/2"></math-field>
         <button class="primary">Проверить</button>
         <button class="hintBtn">Подсказка</button>
       </div>
@@ -317,12 +362,13 @@ examples.forEach((ex,ei)=>{
     const input=s.querySelector('math-field'), fb=s.querySelector('.feedback');
     input.setAttribute('smart-mode','true');
     const check=()=>{
+      if(!s.classList.contains('active')) return;
       const got=parseVal(input.value), want=parseVal(st.ans);
       if(eq(got,want)){
         ex._vals=ex._vals||[]; ex._vals[si]=String(want);
         s.classList.remove('active'); s.classList.add('done');
         fb.className='feedback ok'; fb.innerHTML='Верно ✓ Этот результат подставится дальше автоматически.';
-        input.disabled=true; s.querySelector('.primary').disabled=true;
+        input.readOnly=true; input.setAttribute("read-only", ""); s.querySelector('.primary').disabled=true;
         if(si+1<ex.steps.length){
           const ns=stepsEl.children[si+1]; ns.classList.add('active');
           ex.steps[si+1]._render();
@@ -362,7 +408,7 @@ function showPage(i){
   window.scrollTo({top:0,behavior:'smooth'});
   typeset(document.querySelector(`[data-page="${i}"]`));
 }
-setTimeout(()=>typeset(document.body),500);
+window.addEventListener('load',()=>typeset(document.body));
 </script>
 </body>
 </html>
