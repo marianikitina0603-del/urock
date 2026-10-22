@@ -73,8 +73,9 @@ math-field.visual-math:focus-within{outline:2px solid #6f8271;outline-offset:2px
 header{background:var(--header-bg)}
 .slide{background:linear-gradient(125deg,var(--slide-a),var(--slide-b))}
 .note,.lesson-note-body{background:var(--soft-note)}
-.lesson-tile{background:var(--card)}
-.lesson-tile:hover,.tabs .lesson-link:hover{background:var(--pale)}
+.lesson-tile{background:#eef6ff;border-color:#bfd7ee}
+.lesson-tile:hover{background:#e2f0ff;border-color:#78a9d4}
+.lesson-tile:hover,.tabs .lesson-link:hover{background:#e2f0ff}
 .hero-math{background:linear-gradient(120deg,var(--slide-a),var(--slide-b))}
 .sketch-wrap,.math-keyboard{background:var(--soft-note)}
 .sketch-control,.aside textarea,.answer-preview{background:var(--field-bg)}
@@ -300,7 +301,7 @@ function render(){let total=plans[state.count].length,current=plans[state.count]
 $('progress').style.width=state.home?'0%':`${Math.round(((state.lesson*5+state.page+1)/(total*5))*100)}%`;
 const content=$('stage');
 document.querySelector('.shell').classList.toggle('presentation-only',state.home);
-if(state.home){content.innerHTML=`<div class="module-presentation"><div class="oge15-topline"><div><div class="hero-eyebrow">МАТЕМАТИКА · 9 КЛАСС · ПРЕЗЕНТАЦИЯ ТЕМЫ</div><h2 style="margin:4px 0">ОГЭ №15. Треугольники</h2></div><button type="button" class="primary oge15-focus-toggle" id="oge15FocusToggle" aria-pressed="false">⛶ Режим фокуса</button></div><iframe id="oge15PresentationFrame" class="oge15-frame" title="Презентация ОГЭ №15: треугольники, 10 слайдов" allowfullscreen></iframe><p class="muted">Листайте слайды кнопками или стрелками ← → внутри презентации. Режим фокуса разворачивает презентацию на весь экран; для выхода нажмите Esc.</p><div class="hero-facts"><span>◷ ${total} урока по 60 минут</span><span>▤ 10 слайдов · формулы и чертежи</span><span>✎ Конспект и практика</span><span>✓ Итоговая проверка</span></div><h3>Перейти к уроку</h3><div class="lesson-grid">${plans[state.count].map((l,i)=>`<a class="lesson-tile" href="#lesson-${i+1}" data-lesson="${i}"><small>УРОК ${i+1} · 60 МИНУТ</small><strong>${esc(l[0])}</strong><span>${esc(l[1])}</span><em>Открыть конспект урока →</em></a>`).join('')}</div></div>`;
+if(state.home){content.innerHTML=`<div class="module-presentation"><div class="oge15-topline"><div><div class="hero-eyebrow">УРОК · МАТЕМАТИКА · 9 КЛАСС</div><h2 style="margin:4px 0">ОГЭ №15. Треугольники</h2></div><button type="button" class="primary oge15-focus-toggle" id="oge15FocusToggle" aria-pressed="false">⛶ Режим фокуса</button></div><iframe id="oge15PresentationFrame" class="oge15-frame" title="Презентация ОГЭ №15: треугольники, 10 слайдов" allowfullscreen></iframe><p class="muted">Листайте слайды кнопками или стрелками ← → внутри презентации. Режим фокуса разворачивает презентацию на весь экран; для выхода нажмите Esc.</p><div class="hero-facts"><span>◷ ${total} урока по 60 минут</span><span>▤ 10 слайдов · формулы и чертежи</span><span>✎ Конспект и практика</span><span>✓ Итоговая проверка</span></div><h3>Перейти к уроку</h3><div class="lesson-grid">${plans[state.count].map((l,i)=>`<a class="lesson-tile" href="#lesson-${i+1}" data-lesson="${i}"><small>УРОК ${i+1} · 60 МИНУТ</small><strong>${esc(l[0])}</strong><span>${esc(l[1])}</span><em>Открыть конспект урока →</em></a>`).join('')}</div></div>`;
 const frame=$('oge15PresentationFrame');frame.srcdoc=OGE15_PRESENTATION_HTML;
 frame.addEventListener('load',()=>{frame.contentWindow?.postMessage({type:'oge15goto',slide:state.slide},'*')},{once:true});
 const focusButton=$('oge15FocusToggle');
