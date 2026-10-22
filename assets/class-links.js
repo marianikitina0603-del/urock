@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(/игра|game|детектив/.test(s))return 'Игра';
     if(/диагност|сам\.раб|самостоятель|контроль|демоверс|вариант/.test(s))return 'Диагностика';
     if(/тренаж|практик/.test(s))return 'Тренажёр';
+    if(/без[_\-\s]*повтор/.test(s))return 'Урок';
     if(/повтор/.test(s))return 'Повторение';
     return 'Урок';
   };
