@@ -1,0 +1,939 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Математический модуль — прототип</title><style>
+:root{--bg:#f7f4ea;--card:#fffefa;--ink:#302e29;--sage:#6f8271;--pale:#e8eee3;--line:#d9dcd1;--accent:#b77853}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px/1.55 system-ui,Arial;color:var(--ink)}button,select,input,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 15px;color:var(--ink)}button:hover{border-color:var(--sage)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--sage);color:white;border-color:var(--sage)}header{background:#fafaf6;border-bottom:1px solid var(--line);padding:15px clamp(16px,4vw,45px);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}h1{font:700 1.35rem/1.3 Georgia,serif;margin:0}small,.muted{color:#666e64}main{max-width:1350px;margin:22px auto;padding:0 18px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.tabs button.active{background:var(--pale);border-color:var(--sage);font-weight:700}.shell{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;min-width:0}.panel h2{font:700 1.6rem/1.2 Georgia,serif;margin:0 0 15px}.slide{border-radius:15px;background:linear-gradient(125deg,#f0ede0,#e9eee5);padding:25px;min-height:290px;display:flex;flex-direction:column;justify-content:center}.slide h3{font:700 1.8rem Georgia,serif;margin:0 0 12px}.math{font:26px Georgia,serif;margin:14px 0}.actions{display:flex;align-items:center;gap:9px;justify-content:space-between;flex-wrap:wrap;margin-top:15px}.note{background:#f3f4ea;padding:12px;border-radius:12px}.aside{position:sticky;top:15px;align-self:start}.aside h3{margin:0 0 10px}.aside details{margin-bottom:12px}.aside summary{cursor:pointer;font-weight:650}.aside textarea{width:100%;height:130px;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff}.question{border:1px solid var(--line);padding:16px;margin:12px 0;border-radius:14px}.question input{width:min(350px,100%);padding:9px;border:1px solid var(--line);border-radius:9px}.feedback{margin-top:10px;padding:9px;border-radius:10px;background:#eef2e9}.progress{height:7px;background:#e6e6df;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--sage);transition:width .2s}.hide{display:none!important}.tag{display:inline-block;border-radius:99px;background:var(--pale);padding:3px 9px;font-size:13px}.footer{font-size:13px;color:#666;padding:20px 0}.teacher-only{border:1px dashed #b5aa91;border-radius:12px;padding:12px;margin-top:10px}.sketch{width:100%;height:260px;border:1px solid var(--line);background-color:#fff;background-image:linear-gradient(#e6edf0 1px,transparent 1px),linear-gradient(90deg,#e6edf0 1px,transparent 1px);background-size:20px 20px;border-radius:10px;touch-action:none;display:block}.sketch-wrap{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fafbf8}.sketch-header{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px}.sketch-tools{display:flex;gap:7px;flex-wrap:wrap}.sketch-tools button{padding:6px 10px}.sketch-tools button.selected{border-color:var(--sage);background:var(--pale)}.math-keyboard{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#f8f9f4}.key-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-top:8px}.key-grid button{padding:7px 2px;min-width:0;font-size:15px}.answer-preview{background:white;border:1px dashed var(--line);border-radius:9px;margin-top:8px;min-height:42px;padding:8px 12px;overflow-x:auto;white-space:nowrap}.question input.math-entry{width:100%;max-width:none}.math-entry-wrap{max-width:660px}.question-tools{margin-top:10px;display:flex;flex-wrap:wrap;gap:7px}.question-tools button{padding:6px 10px}.question .katex-display{max-width:100%}.slide p{min-width:0}.slide .katex-display>.katex,.question .katex-display>.katex{white-space:nowrap}.katex{white-space:nowrap}.katex-display{max-width:100%;white-space:nowrap}.question p,.slide p,.note p{overflow-wrap:normal}.list-item{padding:8px 0;border-bottom:1px solid var(--line)}.list-item{padding:8px 0;border-bottom:1px solid var(--line)}@media(max-width:850px){.shell{grid-template-columns:1fr}.aside{position:static}.slide{min-height:260px}.panel{padding:16px}}
+@media(max-width:600px){.key-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.sketch{height:220px}.question{padding:12px}}
+/* Visual MathLive equation input: one line, scroll rather than wrap */
+math-field.visual-math{display:block;width:100%;min-height:72px;font-size:1.65rem;background:#fff;border:2px solid #a6b5a4;border-radius:12px;padding:13px 14px;overflow-x:auto;white-space:nowrap;--caret-color:#516c54;--selection-background-color:#d8e8d5}
+math-field.visual-math:focus-within{outline:2px solid #6f8271;outline-offset:2px}
+.math-help{font-size:.82rem;margin-top:6px}.math-entry-wrap{max-width:100%;min-width:0}
+.key-grid button{min-height:39px;touch-action:manipulation}.key-grid button:active{background:#dce9d8}
+/* KaTeX math layout */
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:6px 0;margin:14px 0}.slide .katex-display{font-size:1.2em}.question .katex-display{font-size:1.05em}.question>p,.slide>p{white-space:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:thin}.math-fallback{color:#a33;font-size:.85rem}
+/* Keep each question statement and its inline KaTeX together on one line. */
+.question .question-statement{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden;white-space:nowrap;overflow-wrap:normal;word-break:normal;line-height:2.25;scrollbar-width:thin}
+.question .question-statement strong{display:inline;white-space:nowrap}
+.question .question-statement .katex,.question .feedback .katex,.question .note .katex{white-space:nowrap}
+.question .feedback,.question .note{overflow-x:auto}
+
+/* Formula-safe line layout across question types */
+.question-card{margin:0 0 18px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.question-type{font-size:.85rem;color:var(--sage);font-weight:750;margin-bottom:8px}
+.question-statement{white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;max-width:100%;line-height:2.4;display:block}
+.question-statement .katex{white-space:nowrap!important}.choices,.pairs,.sortlist{display:grid;gap:9px;margin:13px 0}.choice,.pair-row,.sortrow{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;min-width:0}.choice > span,.pair-row > span,.sort-title{white-space:nowrap;overflow-x:auto;min-width:0;flex:1}.choice > input{flex:none}.pair-row select{max-width:48%;min-width:125px}.sortrow button{flex:none;min-width:40px}.sort-index{font-weight:700;color:var(--sage)}.blanks{display:flex;gap:12px;flex-wrap:wrap}.blanks input,.answer-text{max-width:100%;padding:10px;border-radius:9px;border:1px solid var(--line);background:white}.math-mini-key{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.math-mini-key button{font-size:.85rem;padding:7px 10px}.question-feedback{max-width:100%;overflow-x:auto}.question-card .sketch-wrap{margin-top:15px}@media(max-width:700px){.pair-row{flex-wrap:wrap}.pair-row select{max-width:100%;width:100%}}
+
+/* Compact layouts for multiple-choice questions: row or two columns. */
+.choices{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.choices.choices-row{grid-template-columns:repeat(4,minmax(0,1fr))}
+.choices .choice{width:100%;min-height:60px;gap:12px;cursor:pointer;background:#fffefa;transition:background .15s,border-color .15s}
+.choices .choice:hover{background:var(--pale);border-color:var(--sage)}
+.choices .choice:has(input:checked){border-color:var(--sage);background:var(--pale)}
+.choices .choice > input{width:19px;height:19px;margin:0;accent-color:var(--sage)}
+.choices .choice > span{display:flex;align-items:center;justify-content:center;flex:1;text-align:center;white-space:nowrap;overflow-x:auto;scrollbar-width:thin;line-height:1.9;min-height:36px}
+.choices .choice .katex{white-space:nowrap;display:inline-block;max-width:none}
+@media(max-width:1000px){.choices.choices-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.choices,.choices.choices-row{grid-template-columns:minmax(0,1fr)}}
+
+/* KaTeX generates nested spans; only the immediate answer wrapper is a flex item. */
+.choices .choice > span .katex, .choices .choice > span .katex * {overflow-wrap:normal;word-break:normal}
+.choices .choice > span .katex-html {white-space:nowrap}
+@media(max-width:730px){.choices.choices-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Hyperlink navigation and module opening presentation */
+.tabs .lesson-link{display:inline-flex;align-items:center;min-height:43px;padding:9px 14px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);text-decoration:none;font-weight:550}
+.tabs .lesson-link.active,.tabs .lesson-link[aria-current="page"]{background:var(--pale);border-color:var(--sage);font-weight:750}
+.tabs .lesson-link:hover,.lesson-tile:hover{border-color:var(--sage);background:#f1f5ed}
+.module-presentation{min-height:620px}.hero-eyebrow{letter-spacing:.12em;color:var(--sage);font-size:12px;font-weight:750}
+.module-presentation h2{font-size:clamp(1.8rem,4vw,3.3rem);max-width:760px;margin:15px 0}.hero-lead{font:1.2rem/1.6 Georgia,serif;max-width:760px}
+.hero-math{padding:25px 18px;background:linear-gradient(120deg,#edf0e7,#f7ede1);border-radius:18px;max-width:100%;overflow-x:auto;margin:18px 0}
+.hero-facts{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 26px}.hero-facts span{border:1px solid var(--line);border-radius:22px;padding:7px 12px;font-size:13px}
+.lesson-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.lesson-tile{display:flex;flex-direction:column;gap:9px;min-width:0;padding:21px;border-radius:16px;border:1px solid var(--line);color:var(--ink);text-decoration:none;background:#fffefa}
+.lesson-tile small{color:var(--sage);font-weight:750;letter-spacing:.07em}.lesson-tile strong{font:700 1.3rem Georgia,serif}.lesson-tile span{color:#626860}.lesson-tile em{font-style:normal;font-weight:700;color:#526e54;margin-top:8px}
+@media(max-width:720px){.lesson-grid{grid-template-columns:1fr}.module-presentation{min-height:0}}
+
+/* Whole-topic presentation on home; lesson pages start with notes */
+.module-slide{margin:24px 0}.module-slide-heading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}.module-slide .slide{min-height:330px}.module-slide .slide-content{font-size:1.12rem;line-height:1.8}.module-slide .katex-display{overflow-x:auto;overflow-y:hidden}.slide-dots{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.slide-dots button{width:10px;height:10px;min-width:10px;min-height:10px;padding:0;border-radius:50%;background:#d2d9cb;border:0}.slide-dots button.active{background:var(--sage);transform:scale(1.2)}.lesson-notes-page h3{font:700 1.6rem Georgia,serif}.lesson-note-body{padding:20px;line-height:1.8}.lesson-note-body .katex-display{overflow-x:auto}
+/* Collapsible, configurable per-question scratchpad */
+.sketch-wrap>summary{cursor:pointer;list-style:none;padding:5px 0;user-select:none}
+.sketch-wrap>summary::-webkit-details-marker{display:none}
+.sketch-wrap>summary::before{content:"▸";display:inline-block;margin-right:8px;color:var(--sage)}
+.sketch-wrap[open]>summary::before{content:"▾"}
+.sketch-wrap:not([open]){padding:9px 12px}
+.sketch-wrap[open]>summary{margin-bottom:12px}
+.sketch-control{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;padding:4px 9px;background:#fff;font-size:13px}
+.sketch-control input[type=color]{width:36px;height:28px;padding:0;border:0;background:transparent;cursor:pointer}
+.sketch-control input[type=range]{width:110px;accent-color:var(--sage)}
+.sketch-control output{white-space:nowrap;min-width:34px}
+
+/* Selectable worksheet appearance; scoped to the whole learning module. */
+:root[data-worksheet-theme="sage"]{--bg:#f7f4ea;--card:#fffefa;--ink:#302e29;--sage:#6f8271;--pale:#e8eee3;--line:#d9dcd1;--accent:#b77853;--slide-a:#f0ede0;--slide-b:#e9eee5;--soft-note:#f3f4ea;--header-bg:#fafaf6;--field-bg:#ffffff}
+:root[data-worksheet-theme="cream"]{--bg:#fcf5e8;--card:#fffdf7;--ink:#3c3025;--sage:#99774f;--pale:#f7e8d0;--line:#e7d7c0;--accent:#c08649;--slide-a:#f9ead3;--slide-b:#fdf5e7;--soft-note:#fbefd9;--header-bg:#fff9ef;--field-bg:#fffdf7}
+:root[data-worksheet-theme="lavender"]{--bg:#f5f2fc;--card:#fefcff;--ink:#302b40;--sage:#7865a1;--pale:#eee7fa;--line:#ded7ef;--accent:#9373b6;--slide-a:#f0eafa;--slide-b:#f9f5ff;--soft-note:#f1ebfb;--header-bg:#faf8ff;--field-bg:#ffffff}
+:root[data-worksheet-theme="sky"]{--bg:#eff7fb;--card:#faffff;--ink:#263740;--sage:#507b91;--pale:#e0f0f8;--line:#cddfe8;--accent:#468ba6;--slide-a:#deedf6;--slide-b:#f2f9fc;--soft-note:#e9f4fa;--header-bg:#f5fbfe;--field-bg:#ffffff}
+:root[data-worksheet-theme="peach"]{--bg:#fff4ef;--card:#fffdfb;--ink:#48312c;--sage:#a76d5f;--pale:#f9e4dd;--line:#eed5cc;--accent:#d08b6b;--slide-a:#f9e2d9;--slide-b:#fff2e7;--soft-note:#fbeae2;--header-bg:#fff8f4;--field-bg:#ffffff}
+:root[data-worksheet-theme="contrast"]{--bg:#e9eef0;--card:#ffffff;--ink:#17222b;--sage:#264b63;--pale:#d7e4ee;--line:#9aadb9;--accent:#a34f17;--slide-a:#dceaf1;--slide-b:#ecf2f7;--soft-note:#e2edf5;--header-bg:#ffffff;--field-bg:#ffffff}
+header{background:var(--header-bg)}
+.slide{background:linear-gradient(125deg,var(--slide-a),var(--slide-b))}
+.note,.lesson-note-body{background:var(--soft-note)}
+.lesson-tile{background:var(--card)}
+.lesson-tile:hover,.tabs .lesson-link:hover{background:var(--pale)}
+.hero-math{background:linear-gradient(120deg,var(--slide-a),var(--slide-b))}
+.sketch-wrap,.math-keyboard{background:var(--soft-note)}
+.sketch-control,.aside textarea,.answer-preview{background:var(--field-bg)}
+.slide-dots button{background:var(--line)}
+.slide-dots button.active{background:var(--sage)}
+.worksheet-theme-picker{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.worksheet-theme-picker label{font-weight:650}
+.worksheet-theme-picker select{max-width:210px;min-width:160px;padding:9px 30px 9px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.worksheet-theme-swatch{display:inline-flex;width:24px;height:24px;border-radius:50%;border:2px solid var(--card);outline:1px solid var(--line);background:var(--sage)}
+@media print{.worksheet-theme-picker{display:none!important}body{background:white}.panel{box-shadow:none}}
+/* Hide the reference panel on the module presentation and give slides full width. */
+.shell.presentation-only{grid-template-columns:minmax(0,1fr)}
+.shell.presentation-only>.aside{display:none}
+/* Stage 2: learning analytics */
+.analytics-panel{margin:20px 0;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.analytics-panel h3{margin:0 0 12px}.mastery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.skill-card{padding:14px;border-radius:13px;background:var(--soft-note);min-width:0}.skill-card strong{display:block}.skill-card small{display:block;color:var(--sage)}.skill-bar{height:9px;background:var(--line);border-radius:10px;overflow:hidden;margin:10px 0}.skill-bar>span{display:block;height:100%;background:var(--sage);border-radius:10px}.analytics-details{margin-top:14px}.analytics-details table{width:100%;border-collapse:collapse;font-size:13px}.analytics-details td,.analytics-details th{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}.analytics-panel .muted{font-size:13px}.analytics-link{display:inline-flex;align-items:center;gap:7px}.error-tag{display:inline-block;background:var(--pale);padding:3px 8px;border-radius:7px;font-size:12px;margin:2px}.analytics-panel .metric{font-size:22px;font-weight:750}
+@media print{.analytics-panel{break-inside:avoid}.analytics-panel button{display:none}}
+/* Lesson progress controls */
+.save-status{font-size:12px;color:var(--sage);white-space:nowrap}
+.save-status.warning{color:#a04a20;font-weight:650}
+@media(max-width:650px){.toolbar>button{flex:1 1 135px}.save-status{flex-basis:100%}}
+
+/* Stage 3 — interactive coordinate and geometry tasks */
+.interactive-plot{margin:14px 0;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:12px;max-width:730px}
+.interactive-plot svg{display:block;width:100%;height:auto;max-height:370px;background:var(--field-bg,#fff);border-radius:10px;touch-action:none;user-select:none}
+.interactive-plot .grid-line{stroke:#dae4e4;stroke-width:1}
+.interactive-plot .axis-line{stroke:#71827b;stroke-width:1.8}
+.interactive-plot .plot-label{fill:var(--ink);font:12px system-ui,sans-serif;pointer-events:none}
+.interactive-plot .shape-line{stroke:#638b79;stroke-width:3;fill:rgba(111,130,113,.08);pointer-events:none}
+.interactive-plot .draggable-point{fill:#b77853;stroke:white;stroke-width:3;cursor:grab;touch-action:none}
+.interactive-plot .draggable-point:active{cursor:grabbing}
+.plot-instruction{margin:8px 0;color:var(--ink);font-size:14px}.plot-status{display:inline-block;background:var(--pale);border-radius:8px;padding:6px 10px;font-size:14px}
+@media print{.interactive-plot svg{max-height:260px}.draggable-point{stroke:#333}}
+
+/* Stage 4: focus, drag-sort, expanded scratchpads */
+.question-card{position:relative}.focus-question{margin-left:auto}
+body.question-focus .question-card:not(.is-focused){display:none!important}
+body.question-focus .question-card.is-focused{position:fixed;inset:14px;z-index:900;overflow:auto;margin:0;max-width:none;background:var(--card);padding:22px;box-shadow:0 0 0 100vmax rgba(20,28,23,.78);border:2px solid var(--sage)}
+body.question-focus{overflow:hidden}
+body.question-focus .question-card.is-focused .question-statement{font-size:1.12rem}
+.sortrow[draggable=true]{cursor:grab;touch-action:pan-y}.sortrow.sort-dragging{opacity:.45;border-style:dashed}.sortrow.sort-over{outline:2px solid var(--sage);outline-offset:2px}
+.drag-handle{font-size:1.25rem;color:var(--sage);cursor:grab;touch-action:none;user-select:none}
+.sketch-settings{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0}
+.sketch-pages{display:flex;flex-wrap:wrap;gap:6px}
+.sketch-wrap canvas.sketch{background-color:white;touch-action:none}
+.sketch-wrap[data-paper="grid"] canvas.sketch{background-image:linear-gradient(#dce5ed 1px,transparent 1px),linear-gradient(90deg,#dce5ed 1px,transparent 1px);background-size:24px 24px}
+.sketch-wrap[data-paper="lines"] canvas.sketch{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,#dce5ed 28px,#dce5ed 29px)}
+.sketch-wrap .sketch-stage{width:100%;overflow-x:auto}
+.sketch-wrap canvas.sketch{display:block;max-width:100%}
+@media(max-width:700px){body.question-focus .question-card.is-focused{inset:0;border-radius:0;padding:12px}}
+@media print{body.question-focus .question-card.is-focused{position:static;box-shadow:none}body.question-focus .question-card:not(.is-focused){display:block}.focus-question,.drag-handle{display:none!important}}
+
+
+/* Print preview is built from lesson data, never from editable live answer controls. */
+.print-dialog{border:1px solid var(--line);border-radius:18px;padding:0;width:min(680px,94vw);max-height:90vh;background:var(--card);color:var(--ink);box-shadow:0 18px 70px #0003}
+.print-dialog::backdrop{background:#16231d99}.print-settings{padding:22px;max-height:88vh;overflow:auto;display:grid;gap:15px}.print-top{display:flex;align-items:center;justify-content:space-between}.print-top h2{margin:0;font-size:1.35rem}.print-dialog fieldset{display:grid;gap:9px;border:1px solid var(--line);border-radius:10px;padding:12px}.print-dialog fieldset label{display:block}.print-control{display:flex;align-items:center;gap:12px}.print-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.print-options label{display:grid;gap:5px}.print-dialog select{width:100%;min-width:0;padding:8px;border:1px solid var(--line);border-radius:8px}.print-lesson-choices{display:flex;flex-wrap:wrap;gap:12px}.print-lesson-choices label{display:flex;gap:4px}.print-dialog input{accent-color:var(--sage)}#printOutput{display:none}
+@media(max-width:540px){.print-options{grid-template-columns:1fr}.print-control{display:block}}
+@media print{
+ @page{size:A4 portrait;margin:12mm}
+ html,body{background:white!important;color:#171717!important;overflow:visible!important}
+ body>*:not(#printOutput){display:none!important}
+ #printOutput{display:block!important;position:static!important;width:100%;background:#fff;color:#171717;font:12pt/1.5 'Times New Roman',serif}
+ #printOutput *{box-sizing:border-box}
+ #printOutput .print-cover{page-break-after:always;text-align:center;padding-top:18mm}
+ #printOutput .print-cover h1{font-size:23pt;margin:20mm 0 8mm}
+ /* Every lesson starts on a fresh printed sheet, including in browsers
+    using the legacy paged-media property. Keep lesson contents splittable. */
+ #printOutput section.print-lesson{
+   display:block!important;
+   break-before:page!important;
+   page-break-before:always!important;
+   break-inside:auto;
+   page-break-inside:auto;
+ }
+ #printOutput .print-cover{break-after:page;page-break-after:always}
+ #printOutput .print-lesson > .print-heading{break-after:avoid;page-break-after:avoid}
+ #printOutput .print-lesson > .print-heading + p{break-after:avoid;page-break-after:avoid}
+ /* A lesson title is an ordinary block, never a repeating print header. */
+ #printOutput .print-heading{position:static!important;top:auto!important;display:block!important;float:none!important;font-size:17pt;border-bottom:1px solid #777;padding-bottom:4mm;margin:0 0 9mm}
+ #printOutput .print-lesson{position:static!important;overflow:visible!important}
+ #printOutput .print-lesson:not(:first-child){margin-top:0}
+ #printOutput .print-subheading{font-size:14pt;margin:7mm 0 3mm}
+ #printOutput .print-question{break-inside:avoid;margin:0 0 5mm}
+ #printOutput .print-question-title{font-weight:700;font-size:11pt}
+ #printOutput .print-statement{margin:2mm 0 3mm;line-height:2.2;overflow:visible;white-space:normal}
+ #printOutput .print-statement .katex{white-space:nowrap}
+ #printOutput .print-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2mm 7mm}
+ #printOutput .print-choice{padding:1mm 0;min-width:0}
+ #printOutput .print-choice .katex{white-space:nowrap}
+ #printOutput .print-solution{position:relative;margin-top:3mm;height:var(--solution-height,29mm);border:1px solid #b9c5cd;overflow:hidden}
+ #printOutput .print-solution-grid{display:block;position:absolute;inset:0;width:100%;height:100%;max-width:none!important;overflow:hidden;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #printOutput .print-answer{font-size:10pt;font-weight:700;margin:2mm 0 3mm}
+ #printOutput .print-explain{break-inside:avoid}
+ #printOutput .print-key{break-before:page}
+ #printOutput .print-slide{break-inside:avoid;margin:5mm 0;border-bottom:1px solid #ddd;padding-bottom:4mm}
+ #printOutput .katex-display{margin:3mm 0;overflow:visible;max-width:100%}
+ #printOutput svg{max-width:100%}
+ #printOutput .print-geometry-space{height:45mm;border:1px solid #ddd}
+}
+
+.imported-presentation *{box-sizing:border-box}
+.imported-presentation .header-inner{
+      max-width:1100px;
+      margin:0 auto;
+      display:flex;
+      gap:16px;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+.imported-presentation .imported-slide{
+      display:none;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:0 20px 50px rgba(70,76,58,.08);
+      padding:28px;
+      min-height:650px;
+    }
+.imported-presentation .imported-slide.active{display:block; animation:fade .25s ease}
+.imported-presentation .eyebrow{
+      display:inline-block;
+      padding:6px 12px;
+      border-radius:999px;
+      background:#edf5ea;
+      color:#58705d;
+      font-size:.88rem;
+      font-weight:700;
+      margin-bottom:14px;
+    }
+.imported-presentation h2{
+      margin:0 0 14px;
+      font-size:2rem;
+      color:#38483d;
+    }
+.imported-presentation h3{
+      margin:0 0 10px;
+      font-size:1.3rem;
+      color:#435548;
+    }
+.imported-presentation p,.imported-presentation li{
+      font-size:1.05rem;
+      line-height:1.6;
+    }
+.imported-presentation .lead{
+      font-size:1.15rem;
+      color:#506456;
+    }
+.imported-presentation .grid-2{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:22px;
+      align-items:start;
+    }
+.imported-presentation .grid-2.equal{grid-template-columns:1fr 1fr}
+.imported-presentation .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+.imported-presentation .card{
+      background:#fff;
+      border:1px solid #e5decd;
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 8px 18px rgba(65,72,58,.04);
+    }
+.imported-presentation .soft-card{
+      background:var(--warn);
+      border:1px solid #e3d9c6;
+      border-radius:18px;
+      padding:18px;
+    }
+.imported-presentation .tip{background:var(--good); border:1px solid #d2e7c9}
+.imported-presentation .formula{
+      font-family:"Cambria Math", "Times New Roman", serif;
+      font-size:1.45rem;
+      background:#f7f5ef;
+      border-left:5px solid var(--accent);
+      padding:14px 16px;
+      border-radius:14px;
+      margin:10px 0;
+    }
+.imported-presentation .example{
+      background:#f8f7f2;
+      border:1px dashed #c7beac;
+      border-radius:16px;
+      padding:16px;
+      margin-top:14px;
+    }
+.imported-presentation ul.check li{margin-bottom:10px}
+.imported-presentation .big-number{
+      font-size:2.6rem;
+      font-weight:800;
+      color:#607a64;
+      margin:0;
+    }
+.imported-presentation .table-like{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      margin-top:12px;
+    }
+.imported-presentation .cell{
+      padding:14px 16px;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      border-right:1px solid var(--line);
+    }
+.imported-presentation .cell:nth-child(2n){border-right:none}
+.imported-presentation .cell.head{background:#eef5eb; font-weight:800}
+.imported-presentation .highlight{color:#49614d; font-weight:700}
+.imported-presentation .answer-box{
+      margin-top:12px;
+      padding:14px;
+      border-radius:14px;
+      background:#f8f5ec;
+      border:1px solid #e3dccd;
+      display:none;
+    }
+.imported-presentation .answer-box.show{display:block}
+.imported-presentation .check-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:12px;
+    }
+.imported-presentation .feedback{
+      margin-top:10px;
+      font-weight:700;
+      min-height:24px;
+    }
+.imported-presentation .canvas-wrap{
+      background:#fff;
+      border:1px solid #ddd3c0;
+      border-radius:18px;
+      padding:12px;
+    }
+.imported-presentation canvas{
+      width:100%;
+      height:auto;
+      display:block;
+      background:linear-gradient(180deg, #ffffff 0%, #fcfaf5 100%);
+      border-radius:14px;
+    }
+.imported-presentation .controls{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-top:14px;
+    }
+.imported-presentation .controls.three{grid-template-columns:repeat(3,1fr)}
+.imported-presentation .control{
+      background:#f7f4ec;
+      border:1px solid #e2d9c9;
+      padding:12px;
+      border-radius:14px;
+    }
+.imported-presentation .control label{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-weight:700;
+      color:#47594c;
+      margin-bottom:8px;
+    }
+.imported-presentation .mini-note{
+      font-size:.95rem;
+      color:#5f6c63;
+    }
+.imported-presentation .badge-list{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px}
+.imported-presentation .badge{
+      background:#edf5ea;
+      color:#4f6854;
+      border:1px solid #d5e3d2;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:700;
+    }
+.imported-presentation .two-col-list{columns:2; column-gap:24px}
+.imported-presentation .note-box{border-left:5px solid var(--blue); background:#f4f7fb; padding:14px 16px; border-radius:14px}
+.imported-presentation .footnote{font-size:.92rem; color:#6d756f}
+.imported-presentation .center{text-align:center}
+.imported-presentation .small{font-size:.95rem}
+.imported-presentation{--panel:var(--card);--dark:var(--ink);--accent:var(--sage);--accent-2:var(--pale);--warn:var(--soft-note);--good:var(--pale);--blue:#8aa5c7;--soft:var(--line);font-family:system-ui,Arial,sans-serif}
+.imported-presentation .imported-slide{padding:16px;min-height:0;border:none;box-shadow:none;background:transparent;display:block;animation:none}
+.imported-presentation .formula{overflow-x:auto;white-space:nowrap}
+.imported-presentation .canvas-wrap canvas{width:100%;height:auto;display:block}
+.imported-presentation .card,.imported-presentation .soft-card{min-width:0}
+.imported-presentation button{font-weight:700;background:var(--sage);color:white}
+.imported-presentation button.ghost{background:var(--pale);color:var(--ink)}
+.imported-presentation .answer-box{display:none}
+.imported-presentation .answer-box.show{display:block}
+.imported-presentation input[type=range]{width:100%}
+.imported-presentation .controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+.imported-presentation .controls.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:860px){.imported-presentation .grid-2,.imported-presentation .grid-2.equal,.imported-presentation .grid-3,.imported-presentation .controls,.imported-presentation .controls.three{grid-template-columns:1fr}.imported-presentation .imported-slide{padding:4px}}
+
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathlive@0.106.0/mathlive.min.js"></script>
+<style>
+.oge-graph{display:block;width:100%;max-width:260px;height:auto;aspect-ratio:280/224}.graph-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 14px;white-space:normal}.graph-tile{background:var(--card);min-width:0;border:1px solid var(--line);padding:7px;border-radius:12px;text-align:center}.graph-tile strong{display:block;font-size:14px}.question-statement:has(.graph-strip){white-space:normal!important;overflow:visible!important}.question-statement .graph-strip{white-space:normal!important}.question-statement p{white-space:normal;margin:9px 0}.module-slide .slide-content details{padding:10px;margin:8px 0;background:var(--card);border-radius:9px;cursor:pointer}.shape-gallery{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}.shape-gallery>div{padding:15px;background:var(--card);border-radius:12px}.question-card .choices{margin-top:12px}@media(max-width:680px){.graph-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.graph-tile{padding:4px}.shape-gallery{grid-template-columns:1fr}}@media print{#printOutput .graph-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3mm}#printOutput .oge-graph{width:100%;max-height:52mm}#printOutput .graph-tile{break-inside:avoid;padding:1mm;border:1px solid #bbb}#printOutput .print-question:has(.graph-strip){break-inside:avoid}}
+</style></head><body>
+<header><div><small>УНИВЕРСАЛЬНЫЙ HTML-МОДУЛЬ · ПРОТОТИП</small><h1>ОГЭ №11. Графики функций</h1><small>9 класс · 2 занятия по 60 минут</small></div><div><label for="mode">Режим: </label><select id="mode"><option value="student">Ученик</option><option value="teacher">Преподаватель</option></select></div></header>
+<main><div class="toolbar"><span class="tag">2 занятия по 60 минут</span><select id="count" class="hide"><option selected>2</option></select><span id="cycleInfo" class="tag"></span><div class="worksheet-theme-picker"><label for="worksheetTheme">Оформление листа:</label><span class="worksheet-theme-swatch" id="themeSwatch" aria-hidden="true"></span><select id="worksheetTheme" aria-label="Тема оформления рабочего листа"><option value="sage">🌿 Шалфейная</option><option value="cream">📜 Кремовая</option><option value="lavender">💜 Лавандовая</option><option value="sky">🩵 Голубая</option><option value="peach">🍑 Персиковая</option><option value="contrast">◼ Контрастная</option></select></div><button id="saveProgress" title="Сохранить состояние прямо сейчас">💾 Сохранить</button><button id="downloadProgress">⬇ Резервная копия</button><button id="uploadProgress">⬆ Продолжить из файла</button><input type="file" id="progressFile" accept=".json,application/json" class="hide"><span id="saveStatus" class="save-status" aria-live="polite">Ожидает сохранения</span><button id="showAnalytics">📊 Карта освоения</button><button id="openPrint">🖨 Печать / PDF</button><button id="export">Экспорт отчёта JSON</button><button id="reset">Сброс занятия</button></div><div class="progress"><div id="progress"></div></div>
+<section id="analytics" class="analytics-panel hide" aria-label="Аналитика освоения темы"></section><div class="shell"><section class="panel" id="stage" aria-live="polite"></section><aside class="panel aside"><h3>Справочник</h3><details open><summary>Конспект / справочник</summary><div id="notes" class="note"></div></details><details><summary>Личные заметки</summary><textarea id="notesText" placeholder="Записи текущего занятия..."></textarea></details><div class="teacher-only hide" id="teacherPanel"><strong>Панель преподавателя</strong><div id="teacherInfo"></div><p><small>Режим преподавателя в автономном HTML не защищён паролем.</small></p></div></aside></div><p class="footer">Теория отображается через KaTeX, визуальный ввод работает через MathLive (для первого открытия нужен доступ к CDN). Практика №11 и разминки №6–№10. Источник прототипов: открытый банк задач (сборник MathStart, 28.08.2026); графики и дополнительные задания разработаны для модуля. Проверка развёрнутых объяснений требует преподавателя.</p></main>
+<dialog id="printDialog" class="print-dialog" aria-labelledby="printTitle"><form method="dialog" class="print-settings"><div class="print-top"><h2 id="printTitle">Печать рабочего листа</h2><button type="submit" aria-label="Закрыть окно">✕</button></div><p class="muted">Выбери материалы, которые попадут в печатную версию. В окне печати браузера можно выбрать принтер или «Сохранить как PDF».</p><div class="print-control"><label for="printScope">Уроки</label><select id="printScope"><option value="all" selected>Весь модуль (каждый урок с новой страницы)</option><option value="current">Только открытый урок</option><option value="custom">Выбранные уроки</option></select></div><div id="printLessonChoices" class="print-lesson-choices hide"></div><fieldset><legend>Содержание</legend><label><input type="checkbox" id="printNotes" checked> Конспекты уроков</label><label><input type="checkbox" id="printPractice" checked> Практические задания</label><label><input type="checkbox" id="printTests" checked> Проверочные задания</label><label><input type="checkbox" id="printPresentation"> Общая презентация темы (все слайды)</label></fieldset><fieldset><legend>Вид печатного материала</legend><label><input type="radio" name="printAudience" value="student" checked> Для ученика (без ответов)</label><label><input type="radio" name="printAudience" value="teacher"> Для преподавателя (с ключами)</label></fieldset><div class="print-options"><label>Формат <select id="printPaper"><option value="A4">A4</option><option value="A5">A5</option></select></label><label>Ориентация <select id="printOrientation"><option value="portrait">Книжная</option><option value="landscape">Альбомная</option></select></label><label>Место для решения <select id="printSpace"><option value="compact">Компактно</option><option value="normal" selected>Среднее</option><option value="large">Большое</option></select></label></div><label><input type="checkbox" id="printGrid" checked> Тетрадная клетка в полях решения</label><div class="actions"><button type="button" class="primary" id="printBuild">🖨 Сформировать и распечатать</button><button type="submit">Отмена</button></div><p id="printMessage" class="muted" role="status"></p></form></dialog><section id="printOutput" aria-label="Печатный рабочий лист"></section>
+<script>
+(()=>{'use strict';
+const themeSelect=document.getElementById('worksheetTheme');
+const themeSwatch=document.getElementById('themeSwatch');
+const validThemes=['sage','cream','lavender','sky','peach','contrast'];
+let storedTheme='sage';
+try{storedTheme=localStorage.getItem('math-module-worksheet-theme')||'sage';}catch(e){}
+function applyWorksheetTheme(name){
+  const selected=validThemes.includes(name)?name:'sage';
+  document.documentElement.dataset.worksheetTheme=selected;
+  themeSelect.value=selected;
+  themeSwatch.style.background='var(--sage)';
+  try{localStorage.setItem('math-module-worksheet-theme',selected);}catch(e){}
+}
+themeSelect.addEventListener('change',()=>applyWorksheetTheme(themeSelect.value));
+applyWorksheetTheme(storedTheme);
+const plans={2:[['Прямая: коэффициенты и формулы','№11.1–11.4 · линейная функция'],['Парабола, гипербола и смешанные графики','№11.5–11.10 · все семейства']]};
+const pages=['Конспект урока','Первичное закрепление','Базовая практика','Углублённая практика','Проверка'];
+const slideBank=[{"name": "ОГЭ №11. Графики функций", "body": "\n\n\n<p class=\"lead\">На этом задании нужно <span class=\"highlight\">читать график</span>, замечать, как ведёт себя функция, и понимать, как меняются графики при изменении коэффициентов.</p>\n<div class=\"grid-2\">\n<div class=\"card\">\n<h3>Что мы повторим</h3>\n<ul class=\"check\">\n<li>как выглядит <b>линейная функция</b>;</li>\n<li>как выглядит <b>квадратичная функция</b>;</li>\n<li>что делают коэффициенты в формулах;</li>\n<li>как по графику отвечать на вопросы ОГЭ.</li>\n</ul>\n</div>\n<div class=\"soft-card tip\">\n<h3>Главная идея</h3>\n<p>График — это рисунок, который показывает, как меняется значение <b>y</b>, если менять <b>x</b>.</p>\n<div class=\"formula\">Если известна формула, можно представить форму графика. Если видим график, можно понять свойства функции.</div>\n</div>\n</div>\n<div class=\"badge-list\">\n<span class=\"badge\">ОГЭ</span>\n<span class=\"badge\">Графики</span>\n<span class=\"badge\">Коэффициенты</span>\n<span class=\"badge\">Наглядно</span>\n</div>\n"}, {"name": "Что обычно спрашивают в №11", "body": "\n\n\n<div class=\"grid-3\">\n<div class=\"card\">\n<p class=\"big-number\">1</p>\n<h3>Узнать функцию по графику</h3>\n<p>Например, выбрать, какой формуле соответствует рисунок.</p>\n</div>\n<div class=\"card\">\n<p class=\"big-number\">2</p>\n<h3>Прочитать свойства</h3>\n<p>Где функция растёт, убывает, пересекает оси, где больше или меньше нуля.</p>\n</div>\n<div class=\"card\">\n<p class=\"big-number\">3</p>\n<h3>Понять роль коэффициентов</h3>\n<p>Что произойдёт с графиком, если изменить число перед <b>x</b> или свободный член.</p>\n</div>\n</div>\n<div class=\"example\">\n<b>Полезно помнить:</b> сначала смотри на <b>форму графика</b>. Прямая — это линейная функция. Парабола — это квадратичная функция.\n        </div>\n"}, {"name": "Координатная плоскость", "body": "\n\n\n<div class=\"grid-2 equal\">\n<div class=\"card\">\n<h3>Ось x</h3>\n<p>Горизонтальная ось. По ней откладывают значение аргумента <b>x</b>.</p>\n<h3>Ось y</h3>\n<p>Вертикальная ось. По ней откладывают значение функции <b>y</b>.</p>\n<div class=\"note-box\">\n              Точка на графике имеет координаты <b>(x; y)</b>. Например, точка <b>(2; 3)</b> значит: вправо на 2 и вверх на 3.\n            </div>\n</div>\n<div class=\"card\">\n<h3>Как читать график</h3>\n<ul class=\"check\">\n<li>Выбираем нужное <b>x</b>.</li>\n<li>Смотрим, на какой высоте находится график.</li>\n<li>Это и есть соответствующее значение <b>y</b>.</li>\n</ul>\n<div class=\"example\">\n              Если при <b>x = 4</b> на графике получаем <b>y = -1</b>, значит точка <b>(4; -1)</b> лежит на графике.\n            </div>\n</div>\n</div>\n"}, {"name": "Линейная функция", "body": "\n\n\n<div class=\"formula\">y = kx + b</div>\n<div class=\"grid-2 equal\">\n<div class=\"card\">\n<h3>Как выглядит</h3>\n<p>График линейной функции — <b>прямая линия</b>.</p>\n<p><b>k</b> — показывает наклон прямой.</p>\n<p><b>b</b> — показывает, где прямая пересекает ось <b>y</b>.</p>\n</div>\n<div class=\"soft-card\">\n<h3>Очень коротко</h3>\n<ul class=\"check\">\n<li>Если <b>k &gt; 0</b>, прямая идёт вверх слева направо.</li>\n<li>Если <b>k &lt; 0</b>, прямая идёт вниз слева направо.</li>\n<li>Если <b>b = 0</b>, прямая проходит через начало координат.</li>\n</ul>\n</div>\n</div>\n"}, {"name": "Что делает коэффициент k", "body": "\n\n\n<div class=\"grid-2\">\n<div class=\"card\">\n<div class=\"formula\">y = kx + b</div>\n<p><b>k</b> отвечает за <span class=\"highlight\">наклон</span> прямой.</p>\n<ul class=\"check\">\n<li>Чем больше по модулю <b>k</b>, тем прямая <b>круче</b>.</li>\n<li>Если <b>k &gt; 0</b>, функция <b>возрастает</b>.</li>\n<li>Если <b>k &lt; 0</b>, функция <b>убывает</b>.</li>\n</ul>\n</div>\n<div class=\"soft-card tip\">\n<h3>Примеры</h3>\n<p><b>y = 2x + 1</b> — прямая поднимается вверх довольно круто.</p>\n<p><b>y = 0,5x + 1</b> — тоже поднимается, но медленнее.</p>\n<p><b>y = -2x + 1</b> — уходит вниз.</p>\n</div>\n</div>\n<div class=\"example\">\n<b>Подсказка для ОГЭ:</b> если на рисунке прямая идёт вверх, формулы с отрицательным коэффициентом <b>k</b> сразу можно исключить.\n        </div>\n"}, {"name": "Что делает коэффициент b", "body": "\n\n\n<div class=\"grid-2 equal\">\n<div class=\"card\">\n<div class=\"formula\">y = kx + b</div>\n<p><b>b</b> отвечает за <span class=\"highlight\">сдвиг вверх или вниз</span>.</p>\n<ul class=\"check\">\n<li>Это значение <b>y</b> при <b>x = 0</b>.</li>\n<li>То есть это точка пересечения с осью <b>y</b>.</li>\n</ul>\n</div>\n<div class=\"card\">\n<h3>Как быстро заметить</h3>\n<div class=\"table-like\">\n<div class=\"cell head\">Формула</div><div class=\"cell head\">Что видно на графике</div>\n<div class=\"cell\">y = 2x + 3</div><div class=\"cell\">Пересекает ось y в точке 3</div>\n<div class=\"cell\">y = 2x - 1</div><div class=\"cell\">Пересекает ось y в точке -1</div>\n<div class=\"cell\">y = 2x</div><div class=\"cell\">Проходит через начало координат</div>\n</div>\n</div>\n</div>\n"}, {"name": "Интерактив: меняем коэффициенты линейной функции", "body": "\n\n\n<p class=\"lead\">Подвигай ползунки и посмотри, как меняется график функции <b>y = kx + b</b>.</p>\n<div class=\"grid-2\">\n<div class=\"canvas-wrap\">\n<canvas height=\"420\" id=\"linearCanvas\" width=\"520\"></canvas>\n</div>\n<div>\n<div class=\"card\">\n<div class=\"formula center\" id=\"linearFormula\">y = 1x + 0</div>\n<div class=\"controls\">\n<div class=\"control\">\n<label>k <span id=\"kValue\">1</span></label>\n<input id=\"kRange\" max=\"5\" min=\"-5\" step=\"0.5\" type=\"range\" value=\"1\"/>\n<div class=\"mini-note\">Наклон прямой</div>\n</div>\n<div class=\"control\">\n<label>b <span id=\"bValue\">0</span></label>\n<input id=\"bRange\" max=\"6\" min=\"-6\" step=\"1\" type=\"range\" value=\"0\"/>\n<div class=\"mini-note\">Сдвиг вверх/вниз</div>\n</div>\n</div>\n</div>\n<div class=\"soft-card tip\">\n<h3>Что наблюдать</h3>\n<ul class=\"check small\">\n<li>меняй <b>k</b> — прямая будет поворачиваться;</li>\n<li>меняй <b>b</b> — прямая будет подниматься и опускаться;</li>\n<li>если <b>k = 0</b>, получится горизонтальная прямая <b>y = b</b>.</li>\n</ul>\n</div>\n</div>\n</div>\n"}, {"name": "Квадратичная функция", "body": "\n\n\n<div class=\"formula\">y = ax² + bx + c</div>\n<div class=\"grid-2 equal\">\n<div class=\"card\">\n<h3>Как выглядит</h3>\n<p>График квадратичной функции — <b>парабола</b>.</p>\n<p>Она может быть направлена <b>ветвями вверх</b> или <b>ветвями вниз</b>.</p>\n</div>\n<div class=\"soft-card\">\n<h3>Очень важно</h3>\n<ul class=\"check\">\n<li><b>a</b> — отвечает за направление ветвей и «ширину» параболы.</li>\n<li><b>b</b> — влияет на положение вершины по горизонтали.</li>\n<li><b>c</b> — показывает пересечение с осью <b>y</b>.</li>\n</ul>\n</div>\n</div>\n"}, {"name": "Что делает коэффициент a", "body": "\n\n\n<div class=\"grid-2\">\n<div class=\"card\">\n<div class=\"formula\">y = ax² + bx + c</div>\n<ul class=\"check\">\n<li>Если <b>a &gt; 0</b>, ветви параболы направлены <b>вверх</b>.</li>\n<li>Если <b>a &lt; 0</b>, ветви параболы направлены <b>вниз</b>.</li>\n<li>Чем больше по модулю <b>a</b>, тем парабола <b>уже</b>.</li>\n<li>Чем меньше по модулю <b>a</b>, тем парабола <b>шире</b>.</li>\n</ul>\n</div>\n<div class=\"soft-card tip\">\n<h3>Примеры</h3>\n<p><b>y = x²</b> — обычная парабола вверх.</p>\n<p><b>y = -x²</b> — такая же форма, но ветви вниз.</p>\n<p><b>y = 3x²</b> — уже.</p>\n<p><b>y = 0,5x²</b> — шире.</p>\n</div>\n</div>\n"}, {"name": "Что делают коэффициенты b и c", "body": "\n\n\n<div class=\"grid-2 equal\">\n<div class=\"card\">\n<h3>Коэффициент c</h3>\n<p><b>c</b> — это значение функции при <b>x = 0</b>.</p>\n<p>Значит, точка <b>(0; c)</b> всегда лежит на графике.</p>\n<div class=\"example\">Например, у функции <b>y = x² - 4x + 5</b> график пересекает ось <b>y</b> в точке <b>5</b>.</div>\n</div>\n<div class=\"card\">\n<h3>Коэффициент b</h3>\n<p><b>b</b> влияет на положение вершины и на симметрию графика.</p>\n<p>На ОГЭ важно понимать это <b>качественно</b>: изменяя <b>b</b>, мы как будто сдвигаем вершину влево или вправо.</p>\n</div>\n</div>\n<div class=\"note-box\">\n          На базовом уровне не всегда нужно считать точную вершину. Часто достаточно увидеть, где она расположена и куда направлены ветви.\n        </div>\n"}, {"name": "Интерактив: меняем коэффициенты квадратичной функции", "body": "\n\n\n<p class=\"lead\">Подвигай ползунки и посмотри, как меняется график функции <b>y = ax² + bx + c</b>.</p>\n<div class=\"grid-2\">\n<div class=\"canvas-wrap\">\n<canvas height=\"420\" id=\"quadCanvas\" width=\"520\"></canvas>\n</div>\n<div>\n<div class=\"card\">\n<div class=\"formula center\" id=\"quadFormula\">y = 1x² + 0x + 0</div>\n<div class=\"controls three\">\n<div class=\"control\">\n<label>a <span id=\"aValue\">1</span></label>\n<input id=\"aRange\" max=\"3\" min=\"-3\" step=\"0.5\" type=\"range\" value=\"1\"/>\n<div class=\"mini-note\">Направление и ширина</div>\n</div>\n<div class=\"control\">\n<label>b <span id=\"qbValue\">0</span></label>\n<input id=\"qbRange\" max=\"6\" min=\"-6\" step=\"1\" type=\"range\" value=\"0\"/>\n<div class=\"mini-note\">Положение вершины</div>\n</div>\n<div class=\"control\">\n<label>c <span id=\"cValue\">0</span></label>\n<input id=\"cRange\" max=\"6\" min=\"-6\" step=\"1\" type=\"range\" value=\"0\"/>\n<div class=\"mini-note\">Пересечение с осью y</div>\n</div>\n</div>\n</div>\n<div class=\"soft-card tip\">\n<h3>Что наблюдать</h3>\n<ul class=\"check small\">\n<li>меняй <b>a</b> — ветви открываются вверх/вниз и становятся уже/шире;</li>\n<li>меняй <b>b</b> — вершина смещается по горизонтали;</li>\n<li>меняй <b>c</b> — вся парабола поднимается или опускается.</li>\n</ul>\n</div>\n</div>\n</div>\n"}, {"name": "Как отвечать на задания по графику", "body": "\n\n\n<div class=\"grid-3\">\n<div class=\"card\">\n<h3>Шаг 1</h3>\n<p>Сначала определи <b>тип графика</b>: прямая или парабола.</p>\n</div>\n<div class=\"card\">\n<h3>Шаг 2</h3>\n<p>Посмотри на <b>направление</b>: вверх, вниз, ветви вверх или вниз.</p>\n</div>\n<div class=\"card\">\n<h3>Шаг 3</h3>\n<p>Найди важные точки: пересечение с осями, вершину, нули функции.</p>\n</div>\n</div>\n<div class=\"example\">\n<b>Пример рассуждения:</b> «Вижу параболу с ветвями вниз. Значит, коэффициент <b>a</b> отрицательный. График пересекает ось <b>y</b> в точке 4. Значит, <b>c = 4</b>».\n        </div>\n"}, {"name": "Типичные ошибки", "body": "\n\n\n<div class=\"grid-2 equal\">\n<div class=\"soft-card\">\n<h3>Часто путают</h3>\n<ul class=\"check two-col-list\">\n<li>коэффициенты <b>k</b> и <b>b</b>;</li>\n<li>знак коэффициента;</li>\n<li>пересечение с осью <b>y</b> и пересечение с осью <b>x</b>;</li>\n<li>ширину параболы и её направление;</li>\n<li>значение функции и аргумента.</li>\n</ul>\n</div>\n<div class=\"card\">\n<h3>Как не ошибиться</h3>\n<ul class=\"check\">\n<li>Всегда подписывай, где <b>x</b>, а где <b>y</b>.</li>\n<li>Смотри на форму графика раньше, чем на числа.</li>\n<li>Если можно, проверяй себя по точке <b>x = 0</b>.</li>\n<li>Не спеши: один верный признак уже помогает убрать лишние варианты.</li>\n</ul>\n</div>\n</div>\n"}, {"name": "Короткая тренировка с подсказками", "body": "\n\n\n<div class=\"grid-2 equal\">\n<div class=\"card\">\n<h3>Вопрос 1</h3>\n<p>Прямая идёт вниз слева направо и пересекает ось <b>y</b> выше нуля. Что можно сказать о коэффициентах?</p>\n<div class=\"check-row\">\n<button class=\"ghost\" data-show-imported-answer=\"ans1\">Показать ответ</button>\n</div>\n<div class=\"answer-box\" id=\"ans1\">\n<b>Ответ:</b> <b>k &lt; 0</b>, потому что прямая убывает. <b>b &gt; 0</b>, потому что пересечение с осью <b>y</b> выше нуля.\n            </div>\n</div>\n<div class=\"card\">\n<h3>Вопрос 2</h3>\n<p>Парабола направлена ветвями вверх и проходит через точку <b>(0; -3)</b>. Что можно сказать о <b>a</b> и <b>c</b>?</p>\n<div class=\"check-row\">\n<button class=\"ghost\" data-show-imported-answer=\"ans2\">Показать ответ</button>\n</div>\n<div class=\"answer-box\" id=\"ans2\">\n<b>Ответ:</b> <b>a &gt; 0</b>, потому что ветви направлены вверх. <b>c = -3</b>, потому что график проходит через точку <b>(0; c)</b>.\n            </div>\n</div>\n</div>\n<div class=\"grid-2 equal\" style=\"margin-top:18px;\">\n<div class=\"card\">\n<h3>Проверь себя</h3>\n<p>Если у функции <b>y = kx + b</b> коэффициент <b>b = 0</b>, проходит ли график через начало координат?</p>\n<div class=\"check-row\">\n<input id=\"quiz1\" placeholder=\"да / нет\" type=\"text\"/>\n<button data-imported-check=\"quiz1|да|fb1\">Проверить</button>\n</div>\n<div class=\"feedback\" id=\"fb1\"></div>\n</div>\n<div class=\"card\">\n<h3>Проверь себя</h3>\n<p>Если у параболы <b>a &lt; 0</b>, куда направлены её ветви?</p>\n<div class=\"check-row\">\n<input id=\"quiz2\" placeholder=\"вверх / вниз\" type=\"text\"/>\n<button data-imported-check=\"quiz2|вниз|fb2\">Проверить</button>\n</div>\n<div class=\"feedback\" id=\"fb2\"></div>\n</div>\n</div>\n<p class=\"footnote\">Самостоятельной работы и рефлексии в презентации нет. Здесь только короткая совместная тренировка с подсказками.</p>\n"}];
+const lessonNotes={
+linear:String.raw`<h3>График линейной функции</h3><p>Линейная функция: \(y=kx+b\). Знак \(k\) определяет наклон, \(b=y(0)\) — пересечение с вертикальной осью.</p><p>\(k>0\): прямая возрастает. \(k<0\): убывает. \(b>0\): пересекает \(Oy\) выше нуля.</p><h4>Алгоритм</h4><p>① Определи, поднимается ли прямая вправо. ② Посмотри точку пересечения с Oy. ③ Исключи формулы с неверными знаками. ④ При необходимости найди две точки и вычисли \(k=\frac{y_2-y_1}{x_2-x_1}\).</p><p><strong>Пример:</strong> прямая убывает и проходит через \((0;2)\), \((1;0)\). Тогда \(k=\frac{0-2}{1-0}=-2\), \(b=2\), \(y=-2x+2\).</p><p><strong>Типичная ошибка:</strong> \(k\) — это не пересечение с осью \(Oy\).</p>`,
+mixed:String.raw`<h3>Парабола, гипербола, корневая функция</h3><p>\(y=ax^2+bx+c\): ветви вверх при \(a>0\), вниз при \(a<0\); пересечение с Oy равно \(c\).</p><p>\(y=\frac{k}{x}\): при \(k>0\) ветви в I и III четвертях, при \(k<0\) — во II и IV. Нули и оси не принадлежат графику.</p><p>\(y=\sqrt{x}\): \(x\ge0\), график начинается в \((0;0)\), возрастает вправо и становится более пологим.</p><h4>Алгоритм соответствия</h4><p>① Тип графика → ② направление ветвей / наклон → ③ положение пересечения с Oy → ④ дополнительные признаки. Для \(y=ax^2+bx+c\) не путай \(c\) с ординатой вершины.</p><p><strong>Пример:</strong> \(y=2x^2-4\) — ветви вверх, пересечение с Oy ниже нуля. \(y=-\frac{3}{x}\) — ветви во II и IV четвертях.</p><p><strong>Повторение:</strong> вспоминай знак наклона прямой и свободный член из урока 1.</p>`};
+
+function lessonNoteType(){return state.lesson===0?'linear':'mixed';}
+
+function typesetMath(node){
+  if(typeof window.renderMathInElement!=='function')return;
+  window.renderMathInElement(node,{delimiters:[
+    {left:'$$',right:'$$',display:true},
+    {left:'\\[',right:'\\]',display:true},
+    {left:'\\(',right:'\\)',display:false},
+    {left:'$',right:'$',display:false}
+  ],throwOnError:false,strict:'ignore',trust:false});
+}
+
+const state={count:2,lesson:0,page:0,slide:0,home:true,attempts:{},notes:{},drawings:{},answers:{},checks:{},hints:{},history:[]};
+// Stage 1: local progress persistence and portable backups.
+const PROGRESS_KEY='oge11-graphs-module-2026-v1',PROGRESS_VERSION=1;
+let persistTimer=null, storageWarning=false;
+function status(message,warning=false){const el=document.getElementById('saveStatus');if(!el)return;el.textContent=message;el.classList.toggle('warning',warning);}
+function progressSnapshot(){return {format:'universal-math-module-progress',version:PROGRESS_VERSION,module:'ОГЭ №11. Графики функций',savedAt:new Date().toISOString(),location:{count:state.count,lesson:state.lesson,page:state.page,slide:state.slide,home:state.home},attempts:state.attempts,answers:state.answers,checks:state.checks,hints:state.hints,notes:state.notes,drawings:state.drawings,history:state.history,layouts:layouts,theme:themeSelect.value};}
+function captureCurrent(){const el=document.getElementById('notesText');if(el)state.notes[key()+'-'+(state.home?'home':state.page)]=el.value;document.querySelectorAll('[data-answer-id]').forEach(input=>state.answers[input.dataset.answerId]=input.value);}
+function persistNow(){clearTimeout(persistTimer);captureCurrent();try{localStorage.setItem(PROGRESS_KEY,JSON.stringify(progressSnapshot()));storageWarning=false;status('✓ Сохранено · '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}));return true;}catch(err){storageWarning=true;status('⚠ Место в браузере закончилось. Скачайте резервную копию',true);return false;}}
+function saveSoon(){clearTimeout(persistTimer);status('Сохраняется…');persistTimer=setTimeout(persistNow,450);}
+function validateProgress(p){if(!p||p.format!=='universal-math-module-progress'||p.version!==PROGRESS_VERSION||!p.location||Number(p.location.count)!==2)throw Error('Неподдерживаемый файл состояния');for(const k of ['attempts','answers','checks','hints','notes','drawings','layouts'])if(p[k]===null||typeof p[k]!=='object'||Array.isArray(p[k]))throw Error('Некорректное поле '+k);return p;}
+function restoreProgress(p){validateProgress(p);for(const k of ['attempts','answers','checks','hints','notes','drawings'])state[k]={...p[k]};state.history=Array.isArray(p.history)?p.history.filter(e=>e&&typeof e==='object').slice(-3000):[];Object.keys(layouts).forEach(k=>delete layouts[k]);Object.assign(layouts,p.layouts);const pos=p.location;state.count=Number(pos.count);state.lesson=Math.min(state.count-1,Math.max(0,Number(pos.lesson)||0));state.page=Math.min(4,Math.max(0,Number(pos.page)||0));state.slide=Math.min(slideBank.length-1,Math.max(0,Number(pos.slide)||0));state.home=Boolean(pos.home);$('count').value=String(state.count);if(validThemes.includes(p.theme))applyWorksheetTheme(p.theme);history.replaceState(null,'',state.home?'#presentation':`#lesson-${state.lesson+1}-page-${state.page+1}`);render();}
+function downloadBackup(){captureCurrent();const data=JSON.stringify(progressSnapshot(),null,2),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='math-module-progress-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);status('✓ Резервная копия скачана');}
+function restoreSavedProgress(){try{const raw=localStorage.getItem(PROGRESS_KEY);if(raw){restoreProgress(JSON.parse(raw));status('✓ Предыдущее занятие восстановлено');return true;}}catch(err){status('⚠ Автовосстановление не удалось — используйте резервную копию',true);}return false;}
+
+const $=id=>document.getElementById(id),key=()=>`${state.count}-${state.lesson}`,qkey=id=>`${key()}-${state.page}-${id}`;
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function beforeNav(){captureCurrent();saveSoon();}
+function scratchpad(id){return `<details class="sketch-wrap" data-paper="grid"><summary><strong>✏ Открыть черновик</strong> <span class="muted">(индивидуальный для задания)</span></summary><div class="sketch-header"><div class="sketch-tools"><button type="button" data-pen="pen">✏ Перо</button><button type="button" data-pen="erase">Ластик</button><label class="sketch-control">Цвет <input type="color" data-ink-color value="#302e29" aria-label="Цвет пера"></label><label class="sketch-control">Толщина <input type="range" data-ink-width min="1" max="18" step="1" value="3"><output data-width-output>3 px</output></label><button type="button" data-undo-sketch>↶ Отменить</button><button type="button" data-redo-sketch>↷ Вернуть</button><button type="button" data-clear-sketch>Очистить лист</button></div><div class="sketch-settings"><label class="sketch-control">Фон <select data-paper-select><option value="grid">Клетка</option><option value="lines">Линейка</option><option value="plain">Чистый</option></select></label><span class="sketch-pages"><button type="button" data-prev-sheet>←</button><strong data-sheet-label>Лист 1</strong><button type="button" data-next-sheet>→</button><button type="button" data-add-sheet>+ Лист</button></span><button type="button" data-export-sheet>PNG листа</button></div></div><div class="sketch-stage"><canvas class="sketch" width="900" height="360" aria-label="Черновик для задания"></canvas></div></details>`;}
+function initScratchpad(container,id){
+ const wrap=container.querySelector('.sketch-wrap'),canvas=wrap?.querySelector('canvas.sketch');if(!canvas)return;
+ const ctx=canvas.getContext('2d'),color=wrap.querySelector('[data-ink-color]'),width=wrap.querySelector('[data-ink-width]'),out=wrap.querySelector('[data-width-output]');
+ const pageKey=n=>n===0?id:id+':sheet:'+n;
+ // Legacy drawings are preserved under the original per-question key.
+ let sheet=0,tool='pen',painting=false,last=null,undo=[],redo=[];
+ function countSheets(){let i=1;while(state.drawings[pageKey(i)])i++;return i;}
+ function save(){try{state.drawings[pageKey(sheet)]=canvas.toDataURL('image/png');saveSoon();}catch(e){console.warn('Не удалось сохранить черновик',e);}}
+ function load(){ctx.clearRect(0,0,canvas.width,canvas.height);undo=[];redo=[];const data=state.drawings[pageKey(sheet)];if(data){let target=sheet;const img=new Image();img.onload=()=>{if(sheet===target){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);}};img.src=data;}wrap.querySelector('[data-sheet-label]').textContent='Лист '+(sheet+1);}
+ function snapshot(){if(undo.length>=20)undo.shift();undo.push(canvas.toDataURL('image/png'));redo=[];}
+ function restore(data){ctx.clearRect(0,0,canvas.width,canvas.height);if(!data){save();return;}let img=new Image();img.onload=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0);save();};img.src=data;}
+ function point(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
+ function toolSet(next){tool=next;wrap.querySelectorAll('[data-pen]').forEach(el=>el.classList.toggle('selected',el.dataset.pen===tool));}
+ wrap.querySelectorAll('[data-pen]').forEach(b=>b.onclick=()=>toolSet(b.dataset.pen));toolSet('pen');
+ width.addEventListener('input',()=>out.textContent=width.value+' px');color.addEventListener('input',()=>toolSet('pen'));
+ wrap.querySelector('[data-paper-select]').onchange=e=>wrap.dataset.paper=e.target.value;
+ wrap.querySelector('[data-prev-sheet]').onclick=()=>{if(sheet>0){save();sheet--;load();}};
+ wrap.querySelector('[data-next-sheet]').onclick=()=>{if(sheet+1<countSheets()){save();sheet++;load();}};
+ wrap.querySelector('[data-add-sheet]').onclick=()=>{save();sheet=countSheets();state.drawings[pageKey(sheet)]=canvas.toDataURL('image/png');load();saveSoon();};
+ wrap.querySelector('[data-undo-sketch]').onclick=()=>{if(!undo.length)return;redo.push(canvas.toDataURL('image/png'));restore(undo.pop());};
+ wrap.querySelector('[data-redo-sketch]').onclick=()=>{if(!redo.length)return;undo.push(canvas.toDataURL('image/png'));restore(redo.pop());};
+ wrap.querySelector('[data-clear-sketch]').onclick=()=>{if(confirm('Очистить текущий лист черновика?')){snapshot();ctx.clearRect(0,0,canvas.width,canvas.height);save();}};
+ wrap.querySelector('[data-export-sheet]').onclick=()=>{const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='chernovik-'+id.replace(/[^a-zA-Z0-9_-]/g,'_')+'-'+(sheet+1)+'.png';a.click();};
+ canvas.addEventListener('pointerdown',e=>{if(!wrap.open)return;e.preventDefault();snapshot();painting=true;canvas.setPointerCapture(e.pointerId);last=point(e);let w=tool==='erase'?Math.max(16,+width.value*3):+width.value;ctx.globalCompositeOperation=tool==='erase'?'destination-out':'source-over';ctx.fillStyle=color.value;ctx.beginPath();ctx.arc(last.x,last.y,w/2,0,Math.PI*2);ctx.fill();});
+ canvas.addEventListener('pointermove',e=>{if(!painting)return;e.preventDefault();const p=point(e);ctx.globalCompositeOperation=tool==='erase'?'destination-out':'source-over';ctx.strokeStyle=color.value;ctx.lineWidth=tool==='erase'?Math.max(16,+width.value*3):+width.value;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;});
+ function end(){if(!painting)return;painting=false;ctx.globalCompositeOperation='source-over';save();}
+ canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);canvas.addEventListener('lostpointercapture',end);load();
+}
+
+const keyboardKeys=[['7','7'],['8','8'],['9','9'],['+','+'],['−','-'],['×','\\cdot '],['÷','\\div '],['⌫','BACK'],['4','4'],['5','5'],['6','6'],['(', '('],[')',')'],['x','x'],['x²','^{2}'],['xⁿ','^{}'],['1','1'],['2','2'],['3','3'],['a','a'],['b','b'],['π','\\pi '],['√','\\sqrt{}'],['Дробь','\\frac{}{}'],['0','0'],[',','{,}'],['=','='],['≠','\\ne '],['≤','\\le '],['≥','\\ge '],['|x|','\\left|\\right|'],['←','LEFT'],['→','RIGHT'],['Очистить','CLEAR']];
+function keyboardMarkup(id,textMode=false){return `<div class="math-entry-wrap"><label for="response">Ответ</label>${textMode?`<input id="response" data-answer-id="${id}" class="math-entry" placeholder="Введите ответ словами" autocomplete="off">`:`<math-field id="response" data-answer-id="${id}" class="visual-math" math-virtual-keyboard-policy="manual" aria-label="Визуальный математический редактор"></math-field><div class="muted math-help">Редактируйте формулу прямо в поле: нажмите на числитель, знаменатель, степень или корень. Клавиши со структурами создают поля для заполнения.</div><details class="math-keyboard" open><summary><strong>Математическая клавиатура</strong></summary><div class="key-grid">${keyboardKeys.map(([label,value],i)=>`<button type="button" data-key-index="${i}" aria-label="${label}">${label}</button>`).join('')}</div></details>`}</div>`;}
+function getAnswer(){const el=$('response');return el?(el.value||''):'';}
+function initKeyboard(id){const input=$('response');const isMath=input.tagName.toLowerCase()==='math-field';input.value=state.answers[id]||'';
+if(isMath){input.mathVirtualKeyboardPolicy='manual';input.smartFence=true;}
+function update(){state.answers[id]=input.value||'';}
+input.addEventListener('input',update);
+document.querySelectorAll('.math-keyboard [data-key-index]').forEach(b=>{b.addEventListener('pointerdown',e=>e.preventDefault());b.onclick=()=>{const ins=keyboardKeys[Number(b.dataset.keyIndex)][1];if(isMath){if(ins==='BACK')input.executeCommand('deleteBackward');else if(ins==='LEFT')input.executeCommand('moveToPreviousChar');else if(ins==='RIGHT')input.executeCommand('moveToNextChar');else if(ins==='CLEAR')input.value='';else input.insert(ins,{selectionMode:'placeholder'});input.focus();}else{let start=input.selectionStart,end=input.selectionEnd;if(ins==='BACK'){input.value=input.value.slice(0,Math.max(0,start-1))+input.value.slice(end);}else if(ins==='CLEAR'){input.value='';}else if(ins==='LEFT'||ins==='RIGHT'){input.setSelectionRange(Math.max(0,start+(ins==='LEFT'?-1:1)),Math.max(0,start+(ins==='LEFT'?-1:1)));}else{input.value=input.value.slice(0,start)+ins+input.value.slice(end);}input.focus();}update();};});update();}
+function normalizeAnswer(value){return String(value).toLowerCase().replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/\\(?:cdot|times|left|right)/g,'').replace(/\\,/g,'').replace(/\\(?:mathrm|text)\{([^}]+)\}/g,'$1').replace(/\{/g,'(').replace(/\}/g,')').replace(/\\div/g,'/').replace(/\*/g,'');}
+function navLesson(i){beforeNav();state.home=false;state.lesson=i;state.page=0;state.slide=0;location.hash=`lesson-${i+1}`;render();saveSoon();}
+function navPage(i){beforeNav();state.home=false;state.page=i;state.slide=0;location.hash=`lesson-${state.lesson+1}-page-${i+1}`;render();saveSoon();}
+function navHome(){beforeNav();state.home=true;state.slide=0;location.hash='presentation';render();saveSoon();}
+function readLocation(){const h=decodeURIComponent(location.hash.slice(1));const m=h.match(/^lesson-(\d+)(?:-page-(\d+))?$/);if(m){state.home=false;state.lesson=Math.max(0,Math.min(state.count-1,Number(m[1])-1));state.page=Math.max(0,Math.min(4,Number(m[2]||1)-1));state.slide=0;}else{state.home=true;state.slide=0;}}
+
+
+function initImportedPresentation(root){
+  // ===== Graph utilities =====
+  function formatNum(n){
+    if (Math.abs(n) < 1e-9) n = 0;
+    return Number(n).toString().replace('.', ',');
+  }
+  function lineFormula(k,b){
+    const kTxt = formatNum(k);
+    const bTxt = Number(b) === 0 ? '' : (b > 0 ? ' + ' + formatNum(b) : ' - ' + formatNum(Math.abs(b)));
+    return `y = ${kTxt}x${bTxt}`;
+  }
+  function quadFormula(a,b,c){
+    const parts = [];
+    parts.push(`${formatNum(a)}x²`);
+    if(Number(b)!==0) parts.push((b>0 ? '+ ' : '- ') + `${formatNum(Math.abs(b))}x`);
+    if(Number(c)!==0) parts.push((c>0 ? '+ ' : '- ') + `${formatNum(Math.abs(c))}`);
+    return 'y = ' + parts.join(' ');
+  }
+
+  function setupPlane(ctx, w, h, xMin, xMax, yMin, yMax){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,w,h);
+    const pad = 30;
+    const innerW = w - pad*2;
+    const innerH = h - pad*2;
+    const xToPx = x => pad + (x - xMin) / (xMax - xMin) * innerW;
+    const yToPx = y => h - pad - (y - yMin) / (yMax - yMin) * innerH;
+
+    // grid
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#ece6da';
+    ctx.beginPath();
+    for(let x=Math.ceil(xMin); x<=Math.floor(xMax); x++){
+      const px = xToPx(x);
+      ctx.moveTo(px, pad); ctx.lineTo(px, h-pad);
+    }
+    for(let y=Math.ceil(yMin); y<=Math.floor(yMax); y++){
+      const py = yToPx(y);
+      ctx.moveTo(pad, py); ctx.lineTo(w-pad, py);
+    }
+    ctx.stroke();
+
+    // axes
+    ctx.strokeStyle = '#68786e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(xToPx(0), pad); ctx.lineTo(xToPx(0), h-pad);
+    ctx.moveTo(pad, yToPx(0)); ctx.lineTo(w-pad, yToPx(0));
+    ctx.stroke();
+
+    // arrows
+    ctx.fillStyle = '#68786e';
+    ctx.beginPath();
+    ctx.moveTo(w-pad, yToPx(0)); ctx.lineTo(w-pad-8, yToPx(0)-4); ctx.lineTo(w-pad-8, yToPx(0)+4); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(xToPx(0), pad); ctx.lineTo(xToPx(0)-4, pad+8); ctx.lineTo(xToPx(0)+4, pad+8); ctx.closePath(); ctx.fill();
+
+    // ticks labels
+    ctx.fillStyle = '#53665a';
+    ctx.font = '12px Segoe UI';
+    for(let x=Math.ceil(xMin); x<=Math.floor(xMax); x++){
+      if(x===0) continue;
+      const px = xToPx(x);
+      ctx.fillText(String(x), px-4, yToPx(0)+16);
+    }
+    for(let y=Math.ceil(yMin); y<=Math.floor(yMax); y++){
+      if(y===0) continue;
+      const py = yToPx(y);
+      ctx.fillText(String(y), xToPx(0)+6, py+4);
+    }
+    ctx.fillText('0', xToPx(0)+6, yToPx(0)+16);
+    ctx.fillText('x', w-pad-12, yToPx(0)-8);
+    ctx.fillText('y', xToPx(0)+8, pad+12);
+
+    return {xToPx, yToPx, pad, innerW, innerH};
+  }
+
+
+if(root.querySelector("#linearCanvas")){
+  // Linear graph
+  const linearCanvas = document.getElementById('linearCanvas');
+  const lctx = linearCanvas.getContext('2d');
+  const kRange = document.getElementById('kRange');
+  const bRange = document.getElementById('bRange');
+  const kValue = document.getElementById('kValue');
+  const bValue = document.getElementById('bValue');
+  const linearFormulaEl = document.getElementById('linearFormula');
+
+  function drawLinear(){
+    const k = parseFloat(kRange.value);
+    const b = parseFloat(bRange.value);
+    kValue.textContent = formatNum(k);
+    bValue.textContent = formatNum(b);
+    linearFormulaEl.textContent = lineFormula(k,b);
+    const {xToPx, yToPx} = setupPlane(lctx, linearCanvas.width, linearCanvas.height, -10, 10, -10, 10);
+
+    lctx.strokeStyle = '#6e9a76';
+    lctx.lineWidth = 3;
+    lctx.beginPath();
+    let first = true;
+    for(let x=-10; x<=10; x+=0.05){
+      const y = k*x + b;
+      const px = xToPx(x), py = yToPx(y);
+      if(first){lctx.moveTo(px, py); first=false;} else {lctx.lineTo(px, py);}    
+    }
+    lctx.stroke();
+
+    // intercept point with y-axis
+    if(b >= -10 && b <= 10){
+      lctx.fillStyle = '#c17373';
+      lctx.beginPath();
+      lctx.arc(xToPx(0), yToPx(b), 5, 0, Math.PI*2);
+      lctx.fill();
+    }
+  }
+  kRange.addEventListener('input', drawLinear);
+  bRange.addEventListener('input', drawLinear);
+  drawLinear();
+
+
+}
+if(root.querySelector("#quadCanvas")){
+  // Quadratic graph
+  const quadCanvas = document.getElementById('quadCanvas');
+  const qctx = quadCanvas.getContext('2d');
+  const aRange = document.getElementById('aRange');
+  const qbRange = document.getElementById('qbRange');
+  const cRange = document.getElementById('cRange');
+  const aValue = document.getElementById('aValue');
+  const qbValue = document.getElementById('qbValue');
+  const cValue = document.getElementById('cValue');
+  const quadFormulaEl = document.getElementById('quadFormula');
+
+  function drawQuadratic(){
+    let a = parseFloat(aRange.value);
+    const b = parseFloat(qbRange.value);
+    const c = parseFloat(cRange.value);
+    // При a = 0 график закономерно превращается в прямую.
+    aValue.textContent = formatNum(aRange.value);
+    qbValue.textContent = formatNum(b);
+    cValue.textContent = formatNum(c);
+    quadFormulaEl.textContent = quadFormula(parseFloat(aRange.value), b, c);
+    const {xToPx, yToPx} = setupPlane(qctx, quadCanvas.width, quadCanvas.height, -10, 10, -10, 10);
+
+    qctx.strokeStyle = '#7f8fcb';
+    qctx.lineWidth = 3;
+    qctx.beginPath();
+    let first = true;
+    for(let x=-10; x<=10; x+=0.02){
+      const y = a*x*x + b*x + c;
+      const px = xToPx(x), py = yToPx(y);
+      if(first){qctx.moveTo(px, py); first=false;} else {qctx.lineTo(px, py);}    
+    }
+    qctx.stroke();
+
+    // y-intercept
+    if(c >= -10 && c <= 10){
+      qctx.fillStyle = '#c17373';
+      qctx.beginPath();
+      qctx.arc(xToPx(0), yToPx(c), 5, 0, Math.PI*2);
+      qctx.fill();
+    }
+    // vertex if visible
+    const xv = a===0 ? NaN : -b/(2*a);
+    const yv = a*xv*xv + b*xv + c;
+    if(isFinite(xv) && isFinite(yv) && xv >= -10 && xv <= 10 && yv >= -10 && yv <= 10){
+      qctx.fillStyle = '#476db3';
+      qctx.beginPath();
+      qctx.arc(xToPx(xv), yToPx(yv), 5, 0, Math.PI*2);
+      qctx.fill();
+    }
+  }
+  aRange.addEventListener('input', drawQuadratic);
+  qbRange.addEventListener('input', drawQuadratic);
+  cRange.addEventListener('input', drawQuadratic);
+  drawQuadratic();
+
+}
+root.querySelectorAll("[data-show-imported-answer]").forEach(b=>b.onclick=()=>root.querySelector("#"+b.dataset.showImportedAnswer)?.classList.toggle("show"));
+root.querySelectorAll("[data-imported-check]").forEach(b=>b.onclick=()=>{const [field,answer,fbid]=b.dataset.importedCheck.split("|");const input=root.querySelector("#"+field),fb=root.querySelector("#"+fbid);if(!input||!fb)return;const normalize=v=>String(v).trim().toLowerCase().replace(/ё/g,"е");const v=normalize(input.value);fb.textContent=!v?"Введите ответ.":v===normalize(answer)?"Верно!":"Пока нет. Попробуй ещё раз.";fb.style.color=!v?"#9a6d36":v===normalize(answer)?"#3f7c49":"#a15353";});
+}
+
+function render(){let total=plans[state.count].length,current=plans[state.count][state.lesson];$('cycleInfo').textContent=`${total} × 60 = ${total*60} минут`;
+$('progress').style.width=state.home?'0%':`${Math.round(((state.lesson*5+state.page+1)/(total*5))*100)}%`;
+const content=$('stage');
+document.querySelector('.shell').classList.toggle('presentation-only',state.home);
+if(state.home){const slide=slideBank[state.slide];content.innerHTML=`<div class="module-presentation"><div class="hero-eyebrow">МАТЕМАТИКА · 9 КЛАСС · ОБЩАЯ ПРЕЗЕНТАЦИЯ ТЕМЫ</div><h2>ОГЭ №11. Графики функций</h2><p class="hero-lead">Обзор всей темы перед началом цикла из ${total} занятий.</p><div class="module-slide"><div class="module-slide-heading"><span class="tag">СЛАЙД ${state.slide+1} / ${slideBank.length}</span><span class="muted">Вся тема · единая презентация</span></div><div class="slide imported-presentation"><h3>${esc(slide.name)}</h3><div class="slide-content imported-slide">${slide.body}</div></div><div class="actions"><button id="homeSlidePrev" ${state.slide===0?'disabled':''}>← Предыдущий слайд</button><div class="slide-dots">${slideBank.map((_,i)=>`<button type="button" data-slide="${i}" class="${i===state.slide?'active':''}" aria-label="Слайд ${i+1}" ${i===state.slide?'aria-current="step"':''}></button>`).join('')}</div><button class="primary" id="homeSlideNext" ${state.slide===slideBank.length-1?'disabled':''}>Следующий слайд →</button></div></div><div class="hero-facts"><span>◷ ${total} урока по 60 минут</span><span>▤ Одна презентация всей темы</span><span>✎ Конспект и практика в каждом уроке</span><span>✓ Итоговая проверка</span></div><h3>Перейти к уроку</h3><div class="lesson-grid">${plans[state.count].map((l,i)=>`<a class="lesson-tile" href="#lesson-${i+1}" data-lesson="${i}"><small>УРОК ${i+1} · 60 МИНУТ</small><strong>${esc(l[0])}</strong><span>${esc(l[1])}</span><em>Открыть конспект урока →</em></a>`).join('')}</div><div class="note" style="margin-top:20px">Презентация единая для всей темы. В каждом занятии: собственный конспект → первичное закрепление → базовая практика → углублённая практика → проверка.</div></div>`;
+$('homeSlidePrev').onclick=()=>{state.slide--;render();saveSoon();};$('homeSlideNext').onclick=()=>{state.slide++;render();saveSoon();};content.querySelectorAll('[data-slide]').forEach(btn=>btn.onclick=()=>{state.slide=Number(btn.dataset.slide);render();saveSoon();});initImportedPresentation(content);
+$('notes').innerHTML=String.raw`<strong>Конспект модуля</strong><p>Основные формулы и алгоритмы по графикам функций.</p><p>\(a^2-b^2=(a-b)(a+b)\)</p><p>\((a\pm b)^2=a^2\pm2ab+b^2\)</p><p>Направление прямой определяет знак k; ветви параболы — знак a.</p>`;
+}else{content.innerHTML=`<a class="lesson-link" href="#presentation" data-home="1">← К презентации модуля</a><div style="height:12px"></div><small>ЗАНЯТИЕ ${state.lesson+1} ИЗ ${total} · ${esc(current[1])}</small><h2>${esc(pages[state.page])}</h2><div id="dynamic"></div><div class="actions"><button id="prev" ${state.lesson===0&&state.page===0?'disabled':''}>← Назад</button><button class="primary" id="next" ${state.lesson===total-1&&state.page===4?'disabled':''}>Далее →</button></div>`;
+$('notes').innerHTML=lessonNotes[lessonNoteType()];
+if(state.page===0)showLessonNotes();else if(state.page===4)showCheck();else showPractice();
+$('prev').onclick=()=>{if(state.page>0)navPage(state.page-1);else if(state.lesson>0){beforeNav();state.lesson--;state.page=4;state.slide=0;location.hash=`lesson-${state.lesson+1}-page-5`;render();}else navHome();};
+$('next').onclick=()=>state.page<4?navPage(state.page+1):navLesson(state.lesson+1);
+}
+typesetMath($('notes'));if(state.home)typesetMath(content);
+$('notesText').value=state.notes[key()+'-'+(state.home?'home':state.page)]||'';$('teacherPanel').classList.toggle('hide',$('mode').value!=='teacher');$('teacherInfo').textContent=`Проверенные ответы: ${Object.keys(state.checks).length}; попыток: ${Object.values(state.attempts).reduce((a,b)=>a+b,0)}. Для подробностей откройте «Карта освоения».`;renderAnalytics();
+}
+function showLessonNotes(){const lessonTitle=plans[state.count][state.lesson][0];$('dynamic').innerHTML=`<div class="lesson-notes-page"><div class="tag">КОНСПЕКТ · ЗАНЯТИЕ ${state.lesson+1}</div><h3>${esc(lessonTitle)}</h3><p class="muted">Изучи правило и примеры. Потренируйся применять правила к интерактивным графикам на следующих страницах.</p><div class="note lesson-note-body">${lessonNotes[lessonNoteType()]}</div><div class="note" style="margin-top:16px"><strong>Дальше:</strong> нажми «Далее», чтобы перейти к первичному закреплению.</div></div>`;typesetMath($('dynamic'));}
+// Question bank: keys are stable; only presentation order is shuffled.
+// Graphs are SVG-generated, vector and printable. Stable graph ids are used in matching.
+function graphSVG(kind,a=1,b=0,c=0){
+ const W=280,H=224,cx=140,cy=112,U=23;
+ let x0=-5.5,x1=5.5,segments=[];
+ const yfun=x=>kind==='line'?a*x+b:kind==='parabola'?a*x*x+b*x+c:kind==='hyperbola'?a/x:Math.sqrt(x);
+ const ranges=kind==='hyperbola'?[[-5.2,-.12],[.12,5.2]]:kind==='sqrt'?[[0,5.1]]:[[-5.2,5.2]];
+ for(const [lo,hi] of ranges){let path='';for(let n=0;n<=420;n++){const x=lo+(hi-lo)*n/420,y=yfun(x),px=cx+U*x,py=cy-U*y;if(!Number.isFinite(py)||py<3||py>H-3){path='';continue;}path+=(path?' L':'M')+px.toFixed(2)+' '+py.toFixed(2);if(n===420||n%15===0)segments.push(path),path='';}if(path)segments.push(path);}
+ let gr='';for(let i=-5;i<=5;i++){const v=cx+i*U,h=cy+i*U;gr+=`<line x1="${v}" y1="8" x2="${v}" y2="216" stroke="#e4ebe7"/><line x1="8" y1="${h}" x2="272" y2="${h}" stroke="#e4ebe7"/>`;}
+ return `<svg class="oge-graph" viewBox="0 0 ${W} ${H}" role="img" aria-label="График функции на координатной плоскости"><rect width="280" height="224" fill="#fff" rx="9"/>${gr}<path d="M8 ${cy} H272 M${cx} 216 V8" fill="none" stroke="#52675d" stroke-width="1.7"/><path d="M265 108 l7 4 -7 4 M136 15 l4 -7 4 7" fill="none" stroke="#52675d" stroke-width="1.5"/><text x="266" y="128" font-size="13">x</text><text x="148" y="16" font-size="13">y</text><text x="129" y="126" font-size="11">0</text>${segments.map(d=>`<path d="${d}" stroke="#426c87" stroke-width="3" fill="none" stroke-linecap="round"/>`).join('')}</svg>`;
+}
+function graphStrip(items){return `<div class="graph-strip">${items.map(([label,kind,a,b,c])=>`<div class="graph-tile"><strong>${label}</strong>${graphSVG(kind,a,b,c)}</div>`).join('')}</div>`;}
+const Q=(id,lesson,page,type,title,q,answer,opts={},hint='Посмотри на форму графика, знак коэффициентов и пересечение с осью Oy.')=>({id,lesson,page,type,group:page,title,q,answer,hint,...opts});
+const M=(id,l,p,title,graphs,formulas,answer,hint)=>Q(id,l,p,'match',title,graphStrip(graphs)+'<p>Установи соответствие между графиками и формулами:</p>',answer,{options:graphs.map(g=>[g[0],g[0]+' — график']),targets:formulas.map((f,i)=>['f'+(i+1),f])},hint);
+const F=(id,l,p,title,formulas,graphs,answer,hint)=>Q(id,l,p,'match',title,'<p>Соотнеси формулы и пронумерованные графики.</p>'+graphStrip(graphs),answer,{options:formulas.map((f,i)=>['f'+(i+1),f]),targets:graphs.map(g=>[g[0],g[0]+' — график'])},hint);
+const bank=[
+Q('r6a',0,1,'number','Разминка №6',String.raw`Вычисли \(2{,}4+3{,}75\).`,['6.15','6,15'],{},'Сложи десятичные дроби по разрядам.'),
+Q('r7a',0,1,'single','Разминка №7',String.raw`Какое число меньше: \(-\frac{3}{4}\) или \(-\frac{1}{2}\)?`,['a'],{options:[['a',String.raw`\(-\frac34\)`],['b',String.raw`\(-\frac12\)`],['c','Равны']]},'Из двух отрицательных чисел меньше то, чей модуль больше.'),
+Q('r8a',0,1,'number','Разминка №8',String.raw`Вычисли \(2^3\cdot2^2\).`,['32'],{},'При умножении степеней с одинаковым основанием показатели складываются.'),
+Q('r9a',0,1,'number','Разминка №9',String.raw`Реши \(3x-7=8\).`,['5'],{},'Перенеси 7 и раздели на 3.'),
+Q('r10a',0,1,'math','Разминка №10',String.raw`Из 10 билетов 3 выигрышных. Какова вероятность выигрыша?`,[String.raw`\frac{3}{10}`,'0.3','0{,}3'],{},'Благоприятные исходы раздели на все равновозможные.'),
+Q('slope1',0,1,'single','Наклон прямой',String.raw`Прямая \(y=kx+b\) возрастает. Каков знак \(k\)?`+graphStrip([['График','line',1,1]]),['pos'],{options:[['pos',String.raw`\(k>0\)`],['neg',String.raw`\(k<0\)`],['zero',String.raw`\(k=0\)`]]},'Смотри, куда идёт прямая слева направо.'),
+Q('intercept1',0,1,'single','Пересечение с Oy',String.raw`Определи знак \(b\).`+graphStrip([['График','line',-1,-2]]),['neg'],{options:[['pos',String.raw`\(b>0\)`],['neg',String.raw`\(b<0\)`],['zero',String.raw`\(b=0\)`]]},'Найди пересечение с вертикальной осью.'),
+M('p111',0,2,'Прототип 11.1 · знаки k и b',[['А','line',-1,-2],['Б','line',-1,2],['В','line',1,-2]],[["",""]].slice(0,0).concat([String.raw`\(k<0,\ b<0\)`,String.raw`\(k<0,\ b>0\)`,String.raw`\(k>0,\ b<0\)`]),{А:'f1',Б:'f2',В:'f3'},'Наклон задаёт знак k; пересечение с Oy — знак b.'),
+M('p112',0,2,'Прототип 11.2 · обратное сопоставление',[['А','line',1,-2],['Б','line',-1,-1],['В','line',1,2]],[String.raw`\(k<0,\ b<0\)`,String.raw`\(k>0,\ b>0\)`,String.raw`\(k>0,\ b<0\)`],{А:'f3',Б:'f1',В:'f2'}),
+M('p113',0,2,'Прототип 11.3 · определение формулы',[['А','line',-2,1],['Б','line',2,1],['В','line',-2,-1]],[String.raw`\(y=-2x-1\)`,String.raw`\(y=-2x+1\)`,String.raw`\(y=2x+1\)`],{А:'f2',Б:'f3',В:'f1'}),
+F('p114',0,2,'Прототип 11.4 · формулы и графики',[String.raw`\(y=-2x+4\)`,String.raw`\(y=2x-4\)`,String.raw`\(y=2x+4\)`],[['1','line',2,4],['2','line',-2,4],['3','line',2,-4]],{f1:'2',f2:'3',f3:'1'}),
+Q('lineCalc',0,3,'number','Найди b',String.raw`Прямая \(y=3x+b\) проходит через \((2;1)\). Вычисли \(b\).`,['-5'],{},'Подставь координаты точки: 1 = 6 + b.'),
+Q('lineError',0,3,'single','Найди ошибку',String.raw`Прямая возрастает и пересекает \(Oy\) ниже нуля. Ученик выбрал \(y=-3x-2\). В чём ошибка?`,['a'],{options:[['a','Неверно определён знак наклона'],['b','Неверно определён знак b'],['c','Ошибки нет']]},'У возрастающей прямой k положителен.'),
+Q('lineOrder',0,3,'order','Восстанови алгоритм','Расположи этапы установления соответствия.', ['shape','slope','intercept','match'],{options:[['shape','Узнать вид графика'],['slope','Определить знак наклона'],['intercept','Определить пересечение с Oy'],['match','Сопоставить с формулой']]}),
+M('lineHard',0,3,'Повышенная сложность: близкие прямые',[['А','line',-2,2],['Б','line',-2,-2],['В','line',2,-2]],[String.raw`\(y=2x-2\)`,String.raw`\(y=-2x+2\)`,String.raw`\(y=-2x-2\)`],{А:'f2',Б:'f3',В:'f1'}),
+M('test1',0,4,'Мини-тест · без подсказок',[['А','line',1,2],['Б','line',-1,2],['В','line',1,-2]],[String.raw`\(y=x-2\)`,String.raw`\(y=-x+2\)`,String.raw`\(y=x+2\)`],{А:'f3',Б:'f2',В:'f1'}),
+Q('test1b',0,4,'number','Мини-тест: коэффициент',String.raw`Прямая \(y=kx-3\) проходит через \((1;1)\). Найди \(k\).`,['4']),
+Q('test1c',0,4,'single','Мини-тест: наклон',String.raw`Каков знак \(k\) для убывающей прямой?`,['n'],{options:[['p',String.raw`\(k>0\)`],['n',String.raw`\(k<0\)`],['z',String.raw`\(k=0\)`]]}),
+Q('r6b',1,1,'number','Повторение №6',String.raw`Вычисли \(7{,}2-4{,}85\).`,['2.35','2,35']),
+Q('r7b',1,1,'single','Повторение №7',String.raw`Выбери большее число: \(-1{,}2\) и \(-1{,}8\).`,['a'],{options:[['a',String.raw`\(-1{,}2\)`],['b',String.raw`\(-1{,}8\)`]]}),
+Q('r8b',1,1,'number','Повторение №8',String.raw`Вычисли \(\sqrt{81}+2^3\).`,['17']),
+Q('r9b',1,1,'number','Повторение №9',String.raw`Реши \(5x+2=17\).`,['3']),
+Q('r10b',1,1,'math','Повторение №10',String.raw`В коробке 12 шаров, из них 4 красных. Какова вероятность красного шара?`,[String.raw`\frac13`,String.raw`\frac{1}{3}`]),
+Q('lineRecall',1,1,'single','Повторение урока 1',String.raw`Прямая убывает и пересекает \(Oy\) выше начала координат. Какие знаки у \(k,b\)?`,['a'],{options:[['a',String.raw`\(k<0,b>0\)`],['b',String.raw`\(k>0,b>0\)`],['c',String.raw`\(k<0,b<0\)`]]}),
+Q('paraUp',1,1,'single','Ветви параболы','Определи знак a.'+graphStrip([['График','parabola',.65,0,-2]]),['p'],{options:[['p',String.raw`\(a>0\)`],['n',String.raw`\(a<0\)`]]}),
+Q('paraC',1,1,'single','Свободный член параболы','Определи знак c.'+graphStrip([['График','parabola',-.6,0,2]]),['p'],{options:[['p',String.raw`\(c>0\)`],['n',String.raw`\(c<0\)`],['z',String.raw`\(c=0\)`]]}),
+M('p115',1,2,'Прототип 11.5 · знаки a и c',[['А','parabola',.5,0,2],['Б','parabola',-.5,0,2],['В','parabola',.6,0,-2]],[String.raw`\(a>0,c>0\)`,String.raw`\(a<0,c>0\)`,String.raw`\(a>0,c<0\)`],{А:'f1',Б:'f2',В:'f3'}),
+M('p116',1,2,'Прототип 11.6 · квадратичные функции',[['А','parabola',-.6,0,2],['Б','parabola',.6,0,-2],['В','parabola',.5,0,2]],[String.raw`\(a>0,c>0\)`,String.raw`\(a>0,c<0\)`,String.raw`\(a<0,c>0\)`],{А:'f3',Б:'f2',В:'f1'}),
+M('p117',1,2,'Прототип 11.7 · демонстрационный тип',[['А','line',.5,0],['Б','hyperbola',1],['В','parabola',-1,0,-2]],[String.raw`\(y=\frac1x\)`,String.raw`\(y=-x^2-2\)`,String.raw`\(y=\frac12x\)`],{А:'f3',Б:'f1',В:'f2'}),
+M('p118',1,2,'Прототип 11.8 · три семейства',[['А','parabola',-1,0,0],['Б','line',2,0],['В','hyperbola',2]],[String.raw`\(y=\frac2x\)`,String.raw`\(y=-x^2\)`,String.raw`\(y=2x\)`],{А:'f2',Б:'f3',В:'f1'}),
+F('p119',1,3,'Прототип 11.9 · три разные формулы',[String.raw`\(y=2x^2+16x+29\)`,String.raw`\(y=\frac53x+3\)`,String.raw`\(y=-\frac4x\)`],[['1','hyperbola',-4],['2','parabola',2,16,29],['3','line',5/3,3]],{f1:'2',f2:'3',f3:'1'},'В первом случае ось симметрии x = -4, вершина (-4; -3).'),
+M('p1110',1,3,'Прототип 11.10 · корневая функция',[['А','sqrt'],['Б','parabola',-1,0,-3],['В','line',-2,-4]],[String.raw`\(y=-x^2-3\)`,String.raw`\(y=-2x-4\)`,String.raw`\(y=\sqrt{x}\)`],{А:'f3',Б:'f1',В:'f2'}),
+Q('hypSign',1,3,'single','Гипербола: четверти','В каких четвертях расположена гипербола '+String.raw`\(y=-\frac3x\)`+'?', ['b'],{options:[['a','I и III'],['b','II и IV'],['c','I и II']]},'При k < 0 значения x и y имеют разные знаки.'),
+Q('paraError',1,3,'single','Ошибка в признаке c',String.raw`Ученик утверждает: «Вершина ниже Ox, значит \(c<0\)». Почему это не всегда верно?`,['a'],{options:[['a','c задаёт пересечение с Oy, а не вершину'],['b','c всегда равно нулю'],['c','c определяет направление ветвей']]},'Обрати внимание на y(0).'),
+M('test2a',1,4,'Итог №11 · линейные графики',[['А','line',-1,-2],['Б','line',2,2],['В','line',-1,2]],[String.raw`\(y=-x+2\)`,String.raw`\(y=-x-2\)`,String.raw`\(y=2x+2\)`],{А:'f2',Б:'f3',В:'f1'}),
+M('test2b',1,4,'Итог №11 · квадратичные графики',[['А','parabola',-1,0,1],['Б','parabola',1,0,-2],['В','parabola',1,0,2]],[String.raw`\(a>0,c>0\)`,String.raw`\(a<0,c>0\)`,String.raw`\(a>0,c<0\)`],{А:'f2',Б:'f3',В:'f1'}),
+M('test2c',1,4,'Итог №11 · смешанное соответствие',[['А','hyperbola',-2],['Б','sqrt'],['В','parabola',-1,0,-1]],[String.raw`\(y=\sqrt{x}\)`,String.raw`\(y=-\frac2x\)`,String.raw`\(y=-x^2-1\)`],{А:'f2',Б:'f1',В:'f3'}),
+Q('test2d',1,4,'number','Итог · вычисление c',String.raw`Для \(y=2x^2-3x+c\) точка \((0;5)\) лежит на графике. Найди \(c\).`,['5']),
+Q('test2e',1,4,'single','Итог · гипербола',String.raw`Где расположены ветви \(y=\frac7x\)?`,['a'],{options:[['a','I и III четверти'],['b','II и IV четверти'],['c','На осях координат']]}),
+];
+
+const layouts={};
+function shuffle(items){let a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function layout(id,items){return layouts[id]||(layouts[id]=shuffle(items));}
+function reshuffle(id,items){layouts[id]=shuffle(items);delete state.answers[id];}
+function info(q){return `<div class="question-statement"><strong>${q.q}</strong></div>`;}
+function choicesMarkup(q,id){let selected=state.answers[id]||[];if(!Array.isArray(selected))selected=[];const compact=q.options.length<=4&&q.options.every(([,label])=>label.replace(/\\\([^)]*\\\)/g,"MATH").length<=32&&label.length<=58);const row=q.choiceColumns===4||(q.choiceColumns!==2&&compact);return `<div class="choices ${row?'choices-row':'choices-two'}">${layout(id,q.options).map(([v,label])=>`<label class="choice"><input type="${q.type==='multiple'?'checkbox':'radio'}" name="choice-${id}" data-choice="${esc(v)}" ${selected.includes(v)?'checked':''}><span>${label}</span></label>`).join('')}</div>`;}
+function sortMarkup(q,id){let order=layouts[id]||layout(id,q.options.map(o=>o[0]));const map=Object.fromEntries(q.options);return `<div class="sortlist">${order.map((v,i)=>`<div class="sortrow" draggable="true" data-sort="${esc(v)}"><span class="drag-handle" aria-hidden="true">⠿</span><span class="sort-index">${i+1}.</span><span class="sort-title">${map[v]}</span><button type="button" data-move="-1" ${i===0?'disabled':''} aria-label="Поднять">↑</button><button type="button" data-move="1" ${i===order.length-1?'disabled':''} aria-label="Опустить">↓</button></div>`).join('')}</div><small class="muted">Перетаскивай строки за маркер ⠿ или меняй порядок стрелками.</small>`;}
+function pairsMarkup(q,id){let a=state.answers[id]||{};let targets=layout(id+'-targets',q.targets);return `<div class="pairs">${q.options.map(([v,label])=>`<label class="pair-row"><span>${label}</span><select data-pair="${esc(v)}"><option value="">Выбери соответствие</option>${targets.map(([key,name])=>`<option value="${esc(key)}" ${a[v]===key?'selected':''}>${name}</option>`).join('')}</select></label>`).join('')}</div>`;}
+function textMarkup(q,id){const val=state.answers[id]||'';if(q.type==='blanks')return `<div class="blanks">${q.answer.map((_,i)=>`<label>Пропуск ${i+1}<input class="answer-text" data-blank="${i}" autocomplete="off" value="${esc(Array.isArray(val)?val[i]||'':'')}"></label>`).join('')}</div>`;
+if(q.type==='math')return `<div class="math-entry-wrap"><label>Ответ</label><math-field class="visual-math" data-math-answer="${esc(id)}" math-virtual-keyboard-policy="manual" aria-label="Математический редактор">${esc(val)}</math-field><div class="math-mini-key">${[['Дробь',String.raw`\frac{}{} `],['Степень','^{}'],['Корень',String.raw`\sqrt{} `],['x','x'],['−','-'],['(', '('],[')',')'],['⌫','BACK']].map(([t,v],i)=>`<button type="button" data-math-key="${i}">${t}</button>`).join('')}</div></div>`;
+return `<label>Ответ <input class="answer-text" data-free-answer="1" value="${esc(val)}" autocomplete="off" ${q.type==='number'?'inputmode="decimal"':''}></label>`;}
+
+function graphMarkup(q,id){
+ const v=state.answers[id]&&typeof state.answers[id]==='object'&&!Array.isArray(state.answers[id])?state.answers[id]:{x:q.type==='coordinate'?-2:2,y:q.type==='coordinate'?-1:3};
+ const gx=Number.isFinite(Number(v.x))?Math.max(-7,Math.min(7,Math.round(Number(v.x)))):0;
+ const gy=Number.isFinite(Number(v.y))?Math.max(-5,Math.min(5,Math.round(Number(v.y)))):0;
+ const cx=220,cy=150,sc=25;
+ let grid='';for(let x=-7;x<=7;x++){let px=cx+x*sc;grid+=`<line class="grid-line" x1="${px}" y1="20" x2="${px}" y2="280"/>`;if(x&&x%2===0)grid+=`<text class="plot-label" x="${px-6}" y="165">${x}</text>`;}
+ for(let y=-5;y<=5;y++){let py=cy-y*sc;grid+=`<line class="grid-line" x1="40" y1="${py}" x2="400" y2="${py}"/>`;if(y&&y%2===0)grid+=`<text class="plot-label" x="202" y="${py-4}">${y}</text>`;}
+ const pX=cx+gx*sc,pY=cy-gy*sc;
+ const figure=q.type==='geometry'?`<polygon class="shape-line" points="${cx},${cy} ${cx+4*sc},${cy} ${pX},${pY}"/><circle cx="${cx}" cy="${cy}" r="5" fill="#526e87"/><circle cx="${cx+4*sc}" cy="${cy}" r="5" fill="#526e87"/><text class="plot-label" x="${cx-15}" y="${cy+18}">A</text><text class="plot-label" x="${cx+4*sc+6}" y="${cy+17}">B</text>`:'';
+ return `<div class="interactive-plot"><div class="plot-instruction">${q.type==='geometry'?'Перемещай точку C так, чтобы угол BAC стал прямым. Точки A и B неподвижны.':'Перемещай точку P по координатной сетке. Координаты изменяются с шагом 1.'}</div><svg viewBox="0 0 440 300" role="img" aria-label="${q.type==='geometry'?'Интерактивный треугольник с перемещаемой вершиной C':'Интерактивная координатная плоскость с перемещаемой точкой P'}" data-plot="${q.type}">${grid}<line class="axis-line" x1="40" y1="150" x2="400" y2="150"/><line class="axis-line" x1="220" y1="20" x2="220" y2="280"/><text class="plot-label" x="405" y="146">x</text><text class="plot-label" x="226" y="15">y</text>${figure}<circle class="draggable-point" data-drag-point="1" cx="${pX}" cy="${pY}" r="12"/><text class="plot-label" data-moving-label="1" x="${pX+13}" y="${pY-12}">${q.type==='geometry'?'C':'P'}</text></svg><div class="plot-status" aria-live="polite">${q.type==='geometry'?'C':'P'} (${gx}; ${gy})</div><p class="muted" style="font-size:12px">Для точной настройки доступны кнопки перемещения:</p><div class="sketch-tools"><button type="button" data-nudge="-1,0">←</button><button type="button" data-nudge="0,1">↑</button><button type="button" data-nudge="0,-1">↓</button><button type="button" data-nudge="1,0">→</button></div></div>`;
+}
+function attachGraph(q,id,host){
+ const wrap=host.querySelector('.interactive-plot'),svg=wrap.querySelector('svg');let dragging=false;
+ function setPos(x,y){x=Math.max(-7,Math.min(7,Math.round(x)));y=Math.max(-5,Math.min(5,Math.round(y)));
+   state.answers[id]={x,y};const px=220+x*25,py=150-y*25;
+   const point=svg.querySelector('[data-drag-point]');point.setAttribute('cx',px);point.setAttribute('cy',py);
+   const label=svg.querySelector('[data-moving-label]');label.setAttribute('x',px+13);label.setAttribute('y',py-12);
+   const poly=svg.querySelector('polygon.shape-line');if(poly)poly.setAttribute('points',`220,150 320,150 ${px},${py}`);
+   wrap.querySelector('.plot-status').textContent=`${q.type==='geometry'?'C':'P'} (${x}; ${y})`;saveSoon();
+ }
+ function pointerPos(e){const r=svg.getBoundingClientRect();const x=(e.clientX-r.left)*440/r.width,y=(e.clientY-r.top)*300/r.height;setPos((x-220)/25,(150-y)/25);}
+ const dot=svg.querySelector('[data-drag-point]');dot.addEventListener('pointerdown',e=>{dragging=true;dot.setPointerCapture(e.pointerId);e.preventDefault();});
+ dot.addEventListener('pointermove',e=>{if(dragging)pointerPos(e);});
+ const stop=()=>{dragging=false;};dot.addEventListener('pointerup',stop);dot.addEventListener('pointercancel',stop);
+ wrap.querySelectorAll('[data-nudge]').forEach(b=>b.onclick=()=>{const [dx,dy]=b.dataset.nudge.split(',').map(Number),v=state.answers[id]||{x:q.type==='coordinate'?-2:2,y:q.type==='coordinate'?-1:3};setPos(Number(v.x)+dx,Number(v.y)+dy);});
+}
+
+function answerMarkup(q,id){if(['coordinate','geometry'].includes(q.type))return graphMarkup(q,id);if(['single','multiple','boolean'].includes(q.type))return choicesMarkup(q,id);if(q.type==='order')return sortMarkup(q,id);if(['match','groups'].includes(q.type))return pairsMarkup(q,id);return textMarkup(q,id);}
+function valueFor(q,id,host){if(['coordinate','geometry'].includes(q.type))return state.answers[id]||{x:q.type==='coordinate'?-2:2,y:q.type==='coordinate'?-1:3};if(['single','multiple','boolean'].includes(q.type))return [...host.querySelectorAll('input[data-choice]:checked')].map(x=>x.dataset.choice);
+if(q.type==='order')return layouts[id]||[];
+if(['match','groups'].includes(q.type)){let a={};host.querySelectorAll('[data-pair]').forEach(e=>a[e.dataset.pair]=e.value);return a;}
+if(q.type==='blanks')return [...host.querySelectorAll('[data-blank]')].map(e=>e.value.trim());
+if(q.type==='math')return host.querySelector('math-field')?.value||'';
+return host.querySelector('[data-free-answer]')?.value.trim()||'';}
+function checkValue(q,a){if(q.type==='coordinate')return a&&Number(a.x)===3&&Number(a.y)===2;if(q.type==='geometry')return a&&Number(a.x)===0&&Math.abs(Number(a.y))>=1;if(['single','multiple','boolean','order'].includes(q.type))return Array.isArray(a)&&a.length===q.answer.length&&a.every((v,i)=>q.type==='order'?v===q.answer[i]:q.answer.includes(v));
+if(['match','groups'].includes(q.type))return Object.keys(q.answer).every(k=>a[k]===q.answer[k]);
+if(q.type==='blanks')return Array.isArray(a)&&a.every((v,i)=>normalizeAnswer(v)===normalizeAnswer(q.answer[i]));
+return q.answer.some(v=>normalizeAnswer(a)===normalizeAnswer(v)||String(a).replace(/\\/g,'')===v);}
+const SKILL_META_BASE={coordinate:['Координатная плоскость','coordinates'],geometry:['Геометрические построения','geometry'],factor:['Разложение на множители','factor'],one:['Разложение на множители','factor'],multi:['Разложение на множители','factor'],tf:['Правила сокращения','cancel'],order:['Алгоритм сокращения','cancel'],match:['Выбор способа разложения','factor'],gaps:['Формулы сокращённого умножения','factor'],groups:['Выбор способа разложения','factor'],number:['Вычислительные навыки','arithmetic'],short:['Правила сокращения','cancel'],error:['Правила сокращения','cancel'],fraction:['Сокращение дробей','cancel'],interval:['ОДЗ рациональных выражений','domain']};
+const SKILL_META=new Proxy(SKILL_META_BASE,{get:(o,id)=>o[id]||[id.startsWith('r')?'Повторение №6–10':id.startsWith('test')?'Итоговая диагностика':id.startsWith('p11')?'Прототип №11':'Чтение графиков',id.startsWith('r')?'review':id.startsWith('test')?'final':id.startsWith('p11')?'matching':'graphs']});
+const ERROR_TYPES={coordinates:'Неверно определены координаты точки',geometry:'Не выполнено условие перпендикулярности',factor:'Ошибка в разложении на множители',cancel:'Возможно, перепутаны слагаемые и множители',domain:'Ошибка в ограничениях на переменную',arithmetic:'Вычислительная ошибка'};
+function diagnose(q,ans){
+ if(q.id==='error' && Array.isArray(ans)&&ans.includes('b'))return 'Вместо правила сокращения выбран анализ ОДЗ';
+ if(q.id==='short' && normalizeAnswer(ans)==='множители')return 'Путаница между слагаемыми и множителями';
+ if(q.id==='interval' && Array.isArray(ans)&&ans.includes('b'))return 'Учтён только один корень знаменателя';
+ if(q.id==='order')return 'Нарушена последовательность преобразований';
+ if(q.id==='match'||q.id==='groups')return 'Неверно определён способ разложения';
+ if(q.id==='gaps')return 'Ошибка при восстановлении формулы';
+ return ERROR_TYPES[SKILL_META[q.id]?.[1]]||'Признаки графика или соответствие выбраны неверно; точная причина не установлена';
+}
+function analyticsData(){
+ const skills={};const errors={};const byLesson={};
+ const events=state.history||[];
+ for(const ev of events){
+  const key=ev.skill||'other';if(!skills[key])skills[key]={label:ev.skillLabel||'Прочие навыки',attempts:0,correct:0,questions:new Set(),helped:0};
+  const x=skills[key];x.attempts++;x.correct+=ev.correct?1:0;x.questions.add(ev.question);x.helped+=ev.hint?1:0;
+  if(!ev.correct)errors[ev.error]=(errors[ev.error]||0)+1;
+  const k=String(ev.lesson);if(!byLesson[k])byLesson[k]={attempts:0,correct:0};byLesson[k].attempts++;byLesson[k].correct+=ev.correct?1:0;
+ }
+ return {events:events.length,skills:Object.fromEntries(Object.entries(skills).map(([k,v])=>[k,{label:v.label,attempts:v.attempts,correct:v.correct,rate:Math.round(v.correct/v.attempts*100),uniqueQuestions:v.questions.size,withHints:v.helped}])),errors,byLesson};
+}
+function renderAnalytics(){
+ const wrap=$('analytics');if(wrap.classList.contains('hide'))return;
+ const data=analyticsData(),arr=Object.entries(data.skills);
+ wrap.innerHTML=`<h3>📊 Карта освоения темы</h3><p class="muted">Предварительные показатели по проверенным попыткам. Повторные попытки учитываются отдельно; процент не равен итоговой оценке и не доказывает освоение навыка.</p><div class="mastery-grid">${arr.length?arr.map(([k,x])=>`<div class="skill-card"><strong>${esc(x.label)}</strong><div class="skill-bar"><span style="width:${x.rate}%"></span></div><span class="metric">${x.rate}%</span><small>${x.correct} верных из ${x.attempts} попыток · ${x.uniqueQuestions} разных заданий · ${x.withHints} проверок после подсказки</small></div>`).join(''):'<p>Пока нет проверенных заданий. Карта появится после первого ответа.</p>'}</div><details class="analytics-details" open><summary><strong>Диагностика затруднений</strong></summary>${Object.keys(data.errors).length?Object.entries(data.errors).sort((a,b)=>b[1]-a[1]).map(([name,n])=>`<span class="error-tag">${esc(name)} · ${n}</span>`).join(''):'<p class="muted">Ошибок пока не зарегистрировано.</p>'}<p class="muted">Для открытых алгебраических ответов причина ошибки ориентировочная; требуется проверка преподавателя.</p></details><details class="analytics-details"><summary><strong>Подробный отчёт по попыткам (${data.events})</strong></summary><div style="overflow-x:auto"><table><thead><tr><th>Урок</th><th>Задание</th><th>Результат</th><th>Причина / подсказка</th><th>Время</th></tr></thead><tbody>${state.history.slice().reverse().map(e=>`<tr><td>${e.lesson}</td><td>${esc(e.title)}</td><td>${e.correct?'Верно':'Ошибка'}</td><td>${e.correct?(e.hint?'С подсказкой':'Без подсказки'):esc(e.error)}</td><td>${esc(e.time)}</td></tr>`).join('')}</tbody></table></div></details><div class="actions"><button type="button" id="printAnalytics">🖨 Печать отчёта</button><button type="button" id="hideAnalytics">Закрыть</button></div>`;
+ $('hideAnalytics').onclick=()=>wrap.classList.add('hide');$('printAnalytics').onclick=()=>window.print();
+}
+function logCheck(q,id,ans,good){
+ const meta=SKILL_META[q.id]||['Прочие навыки','other'];
+ state.history.push({lesson:state.lesson+1,page:state.page+1,question:q.id,title:q.title,skillLabel:meta[0],skill:meta[1],correct:good,hint:Boolean(state.hints[id]),error:good?'':diagnose(q,ans),time:new Date().toLocaleString('ru-RU')});
+ if(state.history.length>3000)state.history.splice(0,state.history.length-3000);
+ renderAnalytics();
+}
+function attachCard(q,id,host,test){if(['coordinate','geometry'].includes(q.type))attachGraph(q,id,host);const input=host.querySelector('math-field');if(input){input.value=state.answers[id]||'';input.mathVirtualKeyboardPolicy='manual';const keys=[String.raw`\frac{}{}`, '^{}',String.raw`\sqrt{}`,'x','-','(',')','BACK'];host.querySelectorAll('[data-math-key]').forEach(btn=>btn.onclick=()=>{const x=keys[Number(btn.dataset.mathKey)];if(x==='BACK')input.executeCommand('deleteBackward');else input.insert(x,{selectionMode:'placeholder'});input.focus();state.answers[id]=input.value;});}
+if(q.type==='order'){host.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{const row=b.closest('[data-sort]'),v=row.dataset.sort,arr=layouts[id],index=arr.indexOf(v),to=index+Number(b.dataset.move);if(to<0||to>=arr.length)return;[arr[index],arr[to]]=[arr[to],arr[index]];state.answers[id]=[...arr];renderQuestions();saveSoon();});}
+if(q.type==='order'){
+ const list=host.querySelector('.sortlist');let dragged=null,touchRow=null;
+ const move=(source,target)=>{if(!source||!target||source===target)return;const arr=layouts[id],i=arr.indexOf(source.dataset.sort),j=arr.indexOf(target.dataset.sort);if(i<0||j<0)return;arr.splice(j,0,arr.splice(i,1)[0]);state.answers[id]=[...arr];renderQuestions();saveSoon();};
+ list.querySelectorAll('.sortrow').forEach(row=>{
+  row.addEventListener('dragstart',e=>{dragged=row;row.classList.add('sort-dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',row.dataset.sort);});
+  row.addEventListener('dragover',e=>{e.preventDefault();row.classList.add('sort-over');});
+  row.addEventListener('dragleave',()=>row.classList.remove('sort-over'));
+  row.addEventListener('drop',e=>{e.preventDefault();row.classList.remove('sort-over');move(dragged,row);});
+  row.addEventListener('dragend',()=>{dragged=null;list.querySelectorAll('.sortrow').forEach(r=>r.classList.remove('sort-over','sort-dragging'));});
+  const handle=row.querySelector('.drag-handle');
+  handle.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;touchRow=row;handle.setPointerCapture(e.pointerId);e.preventDefault();});
+  handle.addEventListener('pointerup',e=>{if(!touchRow)return;const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('.sortrow');move(touchRow,target);touchRow=null;});
+  handle.addEventListener('pointercancel',()=>touchRow=null);
+ });
+}
+host.querySelectorAll('input,select,math-field').forEach(el=>el.addEventListener('input',()=>state.answers[id]=valueFor(q,id,host)));
+host.querySelector('.check-question').onclick=()=>{const ans=valueFor(q,id,host);state.answers[id]=ans;state.attempts[id]=(state.attempts[id]||0)+1;const good=checkValue(q,ans);state.checks[id]=good;logCheck(q,id,ans,good);const f=host.querySelector('.question-feedback');f.innerHTML=`<div class="feedback">${good?'✓ Верно!':test?'Неверно. Ответ сохранён для итоговой диагностики.':'Пока неверно. '+q.hint}</div>`;if(!test&&!good)typesetMath(f);saveSoon();};
+const hint=host.querySelector('.hint-question');if(hint)hint.onclick=()=>{host.querySelector('.question-feedback').innerHTML=`<div class="note">${q.hint}</div>`;state.hints[id]=true;typesetMath(host.querySelector('.question-feedback'));saveSoon();};
+const random=host.querySelector('.shuffle-question');if(random)random.onclick=()=>{reshuffle(id,q.type==='order'?q.options.map(x=>x[0]):q.options);if(['match','groups'].includes(q.type))delete layouts[id+'-targets'];renderQuestions();saveSoon();};
+const focus=host.querySelector('.focus-question');if(focus)focus.onclick=()=>{const active=host.classList.contains('is-focused');document.querySelectorAll('.question-card.is-focused').forEach(x=>x.classList.remove('is-focused'));document.body.classList.toggle('question-focus',!active);host.classList.toggle('is-focused',!active);focus.textContent=active?'⛶ На весь экран':'✕ Закрыть фокус';};
+initScratchpad(host,id);}
+function questionCard(q,test){const id=qkey(q.id);return `<section class="question question-card" data-question="${q.id}"><div class="question-type">${esc(q.title)} <button type="button" class="focus-question" aria-label="Развернуть задание">⛶ На весь экран</button></div>${info(q)}${answerMarkup(q,id)}<div class="actions"><button class="primary check-question">Проверить</button>${test?'':`<button class="hint-question">Подсказка</button>`}${['single','multiple','boolean','order','match','groups'].includes(q.type)?`<button class="shuffle-question" title="Начать задание с другим порядком">↻ Перемешать</button>`:''}</div><div class="question-feedback" aria-live="polite"></div>${scratchpad(id)}</section>`;}
+function renderQuestions(){document.body.classList.remove('question-focus');const test=state.page===4;const items=bank.filter(q=>q.lesson===state.lesson&&q.page===state.page);$('dynamic').innerHTML=`${test?`<p class="tag">${state.lesson===state.count-1?'Итоговая проверка (демоверсия типов вопросов)':'Мини-проверка'}</p>`:`<p class="muted">Разные форматы заданий. Каждый ответ и черновик независимы.</p>`}${items.map(q=>questionCard(q,test)).join('')}`;typesetMath($('dynamic'));for(const q of items){attachCard(q,qkey(q.id),$('dynamic').querySelector(`[data-question="${q.id}"]`),test);}}
+function showPractice(){renderQuestions();}
+function showCheck(){renderQuestions();}
+document.addEventListener('input',e=>{if(e.target.closest('#stage,#notesText'))saveSoon();});
+document.addEventListener('change',e=>{if(e.target.closest('#stage,#notesText'))saveSoon();});
+$('stage').addEventListener('click',e=>{const a=e.target.closest('a[data-lesson]');if(a){e.preventDefault();navLesson(Number(a.dataset.lesson));}const home=e.target.closest('a[data-home]');if(home){e.preventDefault();navHome();}});$('count').onchange=e=>{beforeNav();state.count=Number(e.target.value);state.lesson=0;state.page=0;state.slide=0;navHome();};$('mode').onchange=render;
+$('showAnalytics').onclick=()=>{const box=$('analytics');box.classList.toggle('hide');renderAnalytics();if(!box.classList.contains('hide'))box.scrollIntoView({behavior:'smooth',block:'start'});};$('saveProgress').onclick=()=>persistNow();
+$('downloadProgress').onclick=downloadBackup;
+$('uploadProgress').onclick=()=>$('progressFile').click();
+$('progressFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>12*1024*1024)throw Error('Файл слишком большой (максимум 12 МБ)');const data=validateProgress(JSON.parse(await file.text()));if(!confirm('Заменить текущие ответы, черновики и прогресс данными из файла?'))return;restoreProgress(data);persistNow();status('✓ Прогресс восстановлен из файла');}catch(err){alert('Не удалось загрузить прогресс: '+err.message);}finally{e.target.value='';}});
+window.addEventListener('pagehide',()=>{persistNow();});$('reset').onclick=()=>{if(confirm('Очистить ответы, заметки и черновики в текущем модуле?')){state.attempts={};state.notes={};state.drawings={};state.answers={};state.checks={};state.hints={};state.history=[];state.lesson=0;state.page=0;Object.keys(layouts).forEach(k=>delete layouts[k]);try{localStorage.removeItem(PROGRESS_KEY);}catch(e){}navHome();persistNow();}};
+
+// Print sheets are generated independently from current interactive cards.
+const printDialog=$('printDialog');
+$('openPrint').onclick=()=>{
+  beforeNav();const options=Array.from({length:state.count},(_,i)=>`<label><input type="checkbox" class="print-lesson-checkbox" value="${i}" ${i===state.lesson?'checked':''}> Урок ${i+1}</label>`).join('');
+  $('printLessonChoices').innerHTML=options;
+  $('printScope').value='current';$('printLessonChoices').classList.add('hide');$('printMessage').textContent='';
+  if(typeof printDialog.showModal==='function')printDialog.showModal();else printDialog.setAttribute('open','');
+};
+$('printScope').onchange=()=> $('printLessonChoices').classList.toggle('hide',$('printScope').value!=='custom');
+function printLessonIndices(){const scope=$('printScope').value;if(scope==='all')return Array.from({length:state.count},(_,i)=>i);if(scope==='current')return [state.lesson];return [...document.querySelectorAll('.print-lesson-checkbox:checked')].map(x=>Number(x.value));}
+function printNoteType(n){return n===0?'linear':'mixed';}
+let printLessonIndex=0;function printQuestionsForPage(page){return bank.filter(q=>q.lesson===printLessonIndex&&q.page===page);}
+function printAnswer(q){
+ if(q.type==='coordinate')return 'По условию';
+ if(q.type==='geometry')return 'C(0; y), где y ≠ 0';
+ if(Array.isArray(q.answer)){
+   if(['single','multiple','boolean'].includes(q.type))return q.options.filter(o=>q.answer.includes(o[0])).map(o=>o[1]).join('; ');
+   if(q.type==='order')return q.answer.map((k,i)=>`${i+1}. ${q.options.find(o=>o[0]===k)?.[1]||k}`).join(' → ');
+   return q.answer.join('; ');
+ }
+ if(q.answer&&typeof q.answer==='object')return Object.entries(q.answer).map(([k,v])=>`${q.options?.find(o=>o[0]===k)?.[1]||k} → ${q.targets?.find(t=>t[0]===v)?.[1]||v}`).join('; ');
+ return 'Проверка преподавателем';
+}
+// Real SVG lines, not CSS backgrounds: grid remains visible even when
+// the browser's "Print background graphics" option is disabled.
+let printGridSequence=0;
+function printSolutionGridSVG(){
+ const id='print-cell-'+(++printGridSequence);
+ const cell=18.897638; // 5 mm at the CSS reference pixel density (96 px/in)
+ return `<svg class="print-solution-grid" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><defs><pattern id="${id}" width="${cell}" height="${cell}" patternUnits="userSpaceOnUse"><path d="M ${cell} 0 H 0 V ${cell}" fill="none" stroke="#aabccc" stroke-width="0.65"/></pattern></defs><rect width="100%" height="100%" fill="url(#${id})"/></svg>`;
+}
+function printQuestionHTML(q,n,teacher,space){
+ let options='';
+ if(['single','multiple','boolean'].includes(q.type))options=`<div class="print-choice-grid">${q.options.map((o,i)=>`<div class="print-choice">${'АБВГДЕ'[i]||i+1}) ${o[1]}</div>`).join('')}</div>`;
+ if(q.type==='order')options=`<div>${q.options.map(o=>`<div>□ ${o[1]}</div>`).join('')}</div>`;
+ if(['match','groups'].includes(q.type))options=`<div>${q.options.map(o=>`<div>${o[1]} — ________________________</div>`).join('')}</div><p>Варианты: ${q.targets.map(t=>t[1]).join('; ')}</p>`;
+ if(q.type==='blanks')options='<p>Ответы: __________ ; __________</p>';
+ if(q.type==='coordinate'||q.type==='geometry')options='<div class="print-geometry-space">Место для решения</div>';
+ const answer=teacher?`<div class="print-answer">Ответ: ${printAnswer(q)}</div>`:'';
+ const spaceHtml=teacher?'':`<div class="print-solution">${$('printGrid').checked?printSolutionGridSVG():''}</div>`;
+ return `<article class="print-question"><div class="print-question-title">${n}. ${esc(q.title)}</div><div class="print-statement">${q.q}</div>${options}${answer}${spaceHtml}</article>`;
+}
+function buildPrintable(){
+ printGridSequence=0;
+ const indices=printLessonIndices();if(!indices.length)throw Error('Выберите хотя бы один урок.');
+ const notes=$('printNotes').checked,practice=$('printPractice').checked,tests=$('printTests').checked,presentation=$('printPresentation').checked;
+ if(!notes&&!practice&&!tests&&!presentation)throw Error('Выберите хотя бы один вид материала.');
+ const teacher=document.querySelector('input[name="printAudience"]:checked').value==='teacher';
+ let markup=`<div class="print-cover"><h1>ОГЭ №11. Графики функций</h1><h2>9 класс · ${state.count} занятия по 60 минут</h2><p>${teacher?'Комплект преподавателя с ответами':'Рабочие листы для ученика'}</p><p>Имя: ______________________________________</p><p>Дата: ______________________________________</p></div>`;
+ if(presentation){markup+=`<section class="print-lesson"><h2 class="print-heading">Общая презентация темы</h2>${slideBank.map((slide,i)=>`<article class="print-slide"><h3>${i+1}. ${esc(slide.name)}</h3><div>${slide.body.replace(/<canvas\b[^>]*><\/canvas>/g,'<div class="note">Интерактивный график доступен в электронной презентации.</div>')}</div></article>`).join('')}</section>`;}
+ for(const index of indices){
+   printLessonIndex=index;const p=plans[state.count][index];markup+=`<section class="print-lesson"><h2 class="print-heading">Урок ${index+1}. ${esc(p[0])}</h2><p>${esc(p[1])}</p>`;
+   if(notes)markup+=`<h3 class="print-subheading">Конспект</h3><div class="print-explain">${lessonNotes[printNoteType(index)]}</div>`;
+   if(practice){for(const page of [1,2,3]){const qs=printQuestionsForPage(page);if(qs.length)markup+=`<h3 class="print-subheading">${esc(pages[page])}</h3>${qs.map((q,i)=>printQuestionHTML(q,i+1,teacher)).join('')}`;}}
+   if(tests)markup+=`<h3 class="print-subheading">${index===state.count-1?'Итоговая проверка':'Мини-проверка'}</h3>${printQuestionsForPage(4).map((q,i)=>printQuestionHTML(q,i+1,teacher)).join('')}`;
+   markup+='</section>';
+ }
+ let pageRule=document.getElementById('printPageRule');if(!pageRule){pageRule=document.createElement('style');pageRule.id='printPageRule';document.head.appendChild(pageRule);}pageRule.textContent='@media print{@page{size:'+ $('printPaper').value+' '+$('printOrientation').value+';margin:12mm}}';
+ const out=$('printOutput');out.classList.toggle('print-grid',$('printGrid').checked);out.style.setProperty('--solution-height',({compact:'15mm',normal:'29mm',large:'49mm'})[$('printSpace').value]);out.style.setProperty('--print-paper',$('printPaper').value);out.style.setProperty('--print-orientation',$('printOrientation').value);out.innerHTML=markup;
+ typesetMath(out);
+ return out;
+}
+$('printBuild').onclick=()=>{try{
+ const output=buildPrintable();$('printMessage').textContent='Печатная версия: '+printLessonIndices().map(i=>'урок '+(i+1)).join(', ')+'.';
+ if(typeof printDialog.close==='function')printDialog.close();else printDialog.removeAttribute('open');
+ // Wait until KaTeX has laid out math before entering the browser print dialog.
+ requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+ }catch(e){$('printMessage').textContent=e.message;}
+};
+
+$('export').onclick=()=>{beforeNav();const payload={module:'ОГЭ №11. Графики функций',sessions:state.count,attempts:state.attempts,checks:state.checks,hints:state.hints,answers:state.answers,notes:state.notes,history:state.history,analytics:analyticsData(),exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='math-module-report.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+if(!restoreSavedProgress()){readLocation();render();}window.addEventListener('hashchange',()=>{captureCurrent();readLocation();render();saveSoon();});window.addEventListener('load',()=>typesetMath(document.body));
+})();
+</script></body></html>
