@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Действия с рациональными дробями — 8 класс, профиль</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+<style>
+:root{--bg:#f5f4e9;--paper:#fffef9;--ink:#25352d;--olive:#456e54;--edge:#cad5c6;--amber:#f7eac8;--danger:#a33c32;--ok:#23653d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,'Segoe UI',sans-serif}
+header{background:#e4e9d7;border-bottom:2px solid #8da68d;padding:16px max(22px,calc((100% - 1150px)/2))}
+header h1{font-size:clamp(23px,3vw,35px);margin:2px 0}header p{margin:4px 0}
+.shell{max-width:1150px;margin:auto;padding:18px 22px 90px}
+.toolbar,.tabs,.actions,.choices,.keypad{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.toolbar{justify-content:space-between;margin-bottom:14px}.pill{background:white;border:1px solid var(--edge);padding:5px 11px;border-radius:18px;font-size:13px}
+button,select,input,textarea{font:inherit}button{cursor:pointer;border:1px solid #8cac91;border-radius:9px;padding:9px 15px;background:white;color:var(--ink)}button:hover{background:#ecf1e9}button.primary,.tabs button.active{background:var(--olive);color:white;border-color:var(--olive)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #cb9739;outline-offset:2px}
+.tabs{position:sticky;top:0;background:var(--bg);z-index:3;padding:10px 0;border-bottom:1px solid var(--edge)}
+.tab{display:none}.tab.active{display:block}.card{background:var(--paper);border:1px solid var(--edge);border-radius:14px;padding:21px;margin:17px 0;box-shadow:0 3px 12px #31452a08}
+h2{margin:12px 0}h3{margin-top:7px}.muted{color:#57655d}.math{font-size:1.17rem;overflow:auto;padding:12px 0;white-space:nowrap}
+.task{padding:15px;border:1px solid #d9e1d4;border-radius:12px;margin:14px 0;background:white}.task h3{font-size:1.04rem}
+.feedback{padding:10px;margin-top:10px;border-radius:7px;background:#f1f3ef}.feedback.good{background:#e4f3e7;color:var(--ok)}.feedback.bad{background:#fff0e9;color:var(--danger)}
+.answer{width:min(460px,100%);padding:10px;border:1px solid #91a697;border-radius:8px}.step{padding:8px 12px;background:#f1f3e9;border-left:4px solid #7d9d80;margin:7px 0}
+label{cursor:pointer}.choice{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--edge);border-radius:8px}
+.teacher-only{display:none}body.teacher .teacher-only{display:block}
+details{margin-top:12px}details summary{cursor:pointer;font-weight:600}
+.timer{font-weight:700;font-variant-numeric:tabular-nums}.bar{height:8px;background:#d9e3d6;border-radius:9px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:var(--olive)}
+.sketch-wrap{display:none;margin-top:14px}.sketch-wrap.open{display:block}
+canvas{width:100%;height:280px;border:1px dashed #8aa38d;border-radius:9px;background:#fff;touch-action:none}
+textarea{width:100%;min-height:70px;padding:10px;border:1px solid var(--edge);border-radius:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.keypad button{min-width:44px}.rubric td,.rubric th{padding:9px;border:1px solid var(--edge);text-align:left}.rubric{border-collapse:collapse;width:100%}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}.shell{padding:12px}.card{padding:14px}.tabs{position:static}.math{font-size:1rem}}
+@media print{body{background:white;color:black;font:16pt 'Times New Roman',serif}header,.toolbar,.tabs,.actions,.keypad,.sketch-wrap,button{display:none!important}.shell{padding:0;max-width:none}.tab{display:block!important;break-before:page}.card,.task{box-shadow:none;border:0;break-inside:avoid;padding:8px 0}.teacher-only{display:none!important}textarea{border:1px solid #888}.feedback{display:none!important}}
+</style></head>
+<body>
+<header><div class="pill" style="display:inline-block">8 класс · Макарычев · углублённый уровень</div>
+<h1>Действия с рациональными дробями</h1><p>От распознавания множителей — к доказательным преобразованиям · 60 минут</p></header>
+<main class="shell">
+<div class="toolbar"><div class="actions"><label>Режим: <select id="role"><option value="student">Ученик</option><option value="teacher">Преподаватель</option></select></label><span class="pill timer" id="clock">00:00</span><button id="timerBtn">▶ Запустить время</button></div><div class="actions"><span class="pill" id="progress">Выполнено: 0 / 0</span><button id="printBtn">Печать</button><button id="resetBtn">Сброс</button></div></div>
+<div class="bar"><span id="progressBar"></span></div>
+<nav class="tabs" aria-label="Этапы занятия">
+<button data-tab="diagnostic" class="active">1. Диагностика · 9 мин</button>
+<button data-tab="recognition">2. Структура · 12 мин</button>
+<button data-tab="operations">3. Действия · 14 мин</button>
+<button data-tab="profile">4. Профиль · 15 мин</button>
+<button data-tab="final">5. Контроль · 10 мин</button>
+<button data-tab="report">Отчёт / ДЗ</button></nav>
+<section class="tab active" id="diagnostic"><div class="card"><h2>Входная диагностика: не доверяй готовому решению</h2>
+<p>Определи, верно ли равенство. Объясни <b>почему</b>; если ошибка — найди первый неверный шаг. Даже правильное равенство требует указания ОДЗ.</p><div id="diagTasks"></div></div></section>
+<section class="tab" id="recognition"><div class="card"><h2>Распознай скрытые множители</h2>
+<p>Не упрощай сразу. Сначала выбери приём, затем запиши разложение и ограничения. Здесь особенно важно различать <b>сумму</b> и <b>произведение</b>.</p>
+<div class="step">Правило проверки: сократить можно только общий <b>множитель</b> числителя и знаменателя; исходные запрещённые значения сохраняются.</div>
+<div id="recognitionTasks"></div></div></section>
+<section class="tab" id="operations"><div class="card"><h2>Действия с дробями: «Я — Мы — Ты»</h2>
+<p>Для каждого примера: (1) найди ОДЗ, (2) запиши план, (3) разложи на множители, (4) выполни действия, (5) проверь законность сокращений.</p>
+<div id="operationTasks"></div></div></section>
+<section class="tab" id="profile"><div class="card"><h2>Профильный уровень — выбор стратегии</h2>
+<p>Способ решения не назван. Перед вычислениями запиши, где может возникнуть общий множитель. Нельзя «подгонять» тождество под желаемый результат.</p>
+<div id="profileTasks"></div></div></section>
+<section class="tab" id="final"><div class="card"><h2>Итоговая самостоятельная работа</h2>
+<p><b>10 минут. Без подсказок и открытия решений.</b> Впиши упрощённое выражение в линейной записи (например, <code>(x-2)/(x+3)</code>), ОДЗ и объясни хотя бы один ключевой переход. Проверка принимает указанную каноническую форму; математически равносильные другие формы преподаватель проверяет вручную.</p>
+<div id="finalTasks"></div><button class="primary" id="finalCheck">Проверить записанные ответы</button><p class="muted">Сначала выполните все задания на бумаге или в черновике; автоматическая проверка итоговых ответов не заменяет проверку преобразований.</p></div></section>
+<section class="tab" id="report"><div class="card"><h2>Отчёт преподавателю</h2><div id="reportData"></div><button id="copyReport">Скопировать отчёт</button></div>
+<div class="card"><h2>Домашнее задание</h2><p>А — исправление ошибок (4); Б — действия с дробями (4); В — профильный уровень (3). В каждом примере укажите ОДЗ.</p><div id="homework"></div></div>
+<div class="card teacher-only"><h2>Методические ориентиры</h2><p>Отдельно отслеживайте: незаконное сокращение слагаемых; ошибку знака при перестановке разности; пропущенную группировку; неверную ФСУ; потерю ОДЗ. При двух однотипных ошибках вернитесь к этапу 2. Для перехода дальше важно не только число верных ответов, но и объяснение каждого общего множителя.</p></div></section>
+</main>
+<script>
+'use strict';
+const diag=[
+{f:'\\frac{x^2-9}{x^2+6x+9}=\\frac{x-3}{x+3}',ok:true,why:'(x−3)(x+3)/(x+3)². ОДЗ: x≠−3.'},
+{f:'\\frac{x^2-4x+4}{x^2-4}=\\frac{x-2}{x-2}=1',ok:false,why:'x²−4=(x−2)(x+2). Верно (x−2)/(x+2), x≠±2.'},
+{f:'\\frac{x^3-8}{x^2-4}=\\frac{x^2+2x+4}{x+2}',ok:true,why:'Разность кубов и разность квадратов имеют общий множитель x−2, x≠±2.'},
+{f:'\\frac{x^2+5x+6}{x^2-4}=\\frac{x+3}{x-2}',ok:true,why:'(x+2)(x+3)/[(x−2)(x+2)], x≠±2.'},
+{f:'\\frac{x^2-6x+9}{9-x^2}=\\frac{x-3}{x+3}',ok:false,why:'9−x²=−(x−3)(x+3), верно −(x−3)/(x+3), x≠±3.'},
+{f:'\\frac{x^3+2x^2-9x-18}{x^2-9}=x+2',ok:true,why:'Числитель (x+2)(x²−9), x≠±3.'}
+];
+const rec=[
+{f:'\\frac{x^3+4x^2-9x-36}{x^2-9}',opt:['Группировка','Квадрат суммы','Только общий множитель'],idx:0,ans:'(x+4)(x²−9)/(x²−9)=x+4; x≠±3.'},
+{f:'\\frac{x^3+8}{x^2+4x+4}',opt:['Разность квадратов','Сумма кубов и квадрат суммы','Ничего не раскладывается'],idx:1,ans:'(x+2)(x²−2x+4)/(x+2)²=(x²−2x+4)/(x+2); x≠−2.'},
+{f:'\\frac{a^2-b^2}{b-a}',opt:['Перемена порядка разности и ФСУ','Сокращение слагаемых','Сумма кубов'],idx:0,ans:'(a−b)(a+b)/(−(a−b))=−(a+b); a≠b.'},
+{f:'\\frac{x^4-16}{x^2-4x+4}',opt:['Только вынести x²','Дважды разность квадратов, квадрат разности','Трёхчлен по дискриминанту'],idx:1,ans:'(x−2)(x+2)(x²+4)/(x−2)²=(x+2)(x²+4)/(x−2), x≠2.'},
+{f:'\\frac{x^2+2x+5}{x+1}',opt:['Сократить x','Разность кубов','Общего множителя нет'],idx:2,ans:'Не сокращается: при x=−1 числитель 4 ≠0. ОДЗ: x≠−1.'}
+];
+const ops=[
+{f:'\\frac{3}{x-2}-\\frac{2}{x+2}',a:'(x+10)/(x^2-4)',why:'[3(x+2)−2(x−2)]/[(x−2)(x+2)]=(x+10)/(x²−4); x≠±2.'},
+{f:'\\frac{x^2-9}{x^2+6x+9}\\cdot\\frac{x+3}{x-3}',a:'1',why:'Разложить x²−9 и (x+3)², затем сократить множители; x≠±3.'},
+{f:'\\frac{x^2-4x+4}{x^2-4}:\\frac{x-2}{x+2}',a:'1',why:'(x−2)²/[(x−2)(x+2)] × (x+2)/(x−2)=1; x≠±2.'},
+{f:'\\frac1{x-1}+\\frac1{x+1}-\\frac2{x^2-1}',a:'2/(x+1)',why:'[(x+1)+(x−1)−2]/[(x−1)(x+1)]=2(x−1)/[(x−1)(x+1)]; x≠±1.'}
+];
+const prof=[
+{f:'\\frac{x^2-4}{x^2-2x}\\cdot\\frac{x^2-3x}{x^2+x-6}',a:'(x+2)*(x-3)/((x-2)*(x+3))',why:'[(x−2)(x+2)]/[x(x−2)] × [x(x−3)]/[(x+3)(x−2)]. ОДЗ x≠0,2,−3.'},
+{f:'\\left(\\frac{x}{x-2}-\\frac2{x+2}\\right)\\cdot\\frac{x^2-4}{x^2+4}',a:'1',why:'Числитель разности: x(x+2)−2(x−2)=x²+4. ОДЗ x≠±2.'},
+{f:'\\frac{x^3-8}{x^2-4}:\\frac{x^2+2x+4}{x+2}',a:'1',why:'Разность кубов; делитель не ноль для допустимых действительных x. ОДЗ x≠±2.'}
+];
+const finals=[
+{f:'\\frac{x^3+4x^2-9x-36}{x^2-9}',a:'x+4',odz:'x!=3,-3',why:'Группировка (x+4)(x²−9); x≠±3.',error:'Группировка/ОДЗ'},
+{f:'\\frac{x+1}{x^2-4}-\\frac{2}{x-2}+\\frac3{x+2}',a:'(2*x-9)/(x^2-4)',odz:'x!=2,-2',why:'Общий знаменатель x²−4; числитель x+1−2(x+2)+3(x−2)=2x−9; x≠±2.',error:'Общий знаменатель/знаки'},
+{f:'\\frac{x^3-27}{x^2-9}:\\frac{x^2+3x+9}{x+3}',a:'1',odz:'x!=3,-3',why:'Разность кубов, деление на дробь; x≠±3.',error:'Деление/разность кубов'},
+{f:'\\left(\\frac{x}{x-3}-\\frac3{x+3}\\right)\\cdot\\frac{x^2-9}{x^2+9}',a:'1',odz:'x!=3,-3',why:'x(x+3)−3(x−3)=x²+9, результат 1 при x≠±3.',error:'Сложные действия/ОДЗ'}
+];
+const hw=[
+'\\frac{x^2-8x+16}{16-x^2}=\\frac{x-4}{x+4}\\quad\\text{— верно ли?}',
+'\\frac{x^2+3x}{x^2+5x}=\\frac35\\quad\\text{— верно ли?}',
+'\\frac{x^3-27}{x-3}=x^2+3x+9\\quad\\text{— верно ли?}',
+'\\frac{x^2-1}{1-x}=x+1\\quad\\text{— верно ли?}',
+'\\frac{x^3+2x^2-4x-8}{x^2-4}',
+'\\frac{2}{x-3}+\\frac{1}{x+3}-\\frac{3}{x^2-9}',
+'\\frac{x^2-16}{x^2+8x+16}:\\frac{x-4}{x+4}',
+'\\left(\\frac{x}{x-1}-\\frac1{x+1}\\right)\\frac{x^2-1}{x^2+1}',
+'\\frac{x^4-81}{x^2-6x+9}\\cdot\\frac{x-3}{x^2+9}',
+'\\frac{x^3+5x^2-4x-20}{x^2-4}:\\frac{x+5}{x+2}',
+'\\left(\\frac{x+1}{x-1}-\\frac{x-1}{x+1}\\right)\\frac{x^2-1}{4x}'
+];
+const savedKey='rational_grade8_profile_v1';let state={};try{state=JSON.parse(sessionStorage.getItem(savedKey)||'{}')}catch(e){}
+function save(){sessionStorage.setItem(savedKey,JSON.stringify(state));progress()}
+function tex(node){node.querySelectorAll('[data-tex]').forEach(el=>{let f=el.dataset.tex;if(window.katex){try{katex.render(f,el,{displayMode:true,throwOnError:false,strict:'ignore'})}catch(e){el.textContent=f}}else el.textContent=f})}
+function math(f){return '<div class="math" data-tex="'+f.replace(/"/g,'&quot;')+'"></div>'}
+function sketch(id){return '<div class="actions"><button type="button" data-sketch="'+id+'">✎ Черновик</button></div><div class="sketch-wrap" id="sketch-'+id+'"><div class="actions"><label>Цвет <input type="color" id="color-'+id+'" value="#26382c"></label><label>Толщина <input type="range" id="size-'+id+'" min="1" max="12" value="3"></label><button type="button" data-clear="'+id+'">Очистить</button></div><canvas width="950" height="280" id="canvas-'+id+'"></canvas></div>'}
+function teacher(txt){return '<details class="teacher-only"><summary>Решение и объяснение</summary><p>'+txt+'</p></details>'}
+function diagUI(){document.getElementById('diagTasks').innerHTML=diag.map((q,i)=>'<article class="task"><h3>№ '+(i+1)+'</h3>'+math(q.f)+'<div class="choices"><label class="choice"><input type="radio" name="diag'+i+'" value="true" '+(state['diag'+i]==='true'?'checked':'')+'> Верно</label><label class="choice"><input type="radio" name="diag'+i+'" value="false" '+(state['diag'+i]==='false'?'checked':'')+'> Неверно</label><button data-check="diag'+i+'">Проверить</button></div><label>Обоснование:<textarea data-save="reasonDiag'+i+'" placeholder="Запиши причину и ОДЗ..."></textarea></label><div class="feedback" id="feed-diag'+i+'"></div>'+sketch('d'+i)+teacher(q.why)+'</article>').join('')}
+function recUI(){document.getElementById('recognitionTasks').innerHTML=rec.map((q,i)=>'<article class="task"><h3>№ '+(i+1)+'</h3>'+math(q.f)+'<div class="choices">'+q.opt.map((v,j)=>'<label class="choice"><input type="radio" name="rec'+i+'" value="'+j+'" '+(state['rec'+i]===String(j)?'checked':'')+'> '+v+'</label>').join('')+'</div><label>Разложение и ОДЗ<textarea data-save="recExplain'+i+'" placeholder="Запиши множители и ограничения"></textarea></label><div class="actions"><button data-check="rec'+i+'">Проверить способ</button></div><div class="feedback" id="feed-rec'+i+'"></div>'+sketch('r'+i)+teacher(q.ans)+'</article>').join('')}
+function openUI(){function render(q,i,prefix){return '<article class="task"><h3>№ '+(i+1)+'</h3>'+math(q.f)+'<label>План / обоснование<textarea data-save="'+prefix+'Explain'+i+'" placeholder="Почему можно сокращать? Где ОДЗ?"></textarea></label><div class="actions"><label>Итоговый ответ: <input class="answer" data-save="'+prefix+i+'" placeholder="Например (x-2)/(x+3)"></label><button data-check="'+prefix+i+'">Проверить форму</button></div><div class="feedback" id="feed-'+prefix+i+'"></div>'+sketch(prefix+i)+teacher(q.why)+'</article>'}
+document.getElementById('operationTasks').innerHTML=ops.map((q,i)=>render(q,i,'op')).join('');
+document.getElementById('profileTasks').innerHTML=prof.map((q,i)=>render(q,i,'pro')).join('')}
+function finalUI(){document.getElementById('finalTasks').innerHTML=finals.map((q,i)=>'<article class="task"><h3>№ '+(i+1)+'</h3>'+math(q.f)+'<div class="grid2"><label>Ответ<input class="answer" data-save="fin'+i+'" placeholder="Линейная запись"></label><label>ОДЗ<input class="answer" data-save="odz'+i+'" placeholder="Например x!=2,-2"></label></div><label>Обоснование<textarea data-save="finReason'+i+'" placeholder="Ключевые множители, шаги, ограничения"></textarea></label><div class="feedback" id="feed-fin'+i+'"></div>'+sketch('f'+i)+teacher(q.why)+'</article>').join('')}
+function norm(s){return String(s||'').toLowerCase().replace(/\\s+/g,'').replace(/\\cdot/g,'*').replace(/[−–]/g,'-').replace(/²/g,'^2').replace(/³/g,'^3').replace(/\\left|\\right/g,'').replace(/\\{/g,'{')}
+function equivalentInput(input,expected){let a=norm(input),b=norm(expected);if(a===b)return true;const alts={'(2*x-9)/(x^2-4)':['(2x-9)/(x^2-4)','(2x-9)/((x-2)*(x+2))'],'(x+10)/(x^2-4)':['(x+10)/((x-2)*(x+2))'],'2/(x+1)':['2*(1/(x+1))'],'(x+2)*(x-3)/((x-2)*(x+3))':['((x+2)*(x-3))/((x-2)*(x+3))','(x^2-x-6)/(x^2+x-6)']};return (alts[b]||[]).some(v=>norm(v)===a)}
+function check(id){let fb=document.getElementById('feed-'+id);if(!fb)return;let result=false,explain='';
+if(id.startsWith('diag')){let i=+id.slice(4);result=state[id]===String(diag[i].ok);explain=diag[i].why}
+if(id.startsWith('rec')){let i=+id.slice(3);result=state[id]===String(rec[i].idx);explain=rec[i].ans}
+if(id.startsWith('op')){let i=+id.slice(2);result=equivalentInput(state[id],ops[i].a);explain=ops[i].why}
+if(id.startsWith('pro')){let i=+id.slice(3);result=equivalentInput(state[id],prof[i].a);explain=prof[i].why}
+if(id.startsWith('fin')){let i=+id.slice(3);result=equivalentInput(state[id],finals[i].a);explain='Ожидаемая каноническая форма: '+finals[i].a+'. Проверку ОДЗ и рассуждения выполняет преподаватель.'}
+state['checked_'+id]=result?'yes':'no';save();fb.className='feedback '+(result?'good':'bad');fb.textContent=result?'✓ Выбранный ответ / форма совпадает. Проверь объяснение и ОДЗ.':'Не совпало с ожидаемой формой. '+(id.startsWith('fin')?'Не считай это доказательством ошибки: другую равносильную форму проверит преподаватель.':explain)}
+function progress(){let ids=[...diag.map((_,i)=>'diag'+i),...rec.map((_,i)=>'rec'+i),...ops.map((_,i)=>'op'+i),...prof.map((_,i)=>'pro'+i),...finals.map((_,i)=>'fin'+i)];let n=ids.filter(id=>state['checked_'+id]==='yes').length;document.getElementById('progress').textContent='Проверено успешно: '+n+' / '+ids.length;document.getElementById('progressBar').style.width=(100*n/ids.length)+'%'}
+function report(){let parts=[['Диагностика',diag,'diag'],['Структура',rec,'rec'],['Действия',ops,'op'],['Профиль',prof,'pro'],['Контроль',finals,'fin']];let out='<table class="rubric"><tr><th>Этап</th><th>Совпало</th><th>Всего</th></tr>';for(let [name,arr,p] of parts){out+='<tr><td>'+name+'</td><td>'+arr.filter((_,i)=>state['checked_'+p+i]==='yes').length+'</td><td>'+arr.length+'</td></tr>'}out+='</table><p>Учитель отдельно оценивает объяснения и ОДЗ; автоматический счёт отражает только выбор/записанную форму.</p>';let notes=finals.map((q,i)=>'№'+(i+1)+': '+(state['checked_fin'+i]||'не проверено')+'; ОДЗ: '+(state['odz'+i]||'—')+'; Обоснование: '+(state['finReason'+i]||'—')).join('\\n');out+='<label>Комментарий преподавателя<textarea data-save="teacherNote" placeholder="Какие ошибки повторяются? Что дать дальше?"></textarea></label><pre style="white-space:pre-wrap" id="reportText">'+notes.replace(/</g,'&lt;')+'</pre>';document.getElementById('reportData').innerHTML=out;restoreInputs()}
+function restoreInputs(){document.querySelectorAll('[data-save]').forEach(el=>{el.value=state[el.dataset.save]||''})}
+function drawCanvas(id){const canvas=document.getElementById('canvas-'+id);if(!canvas||canvas.dataset.ready)return;canvas.dataset.ready='1';const ctx=canvas.getContext('2d');let drawing=false,last=null;function point(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}canvas.addEventListener('pointerdown',e=>{drawing=true;last=point(e);canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!drawing)return;let p=point(e);ctx.strokeStyle=document.getElementById('color-'+id).value;ctx.lineWidth=+document.getElementById('size-'+id).value;ctx.lineJoin=ctx.lineCap='round';ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});['pointerup','pointercancel'].forEach(v=>canvas.addEventListener(v,()=>drawing=false))}
+diagUI();recUI();openUI();finalUI();document.getElementById('homework').innerHTML=hw.map((f,i)=>'<article class="task"><b>'+('ААААББББВВВ'[i])+(i<4?i+1:i<8?i-3:i-7)+'.</b>'+math(f)+'</article>').join('');tex(document);restoreInputs();progress();
+document.addEventListener('change',e=>{if(e.target.matches('input[type=radio]')){state[e.target.name]=e.target.value;save()}if(e.target.matches('[data-save]')){state[e.target.dataset.save]=e.target.value;save()}});
+document.addEventListener('input',e=>{if(e.target.matches('[data-save]')){state[e.target.dataset.save]=e.target.value;save()}});
+document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.tab){document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='report')report();scrollTo({top:0,behavior:'smooth'})}
+if(b.dataset.check)check(b.dataset.check);
+if(b.dataset.sketch){let id=b.dataset.sketch;document.getElementById('sketch-'+id).classList.toggle('open');drawCanvas(id)}
+if(b.dataset.clear){let c=document.getElementById('canvas-'+b.dataset.clear);c.getContext('2d').clearRect(0,0,c.width,c.height)}});
+document.getElementById('role').addEventListener('change',e=>document.body.classList.toggle('teacher',e.target.value==='teacher'));
+document.getElementById('finalCheck').addEventListener('click',()=>{finals.forEach((_,i)=>check('fin'+i));document.querySelectorAll('#finalTasks .feedback').forEach(x=>x.scrollIntoView({block:'nearest'}))});
+document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('Очистить все ответы этого занятия?')){sessionStorage.removeItem(savedKey);location.reload()}});
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
+document.getElementById('copyReport').addEventListener('click',async()=>{let msg='Рациональные дроби, 8 класс\\n'+document.getElementById('reportData').innerText;try{await navigator.clipboard.writeText(msg);alert('Отчёт скопирован')}catch(e){alert('Копирование недоступно; выделите отчёт вручную')}});
+let seconds=0,interval=null;document.getElementById('timerBtn').addEventListener('click',e=>{if(interval){clearInterval(interval);interval=null;e.target.textContent='▶ Продолжить'}else{interval=setInterval(()=>{seconds++;document.getElementById('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')},1000);e.target.textContent='⏸ Пауза'}});
+window.addEventListener('load',()=>tex(document));
+</script></body></html>
