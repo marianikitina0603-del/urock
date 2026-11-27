@@ -12,7 +12,7 @@
     <div class="home-hero-copy">
       <span class="eyebrow">Библиотека HTML-уроков</span>
       <h1>Библиотека уроков</h1>
-      <p>Уроки, тренажёры, диагностика и игры для 5–11 классов.</p>
+      <p>Уроки, тренажёры и игры для 5–11 классов.</p>
     </div>
     <section class="search-box home-search" aria-label="Поиск по библиотеке">
       <input id="siteSearch" type="search" placeholder="Найти тему, номер ОГЭ, класс…" autocomplete="off">
@@ -72,47 +72,6 @@
   </section>
 </main>
 
-<script>
-(()=>{
-  const pages=[['5 класс','classes/5.html'],['6 класс','classes/6.html'],['7 класс','classes/7.html'],['8 класс','classes/8-v2.html'],['9 класс','classes/9-v2.html'],['10 класс','classes/10.html'],['11 класс','classes/11.html'],['Информатика','informatics/index.html'],['Игры','game/index.html'],['ОГЭ','exams/oge-v2.html'],['ЕГЭ база','exams/ege-base.html'],['ЕГЭ профиль','exams/ege-profile.html']];
-  const input=document.getElementById('siteSearch'),results=document.getElementById('searchResults'),status=document.getElementById('searchStatus');
-  const norm=s=>(s||'').toLowerCase().replace(/ё/g,'е').replace(/→/g,'').replace(/\s+/g,' ').trim();
-  let index=[];
-  const base=new URL('.',location.href);
-  Promise.all(pages.map(async([source,url])=>{
-    try{
-      const r=await fetch(url,{cache:'no-store'}); if(!r.ok)return;
-      const doc=new DOMParser().parseFromString(await r.text(),'text/html');
-      doc.querySelectorAll('.lesson-list a[href]').forEach(a=>{
-        const title=a.textContent.replace(/→/g,'').trim(),href=a.getAttribute('href');
-        if(title&&href)index.push({title,href:new URL(href,new URL(url,base)).href,source});
-      });
-    }catch(e){}
-  })).then(()=>{status.textContent='Поиск готов';run()});
-
-  function run(){
-    const q=norm(input.value);
-    if(!q){results.classList.remove('show');results.innerHTML='';return}
-    const w=q.split(' ').filter(Boolean);
-    const found=index.filter(x=>w.every(t=>norm(x.title+' '+x.source).includes(t))).slice(0,20);
-    results.classList.add('show');
-    results.innerHTML=found.length
-      ?'<h2>Найдено: '+found.length+'</h2>'+found.map(x=>'<a class="search-result" href="'+x.href+'" target="_blank" rel="noopener"><span><strong>'+esc(x.title)+'</strong><small>'+esc(x.source)+'</small></span><span>→</span></a>').join('')
-      :'<div class="empty-state">Ничего не найдено.</div>';
-  }
-  function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-  input.addEventListener('input',run);
-
-  function fill(id,key){
-    const el=document.getElementById(id); let a=[];
-    try{a=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}
-    el.innerHTML=a.length
-      ?a.slice(0,2).map(x=>'<li><a href="'+x.href+'" target="_blank" rel="noopener">'+esc(x.title)+'</a></li>').join('')
-      :'<li class="quick-empty">Пока пусто</li>';
-  }
-  fill('favList','urock:favorites');
-  fill('recentList','urock:recent');
-})();
-</script>
+<script src="assets/library.js"></script>
 </body>
 </html>
