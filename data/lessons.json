@@ -14,5 +14,13 @@
     "category": "mathematics",
     "label": "6 класс · математика · 5/6/7/8 занятий по 60 минут",
     "path": "lessons/grade6/ratios-proportions-percentages-v33-2026.html"
+  },
+  {
+    "id": "geometry8-areas-pythagoras-intensive-v33-20261128",
+    "title": "Площади фигур. Теорема Пифагора",
+    "section": "grade8",
+    "category": "geometry",
+    "label": "8 класс · геометрия · углублённый интенсив · 5/6/7 занятий по 60 минут",
+    "path": "lessons/grade8/geometry/areas-pythagoras-intensive-v33-2026.html"
   }
 ]
